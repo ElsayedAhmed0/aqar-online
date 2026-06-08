@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* ── تعريف الألوان كـ CSS Variables ── */
+@theme {
+  /* Light Mode Colors */
+  --color-aura-bg: #FAF9F6;
+  --color-aura-canvas: #F5F4F0;
+  --color-aura-card: #FFFFFF;
+  --color-aura-accent: #C4B5A5;
+  --color-aura-accent-light: #E6DFD5;
+  --color-aura-accent-dark: #A39281;
+  --color-aura-dark: #2C2B29;
+  --color-aura-muted: #8C8A84;
+  --color-aura-border: #EAE8E2;
+
+  /* Fonts */
+  --font-sans: "Readex Pro", sans-serif;
+  --font-serif: "Playfair Display", serif;
+
+  /* Border Radius */
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+  --radius-6xl: 3rem;
+}
+
+/* ── Dark Mode Colors ── */
+.dark {
+  --color-aura-bg: #1A1A18;
+  --color-aura-canvas: #222220;
+  --color-aura-card: #2A2A27;
+  --color-aura-dark: #F0EEE9;
+  --color-aura-muted: #9A9890;
+  --color-aura-border: #333330;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #FAF9F6; }
+::-webkit-scrollbar-thumb { background: #E6DFD5; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #C4B5A5; }
+.dark ::-webkit-scrollbar-track { background: #1A1A18; }
+.dark ::-webkit-scrollbar-thumb { background: #3A3935; }
+
+/* ── Transitions ── */
+* { transition-property: background-color, border-color, color; transition-duration: 200ms; }
+
+/* ── Bento Card ── */
+.bento-card {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 60px rgba(44, 43, 41, 0.06);
+}
+
+/* ── Search Button ── */
+.search-pill-btn {
+  background: linear-gradient(135deg, #C4B5A5 0%, #A39281 100%);
+  transition: all 0.3s ease;
+}
+.search-pill-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(196, 181, 165, 0.35);
+}
+
+/* ── Glow Spheres ── */
+.glow-sphere {
+  filter: blur(140px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Selection ── */
+::selection { background: #C4B5A5; color: white; }

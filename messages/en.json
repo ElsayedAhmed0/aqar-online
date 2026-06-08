@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "properties": "Properties",
+    "contact": "Contact",
+    "login": "Login",
+    "addListing": "Add Listing"
+  },
+  "hero": {
+    "title": "Find Your Perfect Property",
+    "subtitle": "Thousands of properties waiting for you",
+    "search": "Search for a property..."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred"
+  }
+}
