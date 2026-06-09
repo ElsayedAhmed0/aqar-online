@@ -1,22 +1,20 @@
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import BentoGrid from "@/components/BentoGrid";
-import StatsSection from "@/components/StatsSection";
-import PropertiesSection from "@/components/PropertiesSection";
-import BlogSection from "@/components/BlogSection";
-import Footer from "@/components/Footer";
-import AddListingButton from "@/components/AddListingButton";
-import SideAds from "@/components/SideAds";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import AddListingButton from "@/components/layout/AddListingButton";
+import HeroSection from "@/components/home/HeroSection";
+import BentoGrid from "@/components/home/BentoGrid";
+import StatsSection from "@/components/home/StatsSection";
+import PropertiesSection from "@/components/home/PropertiesSection";
+import BlogSection from "@/components/home/BlogSection";
+import PartnersSection from "@/components/home/PartnersSection";
+import SideAds from "@/components/home/SideAds";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
-
-      {/* Hero — full width */}
       <HeroSection />
 
-      {/* Layout — محتوى + إعلانات جانبية */}
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
         <div className="flex gap-8 items-start">
 
@@ -25,6 +23,7 @@ export default function Home() {
             <BentoGrid />
             <StatsSection />
             <PropertiesSection />
+            <PartnersSection />
             <BlogSection />
           </div>
 

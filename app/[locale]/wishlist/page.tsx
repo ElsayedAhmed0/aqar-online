@@ -2,7 +2,7 @@
 
 import { useWishlist } from "@/context/WishlistContext";
 import { useLocale } from "next-intl";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { HiOutlineHeart, HiOutlineMapPin } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 
