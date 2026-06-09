@@ -3,6 +3,8 @@ import { Readex_Pro, Playfair_Display, Reem_Kufi } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { FilterProvider } from "@/context/FilterContext";
 import "./globals.css";
 
 const readex = Readex_Pro({
@@ -55,9 +57,13 @@ export default async function LocaleLayout({
           enableSystem={false}
           disableTransitionOnChange={false}
         >
-          <NextIntlClientProvider messages={messages}>
-            {children}
-          </NextIntlClientProvider>
+          <WishlistProvider>
+            <FilterProvider>
+              <NextIntlClientProvider messages={messages}>
+                {children}
+              </NextIntlClientProvider>
+            </FilterProvider>
+          </WishlistProvider>
         </ThemeProvider>
       </body>
     </html>

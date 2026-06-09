@@ -72,3 +72,34 @@
 
 /* ── Selection ── */
 ::selection { background: #C4B5A5; color: white; }
+
+/* ── Image Hover Scale ── */
+.img-hover {
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .img-hover {
+  transform: scale(1.06);
+}
+/* ── Property Card Animation ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animate {
+  animation: fadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-animate:nth-child(1) { animation-delay: 0ms; }
+.card-animate:nth-child(2) { animation-delay: 120ms; }
+.card-animate:nth-child(3) { animation-delay: 240ms; }
+.card-animate:nth-child(4) { animation-delay: 360ms; }
+.card-animate:nth-child(5) { animation-delay: 480ms; }
+.card-animate:nth-child(6) { animation-delay: 600ms; }

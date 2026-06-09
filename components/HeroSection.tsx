@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocale } from "next-intl";
 import { HiOutlineSearch, HiOutlineChevronDown } from "react-icons/hi";
 import { HiOutlineMapPin, HiOutlineCheckCircle } from "react-icons/hi2";
+import { useFilter } from "@/context/FilterContext";
 import {
   MdOutlineApartment,
   MdOutlineVilla,
@@ -13,11 +14,11 @@ import {
 } from "react-icons/md";
 
 const getTypes = (isAr: boolean) => [
-  { value: "all",        label: isAr ? "كل الأنواع" : "All Types",   icon: <MdOutlineGridView /> },
-  { value: "apartment",  label: isAr ? "شقة"        : "Apartment",   icon: <MdOutlineApartment /> },
-  { value: "villa",      label: isAr ? "فيلا"       : "Villa",       icon: <MdOutlineVilla /> },
-  { value: "commercial", label: isAr ? "تجاري"      : "Commercial",  icon: <MdOutlineStorefront /> },
-  { value: "land",       label: isAr ? "أرض"        : "Land",        icon: <MdOutlineLandscape /> },
+  { value: "all", label: isAr ? "كل الأنواع" : "All Types", icon: <MdOutlineGridView /> },
+  { value: "apartment", label: isAr ? "شقة" : "Apartment", icon: <MdOutlineApartment /> },
+  { value: "villa", label: isAr ? "فيلا" : "Villa", icon: <MdOutlineVilla /> },
+  { value: "commercial", label: isAr ? "تجاري" : "Commercial", icon: <MdOutlineStorefront /> },
+  { value: "land", label: isAr ? "أرض" : "Land", icon: <MdOutlineLandscape /> },
 ];
 
 export default function HeroSection() {
@@ -25,9 +26,11 @@ export default function HeroSection() {
   const isAr = locale === "ar";
   const types = getTypes(isAr);
 
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [propertyType, setPropertyType] = useState(types[0]);
+  const { searchQuery, setSearchQuery, propertyType, setPropertyType, setActiveFilter } = useFilter();
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // عشان نتزامن مع فلتر الـ PropertiesSection
+  const currentType = types.find((t) => t.value === propertyType) ?? types[0];
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,13 +107,12 @@ export default function HeroSection() {
               className="w-full flex items-center justify-between gap-2 bg-black/40 hover:bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white text-sm transition-all duration-200"
             >
               <span className="flex items-center gap-2">
-                <span className="text-aura-accent text-base">{propertyType.icon}</span>
-                <span>{propertyType.label}</span>
+                <span className="text-aura-accent text-base">{currentType.icon}</span>
+                <span>{currentType.label}</span>
               </span>
               <HiOutlineChevronDown
-                className={`w-4 h-4 text-white/50 transition-transform duration-200 ${
-                  dropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 text-white/50 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -121,18 +123,18 @@ export default function HeroSection() {
                   <button
                     key={type.value}
                     onClick={() => {
-                      setPropertyType(type);
+                      setPropertyType(type.value);
+                      setActiveFilter(type.value);
                       setDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-white/10 ${
-                      propertyType.value === type.value
-                        ? "bg-white/10 text-white"
-                        : "text-white/70"
-                    }`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-white/10 ${propertyType === type.value
+                      ? "bg-white/10 text-white"
+                      : "text-white/70"
+                      }`}
                   >
                     <span className="text-aura-accent text-base">{type.icon}</span>
                     <span>{type.label}</span>
-                    {propertyType.value === type.value && (
+                    {propertyType === type.value && (
                       <HiOutlineCheckCircle className="mr-auto w-4 h-4 text-aura-accent" />
                     )}
                   </button>
@@ -172,9 +174,9 @@ export default function HeroSection() {
         {/* Stats */}
         <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
           {[
-            { num: "2,500+", label: isAr ? "عقار مميز"   : "Properties"        },
-            { num: "1,200+", label: isAr ? "عميل سعيد"   : "Happy Clients"     },
-            { num: "15+",    label: isAr ? "سنة خبرة"    : "Years Experience"  },
+            { num: "2,500+", label: isAr ? "عقار مميز" : "Properties" },
+            { num: "1,200+", label: isAr ? "عميل سعيد" : "Happy Clients" },
+            { num: "15+", label: isAr ? "سنة خبرة" : "Years Experience" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl font-light text-white">{stat.num}</p>
