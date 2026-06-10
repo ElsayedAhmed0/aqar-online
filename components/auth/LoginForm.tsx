@@ -28,10 +28,22 @@ export default function LoginForm() {
     }
     setLoading(true);
     setError("");
-    // هنا هيتربط بـ Supabase لاحقاً
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    router.push(`/${locale}`);
+
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (error) {
+      setError(isAr ? "البريد الإلكتروني أو كلمة المرور غير صحيحة" : "Invalid email or password");
+      setLoading(false);
+      return;
+    }
+
+    window.location.href = `/${locale}`;
   };
 
   return (
@@ -124,8 +136,8 @@ export default function LoginForm() {
               {isAr ? "تذكرني" : "Remember me"}
             </span>
           </label>
-          
-            <a href={`/${locale}/forgot-password`}
+
+          <a href={`/${locale}/forgot-password`}
             className="text-xs text-aura-accent hover:text-aura-accent-dark transition-colors"
           >
             {isAr ? "نسيت كلمة المرور؟" : "Forgot password?"}
@@ -146,8 +158,8 @@ export default function LoginForm() {
         {/* رابط إنشاء حساب */}
         <p className="text-center text-sm text-aura-muted pt-2">
           {isAr ? "ليس لديك حساب؟" : "Don't have an account?"}{" "}
-          
-            <a href={`/${locale}/register`}
+
+          <a href={`/${locale}/register`}
             className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors"
           >
             {isAr ? "إنشاء حساب جديد" : "Create Account"}

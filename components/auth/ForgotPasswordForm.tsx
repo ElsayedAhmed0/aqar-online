@@ -20,8 +20,20 @@ export default function ForgotPasswordForm() {
     }
     setLoading(true);
     setError("");
-    // هنا هيتربط بـ Supabase لاحقاً
-    await new Promise((r) => setTimeout(r, 1500));
+
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/${locale}/reset-password`,
+    });
+
+    if (error) {
+      setError(isAr ? "حدث خطأ أثناء الإرسال" : "Error sending reset email");
+      setLoading(false);
+      return;
+    }
+
     setLoading(false);
     setSent(true);
   };
@@ -40,8 +52,8 @@ export default function ForgotPasswordForm() {
       </a>
 
       {/* رابط الرجوع */}
-      
-        <a href={`/${locale}/login`}
+
+      <a href={`/${locale}/login`}
         className="flex items-center gap-2 text-sm text-aura-muted hover:text-aura-accent transition-colors mb-8 w-fit"
       >
         <HiOutlineArrowRight className="w-4 h-4" />
@@ -62,8 +74,8 @@ export default function ForgotPasswordForm() {
               ? `تم إرسال رابط استعادة كلمة المرور إلى ${email}`
               : `Password reset link has been sent to ${email}`}
           </p>
-          
-           <a href={`/${locale}/login`}
+
+          <a href={`/${locale}/login`}
             className="mt-4 px-8 py-3 rounded-2xl bg-aura-accent text-white text-sm font-medium hover:bg-aura-dark transition-all duration-300"
           >
             {isAr ? "العودة لتسجيل الدخول" : "Back to Login"}

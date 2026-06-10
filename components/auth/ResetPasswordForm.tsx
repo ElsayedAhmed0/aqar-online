@@ -38,8 +38,20 @@ export default function ResetPasswordForm() {
     }
     setLoading(true);
     setError("");
-    // هنا هيتربط بـ Supabase لاحقاً
-    await new Promise((r) => setTimeout(r, 1500));
+
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.updateUser({
+      password: form.password,
+    });
+
+    if (error) {
+      setError(isAr ? "حدث خطأ أثناء تحديث كلمة المرور" : "Error updating password");
+      setLoading(false);
+      return;
+    }
+
     setLoading(false);
     setDone(true);
   };
@@ -58,8 +70,8 @@ export default function ResetPasswordForm() {
       </a>
 
       {/* رابط الرجوع */}
-      
-        <a href={`/${locale}/login`}
+
+      <a href={`/${locale}/login`}
         className="flex items-center gap-2 text-sm text-aura-muted hover:text-aura-accent transition-colors mb-8 w-fit"
       >
         <HiOutlineArrowRight className="w-4 h-4" />

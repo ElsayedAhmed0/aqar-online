@@ -45,10 +45,29 @@ export default function RegisterForm() {
     }
     setLoading(true);
     setError("");
-    // هنا هيتربط بـ Supabase لاحقاً
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
+
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: {
+          full_name: form.name,
+          phone: form.phone,
+        },
+      },
+    });
+
+    if (error) {
+      setError(isAr ? "حدث خطأ أثناء إنشاء الحساب" : "Error creating account");
+      setLoading(false);
+      return;
+    }
+
     router.push(`/${locale}`);
+    router.refresh();
   };
 
   return (
@@ -202,8 +221,8 @@ export default function RegisterForm() {
         {/* رابط تسجيل الدخول */}
         <p className="text-center text-sm text-aura-muted pt-2">
           {isAr ? "لديك حساب بالفعل؟" : "Already have an account?"}{" "}
-          
-            <a href={`/${locale}/login`}
+
+          <a href={`/${locale}/login`}
             className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors"
           >
             {isAr ? "تسجيل الدخول" : "Sign In"}

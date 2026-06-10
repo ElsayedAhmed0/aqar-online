@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { FilterProvider } from "@/context/FilterContext";
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 const readex = Readex_Pro({
@@ -57,13 +58,15 @@ export default async function LocaleLayout({
           enableSystem={false}
           disableTransitionOnChange={false}
         >
-          <WishlistProvider>
-            <FilterProvider>
-              <NextIntlClientProvider messages={messages}>
-                {children}
-              </NextIntlClientProvider>
-            </FilterProvider>
-          </WishlistProvider>
+          <AuthProvider>
+            <WishlistProvider>
+              <FilterProvider>
+                <NextIntlClientProvider messages={messages}>
+                  {children}
+                </NextIntlClientProvider>
+              </FilterProvider>
+            </WishlistProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
