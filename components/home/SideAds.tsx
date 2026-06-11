@@ -38,13 +38,17 @@ const ads = [
     },
 ];
 
-export default function SideAds() {
+type SideAdsProps = {
+    inPanel?: boolean;
+};
+
+export default function SideAds({ inPanel = false }: SideAdsProps) {
     const locale = useLocale();
     const isAr = locale === "ar";
 
-    return (
-        <div className="flex flex-col gap-4 w-full">
-            <p className="text-xs tracking-[0.2em] uppercase text-aura-muted mb-2">
+    const adsList = (
+        <>
+            <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
                 {isAr ? "إعلانات مميزة" : "Featured Ads"}
             </p>
 
@@ -52,7 +56,11 @@ export default function SideAds() {
 
                 <a key={ad.id}
                     href="#properties"
-                    className="relative h-48 rounded-2xl overflow-hidden group cursor-pointer block shadow-md hover:shadow-xl border border-aura-border hover:border-aura-accent transition-all duration-300"
+                    className={`relative rounded-2xl overflow-hidden group cursor-pointer block border border-aura-border hover:border-aura-accent transition-all duration-300 ${
+                        inPanel
+                            ? "h-36 shadow-sm hover:shadow-md"
+                            : "h-48 shadow-md hover:shadow-xl"
+                    }`}
                 >
                     {/* الصورة */}
                     <img
@@ -83,6 +91,22 @@ export default function SideAds() {
                     <div className="absolute inset-0 bg-aura-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </a>
             ))}
+        </>
+    );
+
+    if (inPanel) {
+        return (
+            <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 w-full min-w-0">
+                <div className="flex flex-col gap-3 max-h-[calc(100vh-9rem)] overflow-y-auto overscroll-contain">
+                    {adsList}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-4 w-full">
+            {adsList}
         </div>
     );
 }

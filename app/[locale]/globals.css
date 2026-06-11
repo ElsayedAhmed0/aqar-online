@@ -104,17 +104,24 @@
 .card-animate:nth-child(5) { animation-delay: 480ms; }
 .card-animate:nth-child(6) { animation-delay: 600ms; }
 
-/* ── Marquee Animation ── */
-@keyframes marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+/* ── Partners Marquee — seamless infinite loop ── */
+@keyframes marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 
-.animate-marquee {
-  animation: marquee 20s linear infinite;
+.marquee-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-track {
+  display: flex;
   width: max-content;
+  animation: marquee-scroll 35s linear infinite;
+  will-change: transform;
 }
 
-.animate-marquee:hover {
+.marquee-track:hover {
   animation-play-state: paused;
 }

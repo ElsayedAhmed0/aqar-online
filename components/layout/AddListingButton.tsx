@@ -84,7 +84,7 @@ export default function AddListingButton() {
             : "opacity-0 -translate-y-4 pointer-events-none"
         }`}
       >
-        <a href="/add-listing" className="relative flex items-center justify-center">
+        <a href={`/${locale}/add-listing`} className="relative flex items-center justify-center">
 
           {/* ── حلقات الـ Sonar ── */}
           <span className="sonar-ring-1 absolute inset-0 rounded-2xl bg-aura-accent" />
