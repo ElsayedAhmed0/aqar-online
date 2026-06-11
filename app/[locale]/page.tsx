@@ -21,10 +21,11 @@ export default function Home() {
           {/* المحتوى الرئيسي — 75% */}
           <div className="flex-1 min-w-0">
             <BentoGrid />
+             <PartnersSection />
             <PropertiesSection />
             <StatsSection />
             
-            <PartnersSection />
+           
             <BlogSection />
           </div>
 
