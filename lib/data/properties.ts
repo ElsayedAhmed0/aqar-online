@@ -1,5 +1,5 @@
 export type Property = {
-  id: number;
+  id: number | string;
   title_ar: string;
   title_en: string;
   location_ar: string;
@@ -10,7 +10,9 @@ export type Property = {
   baths: number;
   area: number;
   img: string;
+  images?: string[];
   featured: boolean;
+  status?: string;
 };
 
 export const properties: Property[] = [

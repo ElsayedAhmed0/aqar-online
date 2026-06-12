@@ -12,8 +12,8 @@ type PropertyCardProps = {
   isAr: boolean;
   showFeatured?: boolean;
   animate?: boolean;
+  locale?: string;
 };
-
 export default function PropertyCard({
   property,
   isLiked,
@@ -22,16 +22,18 @@ export default function PropertyCard({
   isAr,
   showFeatured = true,
   animate = false,
+  locale = "ar",
 }: PropertyCardProps) {
   return (
-    <div
-      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer ${
+    
+     <a href={`/${locale}/properties/${property.id}`}
+      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${
         animate ? "card-animate" : ""
       }`}
     >
       <div className="relative h-56 overflow-hidden">
         <img
-          src={property.img}
+        src={property.images?.[0] || property.img || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
           alt={property.title_en}
           className="w-full h-full object-cover img-hover"
         />
@@ -93,6 +95,6 @@ export default function PropertyCard({
           </button>
         </div>
       </div>
-    </div>
+    </a>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useLocale } from "next-intl";
 import { useFilter } from "@/context/FilterContext";
+import { createClient } from "@/lib/supabase/client";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 import PropertyCard from "@/components/properties/PropertyCard";
-import { properties } from "@/lib/data/properties";
 
 const filters = [
   { value: "all", icon: <HiOutlineHome className="w-4 h-4" />, label_ar: "الكل", label_en: "All" },
@@ -21,15 +22,37 @@ export default function PropertiesSection() {
   const { activeFilter, setActiveFilter, searchQuery } = useFilter();
   const { liked, toggleLike } = useWishlist();
 
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loadingProps, setLoadingProps] = useState(true);
+
+  // جيب العقارات المعتمدة من Supabase
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setLoadingProps(true);
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      if (data) setProperties(data);
+      setLoadingProps(false);
+    };
+    fetchProperties();
+  }, []);
+
   const filtered = properties.filter((p) => {
-  const matchType = activeFilter === "all" || p.type === activeFilter;
-  const matchSearch = searchQuery === "" ||
-    p.title_ar.includes(searchQuery) ||
-    p.title_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.location_ar.includes(searchQuery) ||
-    p.location_en.toLowerCase().includes(searchQuery.toLowerCase());
-  return matchType && matchSearch;
-});
+    const matchType = activeFilter === "all" || p.type === activeFilter;
+    const matchSearch =
+      searchQuery === "" ||
+      p.title_ar?.includes(searchQuery) ||
+      p.title_en?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.location_ar?.includes(searchQuery) ||
+      p.location_en?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchType && matchSearch;
+  });
 
   const formatPrice = (price: number) =>
     isAr
@@ -61,8 +84,8 @@ export default function PropertiesSection() {
                 key={f.value}
                 onClick={() => setActiveFilter(f.value)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === f.value
-                  ? "bg-aura-dark text-white shadow-sm"
-                  : "text-aura-muted hover:text-aura-dark"
+                    ? "bg-aura-dark text-white shadow-sm"
+                    : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
                 {f.icon}
@@ -73,29 +96,44 @@ export default function PropertiesSection() {
         </div>
 
         {/* الكروت */}
-        <div key={activeFilter} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              isLiked={liked.includes(property.id)}
-              onToggleLike={(e) => {
-                e.stopPropagation();
-                toggleLike(property.id);
-              }}
-              formatPrice={formatPrice}
-              isAr={isAr}
-              animate
-            />
-          ))}
-        </div>
+        {loadingProps ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-aura-muted font-light">
+              {isAr ? "لا توجد عقارات متاحة حالياً" : "No properties available"}
+            </p>
+          </div>
+        ) : (
+          <div key={activeFilter} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                isLiked={liked.includes(property.id)}
+                onToggleLike={(e) => {
+                  e.stopPropagation();
+                  toggleLike(property.id);
+                }}
+                formatPrice={formatPrice}
+                isAr={isAr}
+                animate
+                locale={locale}
+              />
+            ))}
+          </div>
+        )}
 
         {/* زر عرض الكل */}
-        <div className="text-center mt-12">
-          <button className="px-10 py-4 rounded-full border border-aura-border text-aura-dark text-sm font-medium hover:bg-aura-dark hover:text-white transition-all duration-300">
-            {isAr ? "عرض جميع العقارات" : "View All Properties"}
-          </button>
-        </div>
+        {!loadingProps && filtered.length > 0 && (
+          <div className="text-center mt-12">
+            <button className="px-10 py-4 rounded-full border border-aura-border text-aura-dark text-sm font-medium hover:bg-aura-dark hover:text-white transition-all duration-300">
+              {isAr ? "عرض جميع العقارات" : "View All Properties"}
+            </button>
+          </div>
+        )}
 
       </div>
     </section>

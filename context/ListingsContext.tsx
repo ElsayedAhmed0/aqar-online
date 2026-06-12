@@ -16,7 +16,8 @@ type ListingsContextType = {
   listings: UserListing[];
   loading: boolean;
   addListing: (
-    listing: Omit<UserListing, "id" | "userId" | "createdAt">
+    listing: Omit<UserListing, "id" | "userId" | "createdAt">,
+    rawImages: string[]
   ) => Promise<UserListing | null>;
   removeListing: (id: string) => Promise<void>;
 };
@@ -33,7 +34,6 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const [listings, setListings] = useState<UserListing[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // جيب إعلانات المستخدم من Supabase
   useEffect(() => {
     if (!user?.id) {
       setListings([]);
@@ -44,15 +44,14 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     const fetchListings = async () => {
       setLoading(true);
       const supabase = createClient();
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("listings")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        const mapped: UserListing[] = data.map((l) => ({
+      if (data) {
+        setListings(data.map((l) => ({
           id: l.id,
           userId: l.user_id,
           createdAt: l.created_at,
@@ -72,51 +71,64 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           phone: l.phone || "",
           featured: l.featured || false,
           status: l.status,
-        }));
-        setListings(mapped);
+        })));
       }
-
       setLoading(false);
     };
 
     fetchListings();
   }, [user?.id]);
 
-  // إضافة إعلان جديد لـ Supabase
+  // رفع صورة واحدة لـ Supabase Storage
+  const uploadImage = async (
+    supabase: ReturnType<typeof createClient>,
+    base64: string,
+    userId: string,
+    index: number
+  ): Promise<string | null> => {
+    try {
+      const blob = await fetch(base64).then((r) => r.blob());
+      const ext = blob.type.split("/")[1] || "jpg";
+      const fileName = `${userId}/${Date.now()}_${index}.${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from("listings")
+        .upload(fileName, blob, { contentType: blob.type });
+
+      if (error || !data) return null;
+
+      const { data: urlData } = supabase.storage
+        .from("listings")
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    } catch {
+      return null;
+    }
+  };
+
   const addListing = useCallback(
     async (
-      listing: Omit<UserListing, "id" | "userId" | "createdAt">
+      listing: Omit<UserListing, "id" | "userId" | "createdAt">,
+      rawImages: string[]
     ): Promise<UserListing | null> => {
       if (!user?.id) return null;
 
       const supabase = createClient();
 
-      // رفع الصور لـ Supabase Storage
+      // ارفع الصور الأول
       const uploadedUrls: string[] = [];
-
-      for (const img of listing.images) {
-        // لو الصورة base64 — نرفعها
+      for (let i = 0; i < rawImages.length; i++) {
+        const img = rawImages[i];
         if (img.startsWith("data:")) {
-          const base64 = img.split(",")[1];
-          const blob = await fetch(img).then((r) => r.blob());
-          const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("listings")
-            .upload(fileName, blob, { contentType: "image/jpeg" });
-
-          if (!uploadError && uploadData) {
-            const { data: urlData } = supabase.storage
-              .from("listings")
-              .getPublicUrl(uploadData.path);
-            uploadedUrls.push(urlData.publicUrl);
-          }
+          const url = await uploadImage(supabase, img, user.id, i);
+          if (url) uploadedUrls.push(url);
         } else {
           uploadedUrls.push(img);
         }
       }
 
-      // حفظ الإعلان في الـ DB
+      // حفظ الإعلان في الـ DB بالـ URLs
       const { data, error } = await supabase
         .from("listings")
         .insert({
@@ -140,7 +152,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .select()
         .single();
 
-      if (error || !data) return null;
+      if (error || !data) {
+        console.error("Insert error:", error);
+        return null;
+      }
 
       const newListing: UserListing = {
         id: data.id,
@@ -170,11 +185,9 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     [user?.id]
   );
 
-  // حذف إعلان من Supabase
   const removeListing = useCallback(
     async (id: string) => {
       if (!user?.id) return;
-
       const supabase = createClient();
       await supabase.from("listings").delete().eq("id", id).eq("user_id", user.id);
       setListings((prev) => prev.filter((l) => l.id !== id));

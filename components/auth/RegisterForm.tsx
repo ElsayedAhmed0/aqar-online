@@ -49,6 +49,7 @@ export default function RegisterForm() {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
+
     const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -59,7 +60,6 @@ export default function RegisterForm() {
         },
       },
     });
-
     if (error) {
       setError(isAr ? "حدث خطأ أثناء إنشاء الحساب" : "Error creating account");
       setLoading(false);

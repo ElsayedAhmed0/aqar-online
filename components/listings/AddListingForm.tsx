@@ -223,11 +223,13 @@ export default function AddListingForm() {
         baths: Number(form.baths),
         area: Number(form.area),
         img: form.images[0],
-        images: form.images,
+        images: [],
         phone: form.phone.trim(),
         featured: false,
         status: "pending",
-      });
+      },
+        form.images // الصور الـ raw base64
+      );
 
       if (created) {
         router.push(`/${locale}/dashboard`);
@@ -311,20 +313,18 @@ export default function AddListingForm() {
                     setActiveSection(s.id);
                     setError("");
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-medium transition-all duration-300 shrink-0 lg:shrink ${
-                    isActive
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-medium transition-all duration-300 shrink-0 lg:shrink ${isActive
                       ? "bg-aura-dark text-white"
                       : "bg-aura-canvas text-aura-muted hover:text-aura-dark border border-aura-border"
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                      isActive
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isActive
                         ? "bg-white/20"
                         : isDone
                           ? "bg-green-100 text-green-600"
                           : "bg-aura-card"
-                    }`}
+                      }`}
                   >
                     {isDone && !isActive ? (
                       <HiOutlineCheck className="w-4 h-4" />
@@ -371,16 +371,14 @@ export default function AddListingForm() {
                     key={t.value}
                     type="button"
                     onClick={() => update({ type: t.value })}
-                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all duration-300 text-center ${
-                      selected
+                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all duration-300 text-center ${selected
                         ? "border-aura-accent bg-aura-accent/5 shadow-md"
                         : "border-aura-border hover:border-aura-accent/40"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                        selected ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"
-                      }`}
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center ${selected ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"
+                        }`}
                     >
                       <Icon className="w-7 h-7" />
                     </div>
