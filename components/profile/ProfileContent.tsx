@@ -9,6 +9,7 @@ import {
   HiOutlinePhone,
   HiOutlineEnvelope,
   HiOutlineCalendar,
+  HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import { MdOutlineListAlt, MdOutlineAddHome } from "react-icons/md";
 
@@ -22,6 +23,7 @@ export default function ProfileContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [passwordSent, setPasswordSent] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,19 +43,13 @@ export default function ProfileContent() {
   const getInitials = () => {
     const name = user?.user_metadata?.full_name;
     if (name) {
-      return name
-        .split(" ")
-        .slice(0, 2)
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase();
+      return name.split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase();
     }
     return user?.email?.charAt(0).toUpperCase() || "?";
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(isAr ? "ar-EG" : "en-US", {
+    return new Date(dateStr).toLocaleDateString(isAr ? "ar-EG" : "en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -73,22 +69,40 @@ export default function ProfileContent() {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
-    const { error } = await supabase.auth.updateUser({
+    const { error: authError } = await supabase.auth.updateUser({
       data: {
         full_name: form.name.trim(),
         phone: form.phone.trim(),
       },
     });
 
-    if (error) {
+    if (authError) {
       setError(isAr ? "حدث خطأ أثناء حفظ البيانات" : "Error saving profile");
       setSaving(false);
       return;
     }
 
+    // حدث الـ profiles table برضو
+    await supabase
+      .from("profiles")
+      .update({
+        full_name: form.name.trim(),
+        phone: form.phone.trim(),
+      })
+      .eq("id", user!.id);
+
     setSuccess(true);
     setSaving(false);
     router.refresh();
+  };
+
+  const handlePasswordReset = async () => {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(user!.email!, {
+      redirectTo: `${window.location.origin}/${locale}/reset-password`,
+    });
+    setPasswordSent(true);
   };
 
   if (loading) {
@@ -101,30 +115,82 @@ export default function ProfileContent() {
 
   if (!user) return null;
 
+  const inputCls = "w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
       {/* بطاقة المستخدم */}
       <div className="lg:col-span-1">
         <div className="bento-card bg-aura-card rounded-3xl p-8 flex flex-col items-center text-center">
-          {user.user_metadata?.avatar_url ? (
-            <img
-              src={user.user_metadata.avatar_url}
-              className="w-24 h-24 rounded-full object-cover mb-4"
-              alt="avatar"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-aura-accent flex items-center justify-center text-white text-2xl font-semibold mb-4">
-              {getInitials()}
-            </div>
-          )}
+
+          {/* الصورة أو الأحرف */}
+          {/* الصورة أو الأحرف */}
+          <div className="relative mb-4 group">
+            {user.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                className="w-24 h-24 rounded-full object-cover"
+                alt="avatar"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-aura-accent flex items-center justify-center text-white text-2xl font-semibold">
+                {getInitials()}
+              </div>
+            )}
+
+            {/* زرار رفع الصورة */}
+            <label className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+              <span className="text-white text-[10px] font-medium">
+                {isAr ? "تغيير" : "Change"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const { createClient } = await import("@/lib/supabase/client");
+                  const supabase = createClient();
+
+                  // ارفع الصورة
+                  const ext = file.name.split(".").pop();
+                  const fileName = `avatars/${user!.id}.${ext}`;
+
+                  const { data, error } = await supabase.storage
+                    .from("listings")
+                    .upload(fileName, file, { upsert: true, contentType: file.type });
+
+                  if (!error && data) {
+                    const { data: urlData } = supabase.storage
+                      .from("listings")
+                      .getPublicUrl(data.path);
+
+                    // حدث الـ metadata
+                    await supabase.auth.updateUser({
+                      data: { avatar_url: urlData.publicUrl },
+                    });
+
+                    // حدث الـ profiles
+                    await supabase
+                      .from("profiles")
+                      .update({ avatar_url: urlData.publicUrl })
+                      .eq("id", user!.id);
+
+                    router.refresh();
+                    window.location.reload();
+                  }
+                }}
+              />
+            </label>
+          </div>
 
           <h2 className="text-xl font-light text-aura-dark mb-1">
             {user.user_metadata?.full_name || user.email?.split("@")[0]}
           </h2>
-          <p className="text-sm text-aura-muted mb-6" dir="ltr">
-            {user.email}
-          </p>
+          <p className="text-sm text-aura-muted mb-6" dir="ltr">{user.email}</p>
 
           {user.created_at && (
             <div className="flex items-center gap-2 text-xs text-aura-muted">
@@ -135,16 +201,16 @@ export default function ProfileContent() {
 
           {/* روابط سريعة */}
           <div className="w-full mt-8 pt-6 border-t border-aura-border space-y-3">
-            <a
-              href={`/${locale}/dashboard`}
+
+            <a href={`/${locale}/dashboard`}
               className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-xs text-aura-dark border border-aura-border hover:border-aura-accent hover:bg-aura-canvas transition-all duration-300"
             >
               <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0" />
               {isAr ? "إعلاناتي" : "My Listings"}
             </a>
-            <a
-              href={`/${locale}/add-listing`}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-xs text-white bg-aura-accent hover:bg-aura-accent-dark transition-all duration-300"
+
+            <a href={`/${locale}/add-listing`}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-xs text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300"
             >
               <MdOutlineAddHome className="w-4 h-4 shrink-0" />
               {isAr ? "أضف إعلانك" : "Add Listing"}
@@ -154,7 +220,9 @@ export default function ProfileContent() {
       </div>
 
       {/* نموذج التعديل */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 space-y-6">
+
+        {/* معلومات الحساب */}
         <div className="bento-card bg-aura-card rounded-3xl p-8">
           <h3 className="text-lg font-light text-aura-dark mb-6">
             {isAr ? "معلومات الحساب" : "Account Information"}
@@ -167,13 +235,13 @@ export default function ProfileContent() {
           )}
 
           {success && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm">
+            <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm flex items-center gap-2">
+              <HiOutlineCheckCircle className="w-4 h-4 shrink-0" />
               {isAr ? "تم حفظ البيانات بنجاح" : "Profile updated successfully"}
             </div>
           )}
 
           <div className="space-y-5">
-
             {/* الاسم */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-aura-dark">
@@ -186,7 +254,7 @@ export default function ProfileContent() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder={isAr ? "أدخل اسمك بالكامل" : "Enter your full name"}
-                  className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+                  className={inputCls}
                 />
               </div>
             </div>
@@ -203,7 +271,7 @@ export default function ProfileContent() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="01xxxxxxxxx"
-                  className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+                  className={inputCls}
                   dir="ltr"
                 />
               </div>
@@ -225,9 +293,7 @@ export default function ProfileContent() {
                 />
               </div>
               <p className="text-[10px] text-aura-muted">
-                {isAr
-                  ? "لا يمكن تغيير البريد الإلكتروني"
-                  : "Email address cannot be changed"}
+                {isAr ? "لا يمكن تغيير البريد الإلكتروني" : "Email address cannot be changed"}
               </p>
             </div>
 
@@ -235,18 +301,41 @@ export default function ProfileContent() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving
-                ? isAr
-                  ? "جاري الحفظ..."
-                  : "Saving..."
-                : isAr
-                  ? "حفظ التغييرات"
-                  : "Save Changes"}
+                ? (isAr ? "جاري الحفظ..." : "Saving...")
+                : (isAr ? "حفظ التغييرات" : "Save Changes")}
             </button>
           </div>
         </div>
+
+        {/* تغيير كلمة المرور */}
+        <div className="bento-card bg-aura-card rounded-3xl p-8">
+          <h3 className="text-lg font-light text-aura-dark mb-2">
+            {isAr ? "كلمة المرور" : "Password"}
+          </h3>
+          <p className="text-xs text-aura-muted mb-6">
+            {isAr
+              ? "سيتم إرسال رابط لتغيير كلمة المرور على بريدك"
+              : "A password reset link will be sent to your email"}
+          </p>
+
+          {passwordSent ? (
+            <div className="px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm flex items-center gap-2">
+              <HiOutlineCheckCircle className="w-4 h-4 shrink-0" />
+              {isAr ? "تم إرسال الرابط على بريدك" : "Reset link sent to your email"}
+            </div>
+          ) : (
+            <button
+              onClick={handlePasswordReset}
+              className="w-full py-3.5 rounded-2xl border border-aura-border text-aura-dark text-sm font-medium hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+            >
+              {isAr ? "إرسال رابط تغيير كلمة المرور" : "Send Password Reset Link"}
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );
