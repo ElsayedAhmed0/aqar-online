@@ -22,7 +22,7 @@ export default function WishlistPage() {
   const wishlistProperties = useMemo(() => {
     let list = properties.filter((p) => liked.includes(p.id as any));
 
-    if (activeFilter !== "all") {
+    if (activeFilter !== "all") {  
       list = list.filter((p) => p.type === activeFilter);
     }
 
