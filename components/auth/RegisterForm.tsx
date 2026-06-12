@@ -1,9 +1,7 @@
-
 "use client";
 
 import { useState } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import {
   HiOutlineEnvelope,
   HiOutlineLockClosed,
@@ -11,12 +9,12 @@ import {
   HiOutlineEyeSlash,
   HiOutlineUser,
   HiOutlinePhone,
+  HiOutlineCheckCircle,
 } from "react-icons/hi2";
 
 export default function RegisterForm() {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const router = useRouter();
 
   const [form, setForm] = useState({
     name: "",
@@ -29,6 +27,7 @@ export default function RegisterForm() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
@@ -49,38 +48,67 @@ export default function RegisterForm() {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
-
     const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
+        emailRedirectTo: `${window.location.origin}/${locale}`,
         data: {
           full_name: form.name,
           phone: form.phone,
         },
       },
     });
+
     if (error) {
       setError(isAr ? "حدث خطأ أثناء إنشاء الحساب" : "Error creating account");
       setLoading(false);
       return;
     }
 
-    router.push(`/${locale}`);
-    router.refresh();
+    setLoading(false);
+    setSent(true);
   };
+
+  // شاشة التأكيد
+  if (sent) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <a href={`/${locale}`} className="flex flex-col mb-10">
+          <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-4xl text-aura-dark">عقار</span>
+          <span className="text-[9px] tracking-[0.5em] text-aura-muted uppercase -mt-1">Online</span>
+        </a>
+
+        <div className="flex flex-col items-center text-center py-8 gap-4">
+          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
+            <HiOutlineCheckCircle className="w-8 h-8 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-light text-aura-dark">
+            {isAr ? "تحقق من بريدك!" : "Check your email!"}
+          </h2>
+          <p className="text-aura-muted text-sm font-light max-w-xs leading-relaxed">
+            {isAr
+              ? `أرسلنا رابط تأكيد إلى ${form.email} — اضغط عليه لتفعيل حسابك ثم سجل دخولك`
+              : `We sent a confirmation link to ${form.email} — click it to activate your account then login`}
+          </p>
+          
+           <a href={`/${locale}/login`}
+            className="mt-4 px-8 py-3 rounded-2xl bg-aura-accent text-white text-sm font-medium hover:bg-aura-dark transition-all duration-300"
+          >
+            {isAr ? "انتقل لتسجيل الدخول" : "Go to Login"}
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
 
       {/* اللوجو */}
       <a href={`/${locale}`} className="flex flex-col mb-8">
-        <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-4xl text-aura-dark">
-          عقار
-        </span>
-        <span className="text-[9px] tracking-[0.5em] text-aura-muted uppercase -mt-1">
-          Online
-        </span>
+        <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-4xl text-aura-dark">عقار</span>
+        <span className="text-[9px] tracking-[0.5em] text-aura-muted uppercase -mt-1">Online</span>
       </a>
 
       {/* العنوان */}
@@ -89,9 +117,7 @@ export default function RegisterForm() {
           {isAr ? "إنشاء حساب جديد" : "Create Account"}
         </h1>
         <p className="text-aura-muted text-sm font-light">
-          {isAr
-            ? "انضم إلينا وابدأ تجربة عقارية لا مثيل لها"
-            : "Join us and start an unmatched real estate experience"}
+          {isAr ? "انضم إلينا وابدأ تجربة عقارية لا مثيل لها" : "Join us and start an unmatched real estate experience"}
         </p>
       </div>
 
@@ -106,9 +132,7 @@ export default function RegisterForm() {
 
         {/* الاسم */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">
-            {isAr ? "الاسم الكامل" : "Full Name"}
-          </label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم الكامل" : "Full Name"}</label>
           <div className="relative">
             <HiOutlineUser className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
@@ -123,9 +147,7 @@ export default function RegisterForm() {
 
         {/* رقم الهاتف */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">
-            {isAr ? "رقم الهاتف" : "Phone Number"}
-          </label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم الهاتف" : "Phone Number"}</label>
           <div className="relative">
             <HiOutlinePhone className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
@@ -141,9 +163,7 @@ export default function RegisterForm() {
 
         {/* البريد */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">
-            {isAr ? "البريد الإلكتروني" : "Email Address"}
-          </label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "البريد الإلكتروني" : "Email Address"}</label>
           <div className="relative">
             <HiOutlineEnvelope className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
@@ -159,9 +179,7 @@ export default function RegisterForm() {
 
         {/* كلمة المرور */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">
-            {isAr ? "كلمة المرور" : "Password"}
-          </label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "كلمة المرور" : "Password"}</label>
           <div className="relative">
             <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
@@ -172,11 +190,7 @@ export default function RegisterForm() {
               className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
               dir="ltr"
             />
-            <button
-              type="button"
-              onClick={() => setShowPass(!showPass)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors"
-            >
+            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
               {showPass ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
             </button>
           </div>
@@ -184,9 +198,7 @@ export default function RegisterForm() {
 
         {/* تأكيد كلمة المرور */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">
-            {isAr ? "تأكيد كلمة المرور" : "Confirm Password"}
-          </label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "تأكيد كلمة المرور" : "Confirm Password"}</label>
           <div className="relative">
             <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
@@ -197,11 +209,7 @@ export default function RegisterForm() {
               className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
               dir="ltr"
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors"
-            >
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
               {showConfirm ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
             </button>
           </div>
@@ -221,10 +229,7 @@ export default function RegisterForm() {
         {/* رابط تسجيل الدخول */}
         <p className="text-center text-sm text-aura-muted pt-2">
           {isAr ? "لديك حساب بالفعل؟" : "Already have an account?"}{" "}
-
-          <a href={`/${locale}/login`}
-            className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors"
-          >
+          <a href={`/${locale}/login`} className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors">
             {isAr ? "تسجيل الدخول" : "Sign In"}
           </a>
         </p>
