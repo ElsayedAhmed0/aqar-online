@@ -25,15 +25,14 @@ export default function PropertyCard({
   locale = "ar",
 }: PropertyCardProps) {
   return (
-    
-     <a href={`/${locale}/properties/${property.id}`}
-      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${
-        animate ? "card-animate" : ""
-      }`}
+
+    <a href={`/${locale}/properties/${property.id}`}
+      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${animate ? "card-animate" : ""
+        }`}
     >
       <div className="relative h-56 overflow-hidden">
         <img
-        src={property.images?.[0] || property.img || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
+          src={property.images?.[0] || property.img || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
           alt={property.title_en}
           className="w-full h-full object-cover img-hover"
         />
@@ -45,14 +44,17 @@ export default function PropertyCard({
         )}
 
         <button
-           onClick={(e) => onToggleLike(e, property)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleLike(e, property);
+          }}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110"
           aria-label={isAr ? "المفضلة" : "Wishlist"}
         >
           <HiOutlineHeart
-            className={`w-4 h-4 transition-colors duration-300 ${
-              isLiked ? "text-red-500 fill-red-500" : "text-aura-muted"
-            }`}
+            className={`w-4 h-4 transition-colors duration-300 ${isLiked ? "text-red-500 fill-red-500" : "text-aura-muted"
+              }`}
           />
         </button>
 
