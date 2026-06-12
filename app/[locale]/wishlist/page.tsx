@@ -20,7 +20,7 @@ export default function WishlistPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const wishlistProperties = useMemo(() => {
-    let list = properties.filter((p) => liked.includes(p.id));
+    let list = properties.filter((p) => liked.includes(p.id as any));
 
     if (activeFilter !== "all") {
       list = list.filter((p) => p.type === activeFilter);
@@ -142,10 +142,10 @@ export default function WishlistPage() {
                       <PropertyCard
                         key={property.id}
                         property={property}
-                        isLiked={liked.includes(property.id)}
+                        isLiked={liked.includes(property.id as any)}
                         onToggleLike={(e) => {
                           e.stopPropagation();
-                          toggleLike(property.id);
+                          toggleLike(property.id as any);
                         }}
                         formatPrice={formatPrice}
                         isAr={isAr}
