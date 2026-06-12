@@ -84,8 +84,8 @@ export default function PropertiesSection() {
                 key={f.value}
                 onClick={() => setActiveFilter(f.value)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === f.value
-                    ? "bg-aura-dark text-white shadow-sm"
-                    : "text-aura-muted hover:text-aura-dark"
+                  ? "bg-aura-dark text-white shadow-sm"
+                  : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
                 {f.icon}
@@ -113,9 +113,25 @@ export default function PropertiesSection() {
                 key={property.id}
                 property={property}
                 isLiked={liked.includes(property.id)}
-                onToggleLike={(e) => {
+                onToggleLike={(e, prop) => {
                   e.stopPropagation();
-                  toggleLike(property.id);
+                  e.preventDefault();
+                  toggleLike(prop.id, {
+                    id: prop.id,
+                    title_ar: prop.title_ar,
+                    title_en: prop.title_en,
+                    location_ar: prop.location_ar,
+                    location_en: prop.location_en,
+                    price: prop.price,
+                    type: prop.type,
+                    beds: prop.beds,
+                    baths: prop.baths,
+                    area: prop.area,
+                    img: prop.images?.[0] || prop.img || "",
+                    images: prop.images || [],
+                    featured: prop.featured || false,
+                    status: prop.status,
+                  });
                 }}
                 formatPrice={formatPrice}
                 isAr={isAr}

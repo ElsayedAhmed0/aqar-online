@@ -2,51 +2,67 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-const STORAGE_KEY = "aqar-wishlist";
+const STORAGE_KEY = "aqar-wishlist-v2";
+
+type WishlistItem = {
+  id: string | number;
+  title_ar: string;
+  title_en: string;
+  location_ar: string;
+  location_en: string;
+  price: number;
+  type: string;
+  beds: number;
+  baths: number;
+  area: number;
+  img: string;
+  images: string[];
+  featured: boolean;
+  status?: string;
+};
 
 type WishlistContextType = {
-  liked: number[];
-  toggleLike: (id: number) => void;
-  addLike: (id: number) => void;
+  liked: (string | number)[];
+  items: WishlistItem[];
+  toggleLike: (id: string | number, item?: WishlistItem) => void;
 };
 
 const WishlistContext = createContext<WishlistContextType>({
   liked: [],
+  items: [],
   toggleLike: () => {},
-  addLike: () => {},
 });
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [liked, setLiked] = useState<number[]>([]);
+  const [items, setItems] = useState<WishlistItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setLiked(JSON.parse(stored));
-    } catch {
-      /* ignore */
-    }
+      if (stored) setItems(JSON.parse(stored));
+    } catch {}
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(liked));
-  }, [liked, hydrated]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }, [items, hydrated]);
 
-  const toggleLike = (id: number) => {
-    setLiked((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
+  const liked = items.map((i) => i.id);
 
-  const addLike = (id: number) => {
-    setLiked((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const toggleLike = (id: string | number, item?: WishlistItem) => {
+    setItems((prev) => {
+      const exists = prev.some((i) => i.id === id);
+      if (exists) return prev.filter((i) => i.id !== id);
+      if (item) return [...prev, item];
+      return prev;
+    });
   };
 
   return (
-    <WishlistContext.Provider value={{ liked, toggleLike, addLike }}>
+    <WishlistContext.Provider value={{ liked, items, toggleLike }}>
       {children}
     </WishlistContext.Provider>
   );

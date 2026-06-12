@@ -7,7 +7,7 @@ import type { Property } from "@/lib/data/properties";
 type PropertyCardProps = {
   property: Property;
   isLiked: boolean;
-  onToggleLike: (e: React.MouseEvent) => void;
+  onToggleLike: (e: React.MouseEvent, property: Property) => void;
   formatPrice: (price: number) => string;
   isAr: boolean;
   showFeatured?: boolean;
@@ -45,7 +45,7 @@ export default function PropertyCard({
         )}
 
         <button
-          onClick={onToggleLike}
+           onClick={(e) => onToggleLike(e, property)}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110"
           aria-label={isAr ? "المفضلة" : "Wishlist"}
         >
