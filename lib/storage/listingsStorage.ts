@@ -67,7 +67,7 @@ function getImage(
 async function loadImages(
   db: IDBDatabase,
   userId: string,
-  listingId: number,
+  listingId: number | string,
   count: number
 ): Promise<string[]> {
   if (count === 0) return [];
