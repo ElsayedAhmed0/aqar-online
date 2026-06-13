@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-
-const STORAGE_KEY = "aqar-wishlist-v2";
+import { useAuth } from "@/context/AuthContext";
 
 type WishlistItem = {
   id: string | number;
@@ -34,21 +33,29 @@ const WishlistContext = createContext<WishlistContextType>({
 });
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
+  // مفتاح مختلف لكل مستخدم
+  const storageKey = `aqar-wishlist-${user?.id || "guest"}`;
+
+  // حمّل الـ wishlist من localStorage لما يتغير المستخدم
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setItems(JSON.parse(stored));
-    } catch {}
+      const stored = localStorage.getItem(storageKey);
+      setItems(stored ? JSON.parse(stored) : []);
+    } catch {
+      setItems([]);
+    }
     setHydrated(true);
-  }, []);
+  }, [storageKey]);
 
+  // احفظ لما تتغير الـ items
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items, hydrated]);
+    localStorage.setItem(storageKey, JSON.stringify(items));
+  }, [items, hydrated, storageKey]);
 
   const liked = items.map((i) => i.id);
 
