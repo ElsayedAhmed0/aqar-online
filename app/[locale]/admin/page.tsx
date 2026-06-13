@@ -159,7 +159,7 @@ export default function AdminPage() {
     setUploadingAdImg(true);
     const supabase = createClient();
     const ext = file.name.split(".").pop();
-    const fileName = `ads/${Date.now()}.${ext}`;
+    const fileName = `ad-images/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
     const { data, error } = await supabase.storage.from("listings").upload(fileName, file, { upsert: true, contentType: file.type });
     setUploadingAdImg(false);
     if (error || !data) return null;
@@ -189,11 +189,18 @@ export default function AdminPage() {
     setAds((prev) => prev.map((a) => a.id === id ? { ...a, active } : a));
   };
 
-  const deleteAd = async (id: string) => {
-    const supabase = createClient();
-    await supabase.from("ads").delete().eq("id", id);
+ const deleteAd = async (id: string) => {
+  const supabase = createClient();
+  // نعمل soft delete بدل حذف حقيقي عشان ad blocker
+  const { error } = await supabase
+    .from("ads")
+    .update({ active: false, title_ar: "__deleted__" })
+    .eq("id", id);
+  
+  if (!error) {
     setAds((prev) => prev.filter((a) => a.id !== id));
-  };
+  }
+};
 
   const exportUsersExcel = () => {
     const filtered = getFilteredUsers();
