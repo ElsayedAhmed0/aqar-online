@@ -38,52 +38,42 @@ type Ad = {
 };
 
 const statusConfig = {
-  pending: { ar: "انتظار", en: "Pending", cls: "bg-amber-50 text-amber-600 border-amber-200" },
+  pending:  { ar: "انتظار",     en: "Pending",  cls: "bg-amber-50 text-amber-600 border-amber-200" },
   approved: { ar: "موافق عليه", en: "Approved", cls: "bg-green-50 text-green-600 border-green-200" },
-  rejected: { ar: "مرفوض", en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200" },
+  rejected: { ar: "مرفوض",      en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200"       },
 };
 
 const settingsGroups = [
-  {
-    title_ar: "معلومات الموقع", title_en: "Site Info", fields: [
-      { key: "site_name_ar", label_ar: "اسم الموقع (عربي)", label_en: "Site Name (Arabic)" },
-      { key: "site_name_en", label_ar: "اسم الموقع (إنجليزي)", label_en: "Site Name (English)" },
-    ]
-  },
-  {
-    title_ar: "قسم الهيرو", title_en: "Hero Section", fields: [
-      { key: "hero_title_ar", label_ar: "العنوان (عربي)", label_en: "Hero Title (Arabic)" },
-      { key: "hero_title_en", label_ar: "العنوان (إنجليزي)", label_en: "Hero Title (English)" },
-      { key: "hero_subtitle_ar", label_ar: "الوصف (عربي)", label_en: "Subtitle (Arabic)" },
-      { key: "hero_subtitle_en", label_ar: "الوصف (إنجليزي)", label_en: "Subtitle (English)" },
-      { key: "hero_image", label_ar: "رابط صورة الخلفية", label_en: "Background Image URL" },
-    ]
-  },
-  {
-    title_ar: "الإحصائيات", title_en: "Stats", fields: [
-      { key: "stats_properties", label_ar: "عدد العقارات", label_en: "Properties Count" },
-      { key: "stats_clients", label_ar: "عدد العملاء", label_en: "Clients Count" },
-      { key: "stats_years", label_ar: "سنوات الخبرة", label_en: "Years of Experience" },
-    ]
-  },
-  {
-    title_ar: "الفوتر", title_en: "Footer", fields: [
-      { key: "footer_phone", label_ar: "رقم الهاتف", label_en: "Phone Number" },
-      { key: "footer_email", label_ar: "البريد الإلكتروني", label_en: "Email Address" },
-      { key: "footer_address_ar", label_ar: "العنوان (عربي)", label_en: "Address (Arabic)" },
-      { key: "footer_address_en", label_ar: "العنوان (إنجليزي)", label_en: "Address (English)" },
-      { key: "footer_desc_ar", label_ar: "الوصف (عربي)", label_en: "Description (Arabic)" },
-      { key: "footer_desc_en", label_ar: "الوصف (إنجليزي)", label_en: "Description (English)" },
-    ]
-  },
-  {
-    title_ar: "السوشيال ميديا", title_en: "Social Media", fields: [
-      { key: "social_facebook", label_ar: "فيسبوك (رابط)", label_en: "Facebook (URL)" },
-      { key: "social_instagram", label_ar: "انستجرام (رابط)", label_en: "Instagram (URL)" },
-      { key: "social_whatsapp", label_ar: "واتساب (رابط)", label_en: "WhatsApp (URL)" },
-      { key: "social_tiktok", label_ar: "تيك توك (رابط)", label_en: "TikTok (URL)" },
-    ]
-  },
+  { title_ar: "معلومات الموقع", title_en: "Site Info", fields: [
+    { key: "site_name_ar", label_ar: "اسم الموقع (عربي)",    label_en: "Site Name (Arabic)"  },
+    { key: "site_name_en", label_ar: "اسم الموقع (إنجليزي)", label_en: "Site Name (English)" },
+  ]},
+  { title_ar: "قسم الهيرو", title_en: "Hero Section", fields: [
+    { key: "hero_title_ar",    label_ar: "العنوان (عربي)",         label_en: "Hero Title (Arabic)"    },
+    { key: "hero_title_en",    label_ar: "العنوان (إنجليزي)",       label_en: "Hero Title (English)"   },
+    { key: "hero_subtitle_ar", label_ar: "الوصف (عربي)",           label_en: "Subtitle (Arabic)"      },
+    { key: "hero_subtitle_en", label_ar: "الوصف (إنجليزي)",         label_en: "Subtitle (English)"     },
+    { key: "hero_image",       label_ar: "رابط صورة الخلفية",      label_en: "Background Image URL"   },
+  ]},
+  { title_ar: "الإحصائيات", title_en: "Stats", fields: [
+    { key: "stats_properties", label_ar: "عدد العقارات", label_en: "Properties Count"   },
+    { key: "stats_clients",    label_ar: "عدد العملاء",  label_en: "Clients Count"       },
+    { key: "stats_years",      label_ar: "سنوات الخبرة", label_en: "Years of Experience" },
+  ]},
+  { title_ar: "الفوتر", title_en: "Footer", fields: [
+    { key: "footer_phone",      label_ar: "رقم الهاتف",        label_en: "Phone Number"          },
+    { key: "footer_email",      label_ar: "البريد الإلكتروني", label_en: "Email Address"         },
+    { key: "footer_address_ar", label_ar: "العنوان (عربي)",    label_en: "Address (Arabic)"      },
+    { key: "footer_address_en", label_ar: "العنوان (إنجليزي)", label_en: "Address (English)"     },
+    { key: "footer_desc_ar",    label_ar: "الوصف (عربي)",      label_en: "Description (Arabic)"  },
+    { key: "footer_desc_en",    label_ar: "الوصف (إنجليزي)",   label_en: "Description (English)" },
+  ]},
+  { title_ar: "السوشيال ميديا", title_en: "Social Media", fields: [
+    { key: "social_facebook",  label_ar: "فيسبوك (رابط)",  label_en: "Facebook (URL)"  },
+    { key: "social_instagram", label_ar: "انستجرام (رابط)", label_en: "Instagram (URL)" },
+    { key: "social_whatsapp",  label_ar: "واتساب (رابط)",   label_en: "WhatsApp (URL)"  },
+    { key: "social_tiktok",    label_ar: "تيك توك (رابط)",  label_en: "TikTok (URL)"    },
+  ]},
 ];
 
 const emptyAd = { title_ar: "", title_en: "", subtitle_ar: "", subtitle_en: "", badge_ar: "", badge_en: "", price: "", image_url: "", link: "", order_num: "0" };
@@ -138,7 +128,7 @@ export default function AdminPage() {
         setSiteSettings(mapped);
       }
 
-      const { data: adsData } = await supabase.from("promotions").select("*").order("order_num", { ascending: true });
+      const { data: adsData } = await supabase.from("ads").select("*").order("order_num", { ascending: true });
       if (adsData) setAds(adsData as Ad[]);
 
       setFetching(false);
@@ -182,11 +172,11 @@ export default function AdminPage() {
     const supabase = createClient();
     const payload = { ...adForm, order_num: Number(adForm.order_num) };
     if (editingAd) {
-      const { data } = await supabase.from("promotions").update(payload).eq("id", editingAd).select().single();
+      const { data } = await supabase.from("ads").update(payload).eq("id", editingAd).select().single();
       if (data) setAds((prev) => prev.map((a) => a.id === editingAd ? data : a));
       setEditingAd(null);
     } else {
-      const { data } = await supabase.from("promotions").insert({ ...payload, active: true }).select().single();
+      const { data } = await supabase.from("ads").insert({ ...payload, active: true }).select().single();
       if (data) setAds((prev) => [...prev, data]);
     }
     setAdForm(emptyAd);
@@ -195,22 +185,22 @@ export default function AdminPage() {
 
   const toggleAdActive = async (id: string, active: boolean) => {
     const supabase = createClient();
-    await supabase.from("promotions").update({ active }).eq("id", id);
+    await supabase.from("ads").update({ active }).eq("id", id);
     setAds((prev) => prev.map((a) => a.id === id ? { ...a, active } : a));
   };
 
-  const deleteAd = async (id: string) => {
-    const supabase = createClient();
-    // نعمل soft delete بدل حذف حقيقي عشان ad blocker
-    const { error } = await supabase
-      .from("ads")
-      .update({ active: false, title_ar: "__deleted__" })
-      .eq("id", id);
-
-    if (!error) {
-      setAds((prev) => prev.filter((a) => a.id !== id));
-    }
-  };
+ const deleteAd = async (id: string) => {
+  const supabase = createClient();
+  // نعمل soft delete بدل حذف حقيقي عشان ad blocker
+  const { error } = await supabase
+    .from("ads")
+    .update({ active: false, title_ar: "__deleted__" })
+    .eq("id", id);
+  
+  if (!error) {
+    setAds((prev) => prev.filter((a) => a.id !== id));
+  }
+};
 
   const exportUsersExcel = () => {
     const filtered = getFilteredUsers();
@@ -246,22 +236,22 @@ export default function AdminPage() {
   const inputCls = "w-full px-4 py-3 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300";
 
   const adTextFields = [
-    { key: "title_ar", label_ar: "العنوان (عربي)", label_en: "Title (Arabic)" },
-    { key: "title_en", label_ar: "العنوان (إنجليزي)", label_en: "Title (English)" },
-    { key: "subtitle_ar", label_ar: "الوصف (عربي)", label_en: "Subtitle (Arabic)" },
-    { key: "subtitle_en", label_ar: "الوصف (إنجليزي)", label_en: "Subtitle (English)" },
-    { key: "badge_ar", label_ar: "البادج (عربي) — مثال: مميز / جديد / عرض", label_en: "Badge (Arabic)" },
-    { key: "badge_en", label_ar: "البادج (إنجليزي)", label_en: "Badge (English)" },
-    { key: "price", label_ar: "السعر — مثال: من 2 مليون جنيه", label_en: "Price" },
-    { key: "link", label_ar: "رابط الإعلان", label_en: "Ad Link" },
-    { key: "order_num", label_ar: "الترتيب", label_en: "Order" },
+    { key: "title_ar",    label_ar: "العنوان (عربي)",                          label_en: "Title (Arabic)"    },
+    { key: "title_en",    label_ar: "العنوان (إنجليزي)",                        label_en: "Title (English)"   },
+    { key: "subtitle_ar", label_ar: "الوصف (عربي)",                            label_en: "Subtitle (Arabic)" },
+    { key: "subtitle_en", label_ar: "الوصف (إنجليزي)",                          label_en: "Subtitle (English)"},
+    { key: "badge_ar",    label_ar: "البادج (عربي) — مثال: مميز / جديد / عرض", label_en: "Badge (Arabic)"   },
+    { key: "badge_en",    label_ar: "البادج (إنجليزي)",                         label_en: "Badge (English)"   },
+    { key: "price",       label_ar: "السعر — مثال: من 2 مليون جنيه",           label_en: "Price"             },
+    { key: "link",        label_ar: "رابط الإعلان",                            label_en: "Ad Link"           },
+    { key: "order_num",   label_ar: "الترتيب",                                 label_en: "Order"             },
   ];
 
   const tabs = [
-    { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />, ar: "الإعلانات", en: "Listings", count: listings.length },
-    { id: "users", icon: <HiOutlineUserGroup className="w-4 h-4" />, ar: "المستخدمون", en: "Users", count: users.length },
-    { id: "ads", icon: <HiOutlineMegaphone className="w-4 h-4" />, ar: "الإعلانات الجانبية", en: "Side Ads", count: ads.length },
-    { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />, ar: "إعدادات الموقع", en: "Site Settings", count: null },
+    { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />,       ar: "الإعلانات",          en: "Listings",      count: listings.length },
+    { id: "users",    icon: <HiOutlineUserGroup className="w-4 h-4" />,   ar: "المستخدمون",         en: "Users",         count: users.length    },
+    { id: "ads",      icon: <HiOutlineMegaphone className="w-4 h-4" />,   ar: "الإعلانات الجانبية", en: "Side Ads",      count: ads.length      },
+    { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />,   ar: "إعدادات الموقع",    en: "Site Settings", count: null            },
   ];
 
   return (
@@ -520,9 +510,13 @@ export default function AdminPage() {
                           }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
                             {isAr ? "تعديل" : "Edit"}
                           </button>
+                          <button onClick={() => toggleAdActive(ad.id, !ad.active)}
+                            className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all">
+                            {ad.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}
+                          </button>
                           <button onClick={() => deleteAd(ad.id)}
-                            className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
-                            {isAr ? "حذف" : "Delete"}
+                            className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
+                            {isAr ? "حذف" : "Del"}
                           </button>
                         </div>
                       </div>
