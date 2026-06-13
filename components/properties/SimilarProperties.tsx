@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 import PropertyCard from "@/components/properties/PropertyCard";
 
@@ -13,11 +14,18 @@ export default function SimilarProperties({
   locale: string;
 }) {
   const { liked, toggleLike } = useWishlist();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const formatPrice = (price: number) =>
     isAr
       ? `${(price / 1000000).toFixed(1)} مليون جنيه`
       : `EGP ${(price / 1000000).toFixed(1)}M`;
+
+  if (!mounted) return null;
 
   return (
     <section className="mt-16">
@@ -39,13 +47,29 @@ export default function SimilarProperties({
             <PropertyCard
               property={property}
               isLiked={liked.includes(property.id)}
-              onToggleLike={(e) => {
-                e.stopPropagation();
+              onToggleLike={(e, prop) => {
                 e.preventDefault();
-                toggleLike(property.id);
+                e.stopPropagation();
+                toggleLike(prop.id, {
+                  id: prop.id,
+                  title_ar: prop.title_ar,
+                  title_en: prop.title_en,
+                  location_ar: prop.location_ar,
+                  location_en: prop.location_en,
+                  price: prop.price,
+                  type: prop.type,
+                  beds: prop.beds,
+                  baths: prop.baths,
+                  area: prop.area,
+                  img: prop.images?.[0] || prop.img || "",
+                  images: prop.images || [],
+                  featured: prop.featured || false,
+                  status: prop.status,
+                });
               }}
               formatPrice={formatPrice}
               isAr={isAr}
+              locale={locale}
               animate
             />
           </a>

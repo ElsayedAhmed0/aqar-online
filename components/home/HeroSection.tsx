@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { HiOutlineSearch, HiOutlineChevronDown } from "react-icons/hi";
 import { HiOutlineMapPin, HiOutlineCheckCircle } from "react-icons/hi2";
 import { useFilter } from "@/context/FilterContext";
+import { useSettings } from "@/lib/hooks/useSettings";
 import {
   MdOutlineApartment,
   MdOutlineVilla,
@@ -27,7 +28,7 @@ export default function HeroSection() {
   const types = getTypes(isAr);
 
   const { searchQuery, setSearchQuery, propertyType, setPropertyType, setActiveFilter } = useFilter();
-
+  const { settings } = useSettings();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // عشان نتزامن مع فلتر الـ PropertiesSection
   const currentType = types.find((t) => t.value === propertyType) ?? types[0];
@@ -51,7 +52,7 @@ export default function HeroSection() {
       {/* ── الخلفية ── */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"
+          src={settings.hero_image || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"}
           alt="hero"
           className="w-full h-full object-cover"
         />
@@ -73,28 +74,16 @@ export default function HeroSection() {
 
         {/* العنوان */}
         <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight">
-          {isAr ? (
-            <>
-              اكتشف
-              <span className="block font-serif italic text-aura-accent-light mt-2">
-                عقارك المثالي
-              </span>
-            </>
-          ) : (
-            <>
-              Find Your
-              <span className="block font-serif italic text-aura-accent-light mt-2">
-                Perfect Property
-              </span>
-            </>
-          )}
+          {isAr
+            ? (settings.hero_title_ar || "اكتشف عقارك المثالي")
+            : (settings.hero_title_en || "Find Your Perfect Property")}
         </h1>
 
         {/* الوصف */}
         <p className="text-white/70 font-light text-lg mb-12 max-w-xl mx-auto">
           {isAr
-            ? "آلاف العقارات المميزة في انتظارك — شقق، فيلات، ومحلات تجارية"
-            : "Thousands of premium properties await — apartments, villas, and commercial spaces"}
+            ? (settings.hero_subtitle_ar || "آلاف العقارات المميزة في انتظارك")
+            : (settings.hero_subtitle_en || "Thousands of premium properties await")}
         </p>
 
         {/* شريط البحث */}
@@ -174,9 +163,9 @@ export default function HeroSection() {
         {/* Stats */}
         <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
           {[
-            { num: "2,500+", label: isAr ? "عقار مميز" : "Properties" },
-            { num: "1,200+", label: isAr ? "عميل سعيد" : "Happy Clients" },
-            { num: "15+", label: isAr ? "سنة خبرة" : "Years Experience" },
+            { num: `${settings.stats_properties || "2,500"}+`, label: isAr ? "عقار مميز" : "Properties" },
+            { num: `${settings.stats_clients || "1,200"}+`, label: isAr ? "عميل سعيد" : "Happy Clients" },
+            { num: `${settings.stats_years || "15"}+`, label: isAr ? "سنة خبرة" : "Years Experience" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl font-light text-white">{stat.num}</p>
