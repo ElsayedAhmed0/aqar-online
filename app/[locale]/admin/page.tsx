@@ -128,7 +128,7 @@ export default function AdminPage() {
         setSiteSettings(mapped);
       }
 
-      const { data: adsData } = await supabase.from("ads").select("*").order("order_num", { ascending: true });
+      const { data: adsData } = await supabase.from("promotions").select("*").order("order_num", { ascending: true });
       if (adsData) setAds(adsData as Ad[]);
 
       setFetching(false);
@@ -172,11 +172,11 @@ export default function AdminPage() {
     const supabase = createClient();
     const payload = { ...adForm, order_num: Number(adForm.order_num) };
     if (editingAd) {
-      const { data } = await supabase.from("ads").update(payload).eq("id", editingAd).select().single();
+      const { data } = await supabase.from("promotions").update(payload).eq("id", editingAd).select().single();
       if (data) setAds((prev) => prev.map((a) => a.id === editingAd ? data : a));
       setEditingAd(null);
     } else {
-      const { data } = await supabase.from("ads").insert({ ...payload, active: true }).select().single();
+      const { data } = await supabase.from("promotions").insert({ ...payload, active: true }).select().single();
       if (data) setAds((prev) => [...prev, data]);
     }
     setAdForm(emptyAd);
@@ -185,7 +185,7 @@ export default function AdminPage() {
 
   const toggleAdActive = async (id: string, active: boolean) => {
     const supabase = createClient();
-    await supabase.from("ads").update({ active }).eq("id", id);
+    await supabase.from("promotions").update({ active }).eq("id", id);
     setAds((prev) => prev.map((a) => a.id === id ? { ...a, active } : a));
   };
 
