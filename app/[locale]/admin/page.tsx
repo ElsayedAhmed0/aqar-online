@@ -49,11 +49,11 @@ const settingsGroups = [
     { key: "site_name_en", label_ar: "اسم الموقع (إنجليزي)", label_en: "Site Name (English)" },
   ]},
   { title_ar: "قسم الهيرو", title_en: "Hero Section", fields: [
-    { key: "hero_title_ar",    label_ar: "العنوان (عربي)",         label_en: "Hero Title (Arabic)"    },
-    { key: "hero_title_en",    label_ar: "العنوان (إنجليزي)",       label_en: "Hero Title (English)"   },
-    { key: "hero_subtitle_ar", label_ar: "الوصف (عربي)",           label_en: "Subtitle (Arabic)"      },
-    { key: "hero_subtitle_en", label_ar: "الوصف (إنجليزي)",         label_en: "Subtitle (English)"     },
-    { key: "hero_image",       label_ar: "رابط صورة الخلفية",      label_en: "Background Image URL"   },
+    { key: "hero_title_ar",    label_ar: "العنوان (عربي)",        label_en: "Hero Title (Arabic)"  },
+    { key: "hero_title_en",    label_ar: "العنوان (إنجليزي)",      label_en: "Hero Title (English)" },
+    { key: "hero_subtitle_ar", label_ar: "الوصف (عربي)",          label_en: "Subtitle (Arabic)"    },
+    { key: "hero_subtitle_en", label_ar: "الوصف (إنجليزي)",        label_en: "Subtitle (English)"   },
+    { key: "hero_image",       label_ar: "رابط صورة الخلفية",     label_en: "Background Image URL" },
   ]},
   { title_ar: "الإحصائيات", title_en: "Stats", fields: [
     { key: "stats_properties", label_ar: "عدد العقارات", label_en: "Properties Count"   },
@@ -77,6 +77,8 @@ const settingsGroups = [
 ];
 
 const emptyAd = { title_ar: "", title_en: "", subtitle_ar: "", subtitle_en: "", badge_ar: "", badge_en: "", price: "", image_url: "", link: "", order_num: "0" };
+
+const PROMO_TABLE = "promotions";
 
 export default function AdminPage() {
   const locale = useLocale();
@@ -128,7 +130,7 @@ export default function AdminPage() {
         setSiteSettings(mapped);
       }
 
-      const { data: adsData } = await supabase.from("ads").select("*").order("order_num", { ascending: true });
+      const { data: adsData } = await supabase.from(PROMO_TABLE).select("*").order("order_num", { ascending: true });
       if (adsData) setAds(adsData as Ad[]);
 
       setFetching(false);
@@ -158,11 +160,13 @@ export default function AdminPage() {
   const uploadAdImage = async (file: File): Promise<string | null> => {
     setUploadingAdImg(true);
     const supabase = createClient();
-    const ext = file.name.split(".").pop();
+    const ext = file.name.split(".").pop() || "jpg";
     const fileName = `promo-${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from("listings").upload(fileName, file, { upsert: true, contentType: file.type });
+    const { data, error } = await supabase.storage
+      .from("listings")
+      .upload(fileName, file, { upsert: true, contentType: file.type });
     setUploadingAdImg(false);
-    if (error || !data) return null;
+    if (error || !data) { console.error("Upload error:", error); return null; }
     const { data: urlData } = supabase.storage.from("listings").getPublicUrl(data.path);
     return urlData.publicUrl;
   };
@@ -172,11 +176,13 @@ export default function AdminPage() {
     const supabase = createClient();
     const payload = { ...adForm, order_num: Number(adForm.order_num) };
     if (editingAd) {
-      const { data } = await supabase.from("ads").update(payload).eq("id", editingAd).select().single();
+      const { data, error } = await supabase.from(PROMO_TABLE).update(payload).eq("id", editingAd).select().single();
+      if (error) console.error("Update error:", error);
       if (data) setAds((prev) => prev.map((a) => a.id === editingAd ? data : a));
       setEditingAd(null);
     } else {
-      const { data } = await supabase.from("ads").insert({ ...payload, active: true }).select().single();
+      const { data, error } = await supabase.from(PROMO_TABLE).insert({ ...payload, active: true }).select().single();
+      if (error) console.error("Insert error:", error);
       if (data) setAds((prev) => [...prev, data]);
     }
     setAdForm(emptyAd);
@@ -185,22 +191,19 @@ export default function AdminPage() {
 
   const toggleAdActive = async (id: string, active: boolean) => {
     const supabase = createClient();
-    await supabase.from("ads").update({ active }).eq("id", id);
-    setAds((prev) => prev.map((a) => a.id === id ? { ...a, active } : a));
+    const { error } = await supabase.from(PROMO_TABLE).update({ active }).eq("id", id);
+    if (!error) setAds((prev) => prev.map((a) => a.id === id ? { ...a, active } : a));
   };
 
- const deleteAd = async (id: string) => {
-  const supabase = createClient();
-  // نعمل soft delete بدل حذف حقيقي عشان ad blocker
-  const { error } = await supabase
-    .from("ads")
-    .update({ active: false, title_ar: "__deleted__" })
-    .eq("id", id);
-  
-  if (!error) {
-    setAds((prev) => prev.filter((a) => a.id !== id));
-  }
-};
+  const deleteAd = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from(PROMO_TABLE).delete().eq("id", id);
+    if (!error) {
+      setAds((prev) => prev.filter((a) => a.id !== id));
+    } else {
+      console.error("Delete error:", error);
+    }
+  };
 
   const exportUsersExcel = () => {
     const filtered = getFilteredUsers();
@@ -236,15 +239,15 @@ export default function AdminPage() {
   const inputCls = "w-full px-4 py-3 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300";
 
   const adTextFields = [
-    { key: "title_ar",    label_ar: "العنوان (عربي)",                          label_en: "Title (Arabic)"    },
-    { key: "title_en",    label_ar: "العنوان (إنجليزي)",                        label_en: "Title (English)"   },
-    { key: "subtitle_ar", label_ar: "الوصف (عربي)",                            label_en: "Subtitle (Arabic)" },
-    { key: "subtitle_en", label_ar: "الوصف (إنجليزي)",                          label_en: "Subtitle (English)"},
-    { key: "badge_ar",    label_ar: "البادج (عربي) — مثال: مميز / جديد / عرض", label_en: "Badge (Arabic)"   },
-    { key: "badge_en",    label_ar: "البادج (إنجليزي)",                         label_en: "Badge (English)"   },
-    { key: "price",       label_ar: "السعر — مثال: من 2 مليون جنيه",           label_en: "Price"             },
-    { key: "link",        label_ar: "رابط الإعلان",                            label_en: "Ad Link"           },
-    { key: "order_num",   label_ar: "الترتيب",                                 label_en: "Order"             },
+    { key: "title_ar",    label_ar: "العنوان (عربي)",                           label_en: "Title (Arabic)"    },
+    { key: "title_en",    label_ar: "العنوان (إنجليزي)",                         label_en: "Title (English)"   },
+    { key: "subtitle_ar", label_ar: "الوصف (عربي)",                             label_en: "Subtitle (Arabic)" },
+    { key: "subtitle_en", label_ar: "الوصف (إنجليزي)",                           label_en: "Subtitle (English)"},
+    { key: "badge_ar",    label_ar: "البادج (عربي) — مثال: مميز / جديد / عرض",  label_en: "Badge (Arabic)"   },
+    { key: "badge_en",    label_ar: "البادج (إنجليزي)",                          label_en: "Badge (English)"   },
+    { key: "price",       label_ar: "السعر — مثال: من 2 مليون جنيه",            label_en: "Price"             },
+    { key: "link",        label_ar: "رابط الإعلان",                             label_en: "Ad Link"           },
+    { key: "order_num",   label_ar: "الترتيب",                                  label_en: "Order"             },
   ];
 
   const tabs = [
@@ -417,7 +420,6 @@ export default function AdminPage() {
                   {editingAd ? (isAr ? "تعديل إعلان" : "Edit Ad") : (isAr ? "إضافة إعلان جديد" : "Add New Ad")}
                 </h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {adTextFields.map((field) => (
                     <div key={field.key} className="space-y-1.5">
@@ -430,9 +432,7 @@ export default function AdminPage() {
 
                   {/* صورة الإعلان */}
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-xs font-medium text-aura-dark">
-                      {isAr ? "صورة الإعلان" : "Ad Image"}
-                    </label>
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة الإعلان" : "Ad Image"}</label>
                     <div className="flex gap-3">
                       <input type="text" value={adForm.image_url}
                         onChange={(e) => setAdForm((prev) => ({ ...prev, image_url: e.target.value }))}
@@ -486,7 +486,7 @@ export default function AdminPage() {
                     <div key={ad.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
                       {ad.image_url && (
                         <div className="h-40 overflow-hidden">
-                          <img src={ad.image_url} alt={ad.title_en} className="w-full h-full object-cover" />
+                          <img src={ad.image_url} alt={isAr ? ad.title_ar : ad.title_en} className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div className="p-5">
@@ -504,18 +504,23 @@ export default function AdminPage() {
                         <p className="text-xs text-aura-muted mb-1">{isAr ? ad.subtitle_ar : ad.subtitle_en}</p>
                         {ad.price && <p className="text-xs font-medium text-aura-accent mb-3">{ad.price}</p>}
                         <div className="flex gap-2">
-                          <button onClick={() => {
-                            setEditingAd(ad.id);
-                            setAdForm({ title_ar: ad.title_ar || "", title_en: ad.title_en || "", subtitle_ar: ad.subtitle_ar || "", subtitle_en: ad.subtitle_en || "", badge_ar: ad.badge_ar || "", badge_en: ad.badge_en || "", price: ad.price || "", image_url: ad.image_url || "", link: ad.link || "", order_num: String(ad.order_num) });
-                          }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
+                          <button
+                            onClick={() => {
+                              setEditingAd(ad.id);
+                              setAdForm({ title_ar: ad.title_ar || "", title_en: ad.title_en || "", subtitle_ar: ad.subtitle_ar || "", subtitle_en: ad.subtitle_en || "", badge_ar: ad.badge_ar || "", badge_en: ad.badge_en || "", price: ad.price || "", image_url: ad.image_url || "", link: ad.link || "", order_num: String(ad.order_num) });
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
                             {isAr ? "تعديل" : "Edit"}
                           </button>
-                          <button onClick={() => toggleAdActive(ad.id, !ad.active)}
-                            className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all">
+                          <button
+                            onClick={() => toggleAdActive(ad.id, !ad.active)}
+                            className={`flex-1 py-2 rounded-xl border text-xs transition-all ${ad.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>
                             {ad.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}
                           </button>
-                          <button onClick={() => deleteAd(ad.id)}
-                            className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
+                          <button
+                            onClick={() => deleteAd(ad.id)}
+                            className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
                             {isAr ? "حذف" : "Del"}
                           </button>
                         </div>
