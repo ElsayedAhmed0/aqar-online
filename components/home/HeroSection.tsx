@@ -6,27 +6,23 @@ import { HiOutlineSearch, HiOutlineChevronDown } from "react-icons/hi";
 import { HiOutlineMapPin, HiOutlineCheckCircle } from "react-icons/hi2";
 import { useFilter } from "@/context/FilterContext";
 import { useSettings } from "@/lib/hooks/useSettings";
-import {
-  MdOutlineApartment,
-  MdOutlineVilla,
-  MdOutlineStorefront,
-  MdOutlineLandscape,
-  MdOutlineGridView,
-} from "react-icons/md";
-
-const getTypes = (isAr: boolean) => [
-  { value: "all", label: isAr ? "كل الأنواع" : "All Types", icon: <MdOutlineGridView /> },
-  { value: "apartment", label: isAr ? "شقة" : "Apartment", icon: <MdOutlineApartment /> },
-  { value: "villa", label: isAr ? "فيلا" : "Villa", icon: <MdOutlineVilla /> },
-  { value: "commercial", label: isAr ? "تجاري" : "Commercial", icon: <MdOutlineStorefront /> },
-  { value: "land", label: isAr ? "أرض" : "Land", icon: <MdOutlineLandscape /> },
-];
+import { useRouter } from "next/navigation";
+import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
+import { HiOutlineSquares2X2 } from "react-icons/hi2";
 
 export default function HeroSection() {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const types = getTypes(isAr);
-
+  const router = useRouter();
+  const { types: rawTypes } = usePropertyTypes();
+const types = [
+  { value: "all", label: isAr ? "كل الأنواع" : "All Types", icon: <HiOutlineSquares2X2 /> },
+  ...rawTypes.map((t) => ({
+    value: t.value,
+    label: isAr ? t.name_ar : t.name_en,
+    icon: <span>🏠</span>,
+  })),
+];
   const { searchQuery, setSearchQuery, propertyType, setPropertyType, setActiveFilter } = useFilter();
   const { settings } = useSettings();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -153,7 +149,15 @@ export default function HeroSection() {
           </div>
 
           {/* زر البحث */}
-          <button className="search-pill-btn flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-white text-sm font-medium">
+          <button
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (searchQuery) params.set("q", searchQuery);
+              if (propertyType && propertyType !== "all") params.set("type", propertyType);
+              router.push(`/${locale}/properties?${params.toString()}`);
+            }}
+            className="search-pill-btn flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-white text-sm font-medium"
+          >
             <HiOutlineSearch className="w-4 h-4" />
             {isAr ? "بحث" : "Search"}
           </button>
