@@ -12,7 +12,7 @@ import {
   HiOutlineMapPin, HiOutlineUserGroup, HiOutlineHome,
   HiOutlineMagnifyingGlass, HiOutlineArrowDownTray,
   HiOutlineCog6Tooth, HiOutlineCheckBadge, HiOutlineMegaphone,
-  HiOutlinePhoto,
+  HiOutlinePhoto, HiOutlineTag,
 } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
@@ -35,6 +35,11 @@ type Ad = {
   id: string; title_ar: string; title_en: string;
   subtitle_ar: string; subtitle_en: string; badge_ar: string; badge_en: string;
   price: string; image_url: string; link: string; active: boolean; order_num: number;
+};
+
+type PropertyType = {
+  id: string; name_ar: string; name_en: string;
+  value: string; active: boolean; order_num: number;
 };
 
 const statusConfig = {
@@ -77,7 +82,7 @@ const settingsGroups = [
 ];
 
 const emptyAd = { title_ar: "", title_en: "", subtitle_ar: "", subtitle_en: "", badge_ar: "", badge_en: "", price: "", image_url: "", link: "", order_num: "0" };
-
+const emptyType = { name_ar: "", name_en: "", value: "", order_num: "0" };
 const PROMO_TABLE = "promotions";
 
 export default function AdminPage() {
@@ -86,14 +91,18 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"listings" | "users" | "settings" | "ads">("listings");
+  const [activeTab, setActiveTab] = useState<"listings" | "users" | "settings" | "ads" | "types">("listings");
   const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [listings, setListings] = useState<Listing[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [adForm, setAdForm] = useState(emptyAd);
+  const [typeForm, setTypeForm] = useState(emptyType);
   const [editingAd, setEditingAd] = useState<string | null>(null);
+  const [editingType, setEditingType] = useState<string | null>(null);
   const [savingAd, setSavingAd] = useState(false);
+  const [savingType, setSavingType] = useState(false);
   const [uploadingAdImg, setUploadingAdImg] = useState(false);
   const [userFilter, setUserFilter] = useState<"all" | "admin" | "user">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,6 +142,9 @@ export default function AdminPage() {
       const { data: adsData } = await supabase.from(PROMO_TABLE).select("*").order("order_num", { ascending: true });
       if (adsData) setAds(adsData as Ad[]);
 
+      const { data: typesData } = await supabase.from("property_types").select("*").order("order_num", { ascending: true });
+      if (typesData) setPropertyTypes(typesData as PropertyType[]);
+
       setFetching(false);
     };
     checkAdmin();
@@ -162,9 +174,7 @@ export default function AdminPage() {
     const supabase = createClient();
     const ext = file.name.split(".").pop() || "jpg";
     const fileName = `promo-${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage
-      .from("listings")
-      .upload(fileName, file, { upsert: true, contentType: file.type });
+    const { data, error } = await supabase.storage.from("listings").upload(fileName, file, { upsert: true, contentType: file.type });
     setUploadingAdImg(false);
     if (error || !data) { console.error("Upload error:", error); return null; }
     const { data: urlData } = supabase.storage.from("listings").getPublicUrl(data.path);
@@ -198,11 +208,38 @@ export default function AdminPage() {
   const deleteAd = async (id: string) => {
     const supabase = createClient();
     const { error } = await supabase.from(PROMO_TABLE).delete().eq("id", id);
-    if (!error) {
-      setAds((prev) => prev.filter((a) => a.id !== id));
+    if (!error) setAds((prev) => prev.filter((a) => a.id !== id));
+    else console.error("Delete error:", error);
+  };
+
+  const savePropertyType = async () => {
+    setSavingType(true);
+    const supabase = createClient();
+    const payload = { ...typeForm, order_num: Number(typeForm.order_num) };
+    if (editingType) {
+      const { data, error } = await supabase.from("property_types").update(payload).eq("id", editingType).select().single();
+      if (error) console.error("Update type error:", error);
+      if (data) setPropertyTypes((prev) => prev.map((t) => t.id === editingType ? data : t));
+      setEditingType(null);
     } else {
-      console.error("Delete error:", error);
+      const { data, error } = await supabase.from("property_types").insert({ ...payload, active: true }).select().single();
+      if (error) console.error("Insert type error:", error);
+      if (data) setPropertyTypes((prev) => [...prev, data]);
     }
+    setTypeForm(emptyType);
+    setSavingType(false);
+  };
+
+  const toggleTypeActive = async (id: string, active: boolean) => {
+    const supabase = createClient();
+    await supabase.from("property_types").update({ active }).eq("id", id);
+    setPropertyTypes((prev) => prev.map((t) => t.id === id ? { ...t, active } : t));
+  };
+
+  const deletePropertyType = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("property_types").delete().eq("id", id);
+    if (!error) setPropertyTypes((prev) => prev.filter((t) => t.id !== id));
   };
 
   const exportUsersExcel = () => {
@@ -251,10 +288,11 @@ export default function AdminPage() {
   ];
 
   const tabs = [
-    { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />,       ar: "الإعلانات",          en: "Listings",      count: listings.length },
-    { id: "users",    icon: <HiOutlineUserGroup className="w-4 h-4" />,   ar: "المستخدمون",         en: "Users",         count: users.length    },
-    { id: "ads",      icon: <HiOutlineMegaphone className="w-4 h-4" />,   ar: "الإعلانات الجانبية", en: "Side Ads",      count: ads.length      },
-    { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />,   ar: "إعدادات الموقع",    en: "Site Settings", count: null            },
+    { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />,       ar: "الإعلانات",          en: "Listings",         count: listings.length      },
+    { id: "users",    icon: <HiOutlineUserGroup className="w-4 h-4" />,   ar: "المستخدمون",         en: "Users",            count: users.length         },
+    { id: "ads",      icon: <HiOutlineMegaphone className="w-4 h-4" />,   ar: "الإعلانات الجانبية", en: "Side Ads",         count: ads.length           },
+    { id: "types",    icon: <HiOutlineTag className="w-4 h-4" />,         ar: "أنواع العقارات",     en: "Property Types",   count: propertyTypes.length },
+    { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />,   ar: "إعدادات الموقع",    en: "Site Settings",    count: null                 },
   ];
 
   return (
@@ -429,8 +467,6 @@ export default function AdminPage() {
                         className={inputCls} />
                     </div>
                   ))}
-
-                  {/* صورة الإعلان */}
                   <div className="space-y-1.5 md:col-span-2">
                     <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة الإعلان" : "Ad Image"}</label>
                     <div className="flex gap-3">
@@ -439,11 +475,7 @@ export default function AdminPage() {
                         placeholder={isAr ? "رابط الصورة (URL)..." : "Image URL..."}
                         className={`${inputCls} flex-1`} />
                       <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-xs text-aura-dark hover:border-aura-accent cursor-pointer transition-all shrink-0">
-                        {uploadingAdImg ? (
-                          <div className="w-4 h-4 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <HiOutlinePhoto className="w-4 h-4 text-aura-accent" />
-                        )}
+                        {uploadingAdImg ? <div className="w-4 h-4 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" /> : <HiOutlinePhoto className="w-4 h-4 text-aura-accent" />}
                         {isAr ? "رفع صورة" : "Upload"}
                         <input type="file" accept="image/*" className="hidden"
                           onChange={async (e) => {
@@ -461,7 +493,6 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
-
                 <div className="flex gap-3 mt-5">
                   <button onClick={saveAd} disabled={savingAd || uploadingAdImg}
                     className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">
@@ -484,11 +515,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {ads.map((ad) => (
                     <div key={ad.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
-                      {ad.image_url && (
-                        <div className="h-40 overflow-hidden">
-                          <img src={ad.image_url} alt={isAr ? ad.title_ar : ad.title_en} className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                      {ad.image_url && <div className="h-40 overflow-hidden"><img src={ad.image_url} alt={isAr ? ad.title_ar : ad.title_en} className="w-full h-full object-cover" /></div>}
                       <div className="p-5">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="text-sm font-medium text-aura-dark">{isAr ? ad.title_ar : ad.title_en}</h4>
@@ -496,31 +523,19 @@ export default function AdminPage() {
                             {ad.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}
                           </span>
                         </div>
-                        {ad.badge_ar && (
-                          <span className="inline-block px-2 py-0.5 rounded-full bg-aura-accent/10 text-aura-accent text-[10px] mb-2">
-                            {isAr ? ad.badge_ar : ad.badge_en}
-                          </span>
-                        )}
+                        {ad.badge_ar && <span className="inline-block px-2 py-0.5 rounded-full bg-aura-accent/10 text-aura-accent text-[10px] mb-2">{isAr ? ad.badge_ar : ad.badge_en}</span>}
                         <p className="text-xs text-aura-muted mb-1">{isAr ? ad.subtitle_ar : ad.subtitle_en}</p>
                         {ad.price && <p className="text-xs font-medium text-aura-accent mb-3">{ad.price}</p>}
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditingAd(ad.id);
-                              setAdForm({ title_ar: ad.title_ar || "", title_en: ad.title_en || "", subtitle_ar: ad.subtitle_ar || "", subtitle_en: ad.subtitle_en || "", badge_ar: ad.badge_ar || "", badge_en: ad.badge_en || "", price: ad.price || "", image_url: ad.image_url || "", link: ad.link || "", order_num: String(ad.order_num) });
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }}
+                          <button onClick={() => { setEditingAd(ad.id); setAdForm({ title_ar: ad.title_ar || "", title_en: ad.title_en || "", subtitle_ar: ad.subtitle_ar || "", subtitle_en: ad.subtitle_en || "", badge_ar: ad.badge_ar || "", badge_en: ad.badge_en || "", price: ad.price || "", image_url: ad.image_url || "", link: ad.link || "", order_num: String(ad.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                             className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
                             {isAr ? "تعديل" : "Edit"}
                           </button>
-                          <button
-                            onClick={() => toggleAdActive(ad.id, !ad.active)}
+                          <button onClick={() => toggleAdActive(ad.id, !ad.active)}
                             className={`flex-1 py-2 rounded-xl border text-xs transition-all ${ad.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>
                             {ad.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}
                           </button>
-                          <button
-                            onClick={() => deleteAd(ad.id)}
-                            className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
+                          <button onClick={() => deleteAd(ad.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
                             {isAr ? "حذف" : "Del"}
                           </button>
                         </div>
@@ -529,6 +544,78 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── تاب أنواع العقارات ── */}
+          {activeTab === "types" && (
+            <div className="space-y-8">
+              <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+                <h3 className="text-base font-medium text-aura-dark mb-1">
+                  {editingType ? (isAr ? "تعديل نوع" : "Edit Type") : (isAr ? "إضافة نوع جديد" : "Add New Type")}
+                </h3>
+                <div className="w-8 h-0.5 bg-aura-accent mb-5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم (عربي)" : "Name (Arabic)"}</label>
+                    <input type="text" value={typeForm.name_ar} onChange={(e) => setTypeForm((prev) => ({ ...prev, name_ar: e.target.value }))} placeholder={isAr ? "مثال: شاليه" : "e.g. Chalet"} className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم (إنجليزي)" : "Name (English)"}</label>
+                    <input type="text" value={typeForm.name_en} onChange={(e) => setTypeForm((prev) => ({ ...prev, name_en: e.target.value }))} placeholder="e.g. Chalet" className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "القيمة — بالإنجليزي بدون مسافات" : "Value (no spaces)"}</label>
+                    <input type="text" value={typeForm.value} onChange={(e) => setTypeForm((prev) => ({ ...prev, value: e.target.value.toLowerCase().replace(/\s/g, "_") }))} placeholder="chalet" className={inputCls} dir="ltr" />
+                    <p className="text-[10px] text-aura-muted">{isAr ? "مثال: chalet / land / office" : "e.g. chalet / land / office"}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "الترتيب" : "Order"}</label>
+                    <input type="number" value={typeForm.order_num} onChange={(e) => setTypeForm((prev) => ({ ...prev, order_num: e.target.value }))} className={inputCls} dir="ltr" />
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-5">
+                  <button onClick={savePropertyType} disabled={savingType || !typeForm.name_ar || !typeForm.name_en || !typeForm.value}
+                    className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">
+                    {savingType ? (isAr ? "جاري الحفظ..." : "Saving...") : editingType ? (isAr ? "تحديث" : "Update") : (isAr ? "إضافة" : "Add")}
+                  </button>
+                  {editingType && (
+                    <button onClick={() => { setEditingType(null); setTypeForm(emptyType); }}
+                      className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all">
+                      {isAr ? "إلغاء" : "Cancel"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {propertyTypes.map((type) => (
+                  <div key={type.id} className="bento-card bg-aura-card rounded-2xl p-5 border border-aura-border">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="text-sm font-medium text-aura-dark">{isAr ? type.name_ar : type.name_en}</h4>
+                        <p className="text-[10px] text-aura-muted mt-0.5" dir="ltr">{type.value}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${type.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>
+                        {type.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingType(type.id); setTypeForm({ name_ar: type.name_ar, name_en: type.name_en, value: type.value, order_num: String(type.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
+                        {isAr ? "تعديل" : "Edit"}
+                      </button>
+                      <button onClick={() => toggleTypeActive(type.id, !type.active)}
+                        className={`flex-1 py-2 rounded-xl border text-xs transition-all ${type.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>
+                        {type.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}
+                      </button>
+                      <button onClick={() => deletePropertyType(type.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
+                        {isAr ? "حذف" : "Del"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
