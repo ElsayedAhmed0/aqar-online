@@ -58,6 +58,24 @@ const statusConfig = {
 
 const settingsGroups = [
     {
+        title_ar: "السوشيال ميديا",
+        title_en: "Social Media",
+        fields: [
+            { key: "social_facebook", label_ar: "فيسبوك (رابط)", label_en: "Facebook (URL)" },
+            { key: "social_instagram", label_ar: "انستجرام (رابط)", label_en: "Instagram (URL)" },
+            { key: "social_whatsapp", label_ar: "واتساب (رابط)", label_en: "WhatsApp (URL)" },
+            { key: "social_tiktok", label_ar: "تيك توك (رابط)", label_en: "TikTok (URL)" },
+        ],
+    },
+    {
+        title_ar: "وصف الموقع في الفوتر",
+        title_en: "Footer Description",
+        fields: [
+            { key: "footer_desc_ar", label_ar: "الوصف (عربي)", label_en: "Description (Arabic)" },
+            { key: "footer_desc_en", label_ar: "الوصف (إنجليزي)", label_en: "Description (English)" },
+        ],
+    },
+    {
         title_ar: "معلومات الموقع",
         title_en: "Site Info",
         fields: [
