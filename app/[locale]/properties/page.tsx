@@ -8,7 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PropertiesGrid from "@/components/properties/PropertiesGrid";
 import SideAds from "@/components/home/SideAds";
-import PropertiesFilter from "@/components/properties/PropertiesFilter"
+import PropertiesFilter from "@/components/properties/PropertyFilter";
 
 const ITEMS_PER_PAGE = 9;
 
