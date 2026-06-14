@@ -45,7 +45,7 @@ export default function MyListingCard({
   formatPrice,
   onDelete,
 }: MyListingCardProps) {
-  const typeInfo = typeLabels[listing.type];
+const typeInfo = typeLabels[listing.type as keyof typeof typeLabels] ?? typeLabels.apartment;
   const TypeIcon = typeInfo.icon;
   const status = statusConfig[listing.status] ?? statusConfig.pending;
   const StatusIcon = status.icon;
