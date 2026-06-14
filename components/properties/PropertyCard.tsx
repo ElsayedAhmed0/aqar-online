@@ -14,6 +14,7 @@ type PropertyCardProps = {
   animate?: boolean;
   locale?: string;
 };
+
 export default function PropertyCard({
   property,
   isLiked,
@@ -24,12 +25,12 @@ export default function PropertyCard({
   animate = false,
   locale = "ar",
 }: PropertyCardProps) {
-  return (
+  const purpose = (property as any).purpose;
 
+  return (
     <a href={`/${locale}/properties/${property.id}`}
-      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${animate ? "card-animate" : ""
-        }`}
-    >
+      className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${animate ? "card-animate" : ""}`}>
+
       <div className="relative h-56 overflow-hidden">
         <img
           src={property.images?.[0] || property.img || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
@@ -37,27 +38,37 @@ export default function PropertyCard({
           className="w-full h-full object-cover img-hover"
         />
 
+        {/* مميز */}
         {showFeatured && property.featured && (
           <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-aura-accent text-white text-xs font-medium">
             {isAr ? "مميز" : "Featured"}
           </div>
         )}
 
+        {/* للبيع / للإيجار */}
+        {purpose && (
+          <div className={`absolute top-4 px-3 py-1 rounded-full text-xs font-medium ${
+            showFeatured && property.featured ? "right-20" : "right-4"
+          } ${
+            purpose === "rent"
+              ? "bg-blue-500/90 text-white"
+              : "bg-aura-accent/90 text-white"
+          }`}>
+            {purpose === "rent"
+              ? (isAr ? "للإيجار" : "For Rent")
+              : (isAr ? "للبيع" : "For Sale")}
+          </div>
+        )}
+
+        {/* زرار المفضلة */}
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleLike(e, property);
-          }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleLike(e, property); }}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110"
-          aria-label={isAr ? "المفضلة" : "Wishlist"}
-        >
-          <HiOutlineHeart
-            className={`w-4 h-4 transition-colors duration-300 ${isLiked ? "text-red-500 fill-red-500" : "text-aura-muted"
-              }`}
-          />
+          aria-label={isAr ? "المفضلة" : "Wishlist"}>
+          <HiOutlineHeart className={`w-4 h-4 transition-colors duration-300 ${isLiked ? "text-red-500 fill-red-500" : "text-aura-muted"}`} />
         </button>
 
+        {/* السعر */}
         <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-sm text-white text-sm font-medium">
           {formatPrice(property.price)}
         </div>
@@ -70,9 +81,7 @@ export default function PropertyCard({
 
         <div className="flex items-center gap-1.5 text-aura-muted mb-4">
           <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
-          <span className="text-xs">
-            {isAr ? property.location_ar : property.location_en}
-          </span>
+          <span className="text-xs">{isAr ? property.location_ar : property.location_en}</span>
         </div>
 
         <div className="flex items-center gap-4 pt-4 border-t border-aura-border">
@@ -88,9 +97,7 @@ export default function PropertyCard({
           </div>
           <div className="flex items-center gap-1.5 text-aura-muted">
             <LuMaximize className="w-4 h-4" />
-            <span className="text-xs">
-              {property.area} {isAr ? "م²" : "m²"}
-            </span>
+            <span className="text-xs">{property.area} {isAr ? "م²" : "m²"}</span>
           </div>
           <button className="mr-auto text-xs font-medium text-aura-accent hover:text-aura-accent-dark transition-colors">
             {isAr ? "التفاصيل ←" : "Details →"}

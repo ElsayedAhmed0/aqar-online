@@ -4,28 +4,21 @@ import { useEffect, useState } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useLocale } from "next-intl";
 import { useFilter } from "@/context/FilterContext";
+import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
 import { createClient } from "@/lib/supabase/client";
 import { HiOutlineHome } from "react-icons/hi2";
-import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 import PropertyCard from "@/components/properties/PropertyCard";
-
-const filters = [
-  { value: "all", icon: <HiOutlineHome className="w-4 h-4" />, label_ar: "الكل", label_en: "All" },
-  { value: "apartment", icon: <MdOutlineApartment className="w-4 h-4" />, label_ar: "شقق", label_en: "Apartments" },
-  { value: "villa", icon: <MdOutlineVilla className="w-4 h-4" />, label_ar: "فيلات", label_en: "Villas" },
-  { value: "commercial", icon: <MdOutlineStorefront className="w-4 h-4" />, label_ar: "تجاري", label_en: "Commercial" },
-];
 
 export default function PropertiesSection() {
   const locale = useLocale();
   const isAr = locale === "ar";
   const { activeFilter, setActiveFilter, searchQuery } = useFilter();
   const { liked, toggleLike } = useWishlist();
+  const { types: propertyTypes } = usePropertyTypes();
 
   const [properties, setProperties] = useState<any[]>([]);
   const [loadingProps, setLoadingProps] = useState(true);
 
-  // جيب العقارات المعتمدة من Supabase
   useEffect(() => {
     const fetchProperties = async () => {
       setLoadingProps(true);
@@ -36,7 +29,6 @@ export default function PropertiesSection() {
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(12);
-
       if (data) setProperties(data);
       setLoadingProps(false);
     };
@@ -45,8 +37,7 @@ export default function PropertiesSection() {
 
   const filtered = properties.filter((p) => {
     const matchType = activeFilter === "all" || p.type === activeFilter;
-    const matchSearch =
-      searchQuery === "" ||
+    const matchSearch = searchQuery === "" ||
       p.title_ar?.includes(searchQuery) ||
       p.title_en?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.location_ar?.includes(searchQuery) ||
@@ -55,16 +46,16 @@ export default function PropertiesSection() {
   });
 
   const formatPrice = (price: number) =>
-    isAr
-      ? `${(price / 1000000).toFixed(1)} مليون جنيه`
-      : `EGP ${(price / 1000000).toFixed(1)}M`;
+    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
 
   return (
     <section id="properties" className="py-18 px-6 lg:px-12 bg-aura-canvas">
       <div className="max-w-7xl mx-auto">
 
-        {/* العنوان */}
+        {/* العنوان + فلاتر + زرار كل العقارات في سطر */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+
+          {/* العنوان */}
           <div>
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
               {isAr ? "عقاراتنا المميزة" : "Featured Properties"}
@@ -77,21 +68,35 @@ export default function PropertiesSection() {
             </h2>
           </div>
 
-          {/* الفلاتر */}
-          <div className="flex items-center gap-2 bg-aura-card rounded-2xl p-1.5 border border-aura-border w-fit">
-            {filters.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === f.value
-                  ? "bg-aura-dark text-white shadow-sm"
-                  : "text-aura-muted hover:text-aura-dark"
-                  }`}
-              >
-                {f.icon}
-                {isAr ? f.label_ar : f.label_en}
+          {/* الفلاتر + زرار عرض الكل */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+
+            {/* الفلاتر الديناميك */}
+            <div className="flex items-center gap-2 bg-aura-card rounded-2xl p-1.5 border border-aura-border flex-wrap">
+              {/* الكل */}
+              <button onClick={() => setActiveFilter("all")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === "all" ? "bg-aura-dark text-white shadow-sm" : "text-aura-muted hover:text-aura-dark"
+                  }`}>
+                <HiOutlineHome className="w-4 h-4" />
+                {isAr ? "الكل" : "All"}
               </button>
-            ))}
+
+              {/* // إلى: أول 3 بس */}
+              {propertyTypes.slice(0, 2).map((t) => (
+
+                <button key={t.value} onClick={() => setActiveFilter(t.value)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === t.value ? "bg-aura-dark text-white shadow-sm" : "text-aura-muted hover:text-aura-dark"
+                    }`}>
+                  {isAr ? t.name_ar : t.name_en}
+                </button>
+              ))}
+            </div>
+
+            {/* زرار عرض جميع العقارات */}
+            <a href={`/${locale}/properties`}
+              className="px-5 py-3 rounded-2xl border border-aura-accent text-aura-accent text-xs font-medium hover:bg-aura-accent hover:text-white transition-all duration-300 whitespace-nowrap">
+              {isAr ? "عرض كل العقارات ←" : "View All Properties →"}
+            </a>
           </div>
         </div>
 
@@ -139,16 +144,6 @@ export default function PropertiesSection() {
                 locale={locale}
               />
             ))}
-          </div>
-        )}
-
-        {/* زر عرض الكل */}
-        {!loadingProps && filtered.length > 0 && (
-          <div className="text-center mt-12">
-            <a href={`/${locale}/properties`}
-              className="px-10 py-4 rounded-full border border-aura-border text-aura-dark text-sm font-medium hover:bg-aura-dark hover:text-white transition-all duration-300 inline-block">
-              {isAr ? "عرض جميع العقارات" : "View All Properties"}
-            </a>
           </div>
         )}
 

@@ -2,102 +2,45 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "next-intl";
+import { useSettings } from "@/lib/hooks/useSettings";
 import {
-  HiOutlineHome,
-  HiOutlineUserGroup,
-  HiOutlineStar,
-  HiOutlineBuildingOffice2,
+  HiOutlineHome, HiOutlineUserGroup,
+  HiOutlineStar, HiOutlineBuildingOffice2,
 } from "react-icons/hi2";
 
-const stats = [
-  {
-    icon: <HiOutlineHome className="w-7 h-7" />,
-    number: 2500,
-    suffix: "+",
-    label_ar: "عقار متاح",
-    label_en: "Properties",
-  },
-  {
-    icon: <HiOutlineUserGroup className="w-7 h-7" />,
-    number: 1200,
-    suffix: "+",
-    label_ar: "عميل سعيد",
-    label_en: "Happy Clients",
-  },
-  {
-    icon: <HiOutlineStar className="w-7 h-7" />,
-    number: 98,
-    suffix: "%",
-    label_ar: "نسبة الرضا",
-    label_en: "Satisfaction Rate",
-  },
-  {
-    icon: <HiOutlineBuildingOffice2 className="w-7 h-7" />,
-    number: 15,
-    suffix: "+",
-    label_ar: "سنة خبرة",
-    label_en: "Years Experience",
-  },
-];
-
-// Hook لعد الأرقام
 function useCountUp(target: number, duration: number, started: boolean) {
   const [count, setCount] = useState(0);
-
   useEffect(() => {
-    if (!started) return;
+    if (!started || target === 0) return;
     let start = 0;
     const step = target / (duration / 16);
     const timer = setInterval(() => {
       start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(Math.floor(start));
     }, 16);
     return () => clearInterval(timer);
   }, [started, target, duration]);
-
   return count;
 }
 
-// كارد إحصائية واحدة
-function StatCard({
-  stat,
-  isAr,
-  started,
-}: {
-  stat: (typeof stats)[0];
-  isAr: boolean;
-  started: boolean;
+function StatCard({ icon, number, suffix, label, started }: {
+  icon: React.ReactNode; number: number; suffix: string;
+  label: string; started: boolean;
 }) {
-  const count = useCountUp(stat.number, 2000, started);
-
+  const count = useCountUp(number, 2000, started);
   return (
     <div className="flex flex-col items-center text-center group">
-      {/* الأيقونة */}
-     <div className="w-12 h-12 rounded-xl bg-aura-accent/10 flex items-center justify-center text-aura-accent mb-4 group-hover:bg-aura-accent group-hover:text-white transition-all duration-500">
-        {stat.icon}
+      <div className="w-12 h-12 rounded-xl bg-aura-accent/10 flex items-center justify-center text-aura-accent mb-4 group-hover:bg-aura-accent group-hover:text-white transition-all duration-500">
+        {icon}
       </div>
-
-      {/* الرقم */}
       <div className="flex items-end gap-1 mb-2">
-       <span className="text-4xl font-light text-aura-dark tabular-nums">
+        <span className="text-4xl font-light text-aura-dark tabular-nums">
           {count.toLocaleString()}
         </span>
-        <span className="text-2xl font-light text-aura-accent mb-1">
-          {stat.suffix}
-        </span>
+        <span className="text-2xl font-light text-aura-accent mb-1">{suffix}</span>
       </div>
-
-      {/* التسمية */}
-      <p className="text-aura-muted text-sm font-light">
-        {isAr ? stat.label_ar : stat.label_en}
-      </p>
-
-      {/* خط سفلي */}
+      <p className="text-aura-muted text-sm font-light">{label}</p>
       <div className="w-8 h-0.5 bg-aura-accent/30 mt-4 group-hover:w-16 transition-all duration-500" />
     </div>
   );
@@ -106,29 +49,50 @@ function StatCard({
 export default function StatsSection() {
   const locale = useLocale();
   const isAr = locale === "ar";
+  const { settings } = useSettings();
   const [started, setStarted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // نبدأ العد لما السكاشن يظهر على الشاشة
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStarted(true);
-          observer.disconnect();
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setStarted(true); observer.disconnect(); } },
       { threshold: 0.3 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
+  const stats = [
+    {
+      icon: <HiOutlineHome className="w-7 h-7" />,
+      number: Number(settings.stats_properties?.replace(/,/g, "") || 2500),
+      suffix: "+",
+      label: isAr ? "عقار متاح" : "Properties",
+    },
+    {
+      icon: <HiOutlineUserGroup className="w-7 h-7" />,
+      number: Number(settings.stats_clients?.replace(/,/g, "") || 1200),
+      suffix: "+",
+      label: isAr ? "عميل سعيد" : "Happy Clients",
+    },
+    {
+      icon: <HiOutlineStar className="w-7 h-7" />,
+      number: 98,
+      suffix: "%",
+      label: isAr ? "نسبة الرضا" : "Satisfaction Rate",
+    },
+    {
+      icon: <HiOutlineBuildingOffice2 className="w-7 h-7" />,
+      number: Number(settings.stats_years?.replace(/,/g, "") || 15),
+      suffix: "+",
+      label: isAr ? "سنة خبرة" : "Years Experience",
+    },
+  ];
+
   return (
-   <section ref={ref} className="py-14 px-6 lg:px-12 bg-aura-canvas">
+    <section ref={ref} className="py-14 px-6 lg:px-12 bg-aura-canvas">
       <div className="max-w-7xl mx-auto">
 
-        {/* العنوان */}
         <div className="text-center mb-10">
           <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
             {isAr ? "أرقامنا تتكلم" : "Our Numbers Speak"}
@@ -141,10 +105,9 @@ export default function StatsSection() {
           </h2>
         </div>
 
-        {/* الإحصائيات */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {stats.map((stat, i) => (
-            <StatCard key={i} stat={stat} isAr={isAr} started={started} />
+            <StatCard key={i} {...stat} started={started} />
           ))}
         </div>
 

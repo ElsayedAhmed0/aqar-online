@@ -24,7 +24,7 @@ export default function PropertiesPage() {
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [activeType, setActiveType] = useState(searchParams.get("type") || "all");
-  const [purpose, setPurpose] = useState(searchParams.get("purpose") || "all");
+  const [purpose, setPurpose] = useState(searchParams.get("purpose") || "sale");
   const [maxPrice, setMaxPrice] = useState(10000000);
   const [minArea, setMinArea] = useState(0);
   const [minBeds, setMinBeds] = useState(0);
@@ -70,15 +70,15 @@ export default function PropertiesPage() {
     fetch();
   }, [searchQuery, activeType, purpose, maxPrice, minArea, minBeds, sortBy, page]);
 
-  const clearFilters = () => {
-    setSearchQuery("");
-    setActiveType("all");
-    setPurpose("all");
-    setMaxPrice(10000000);
-    setMinArea(0);
-    setMinBeds(0);
-    setSortBy("newest");
-  };
+ const clearFilters = () => {
+  setSearchQuery("");
+  setActiveType("all");
+  setPurpose("all");   // ← غيرها لـ "sale"
+  setMaxPrice(10000000);
+  setMinArea(0);
+  setMinBeds(0);
+  setSortBy("newest");
+};
 
   return (
     <main className="min-h-screen bg-aura-bg">

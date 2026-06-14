@@ -4,17 +4,28 @@ import { useLocale } from "next-intl";
 import { HiOutlinePhone, HiOutlineEnvelope, HiOutlineMapPin } from "react-icons/hi2";
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaTiktok } from "react-icons/fa6";
 import { useSettings } from "@/lib/hooks/useSettings";
+import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
 
 export default function Footer() {
   const locale = useLocale();
   const isAr = locale === "ar";
   const { settings } = useSettings();
+  const { types: propertyTypes } = usePropertyTypes();
 
   const socials = [
     { icon: <FaTiktok className="w-3.5 h-3.5" />,    key: "social_tiktok"    },
     { icon: <FaWhatsapp className="w-3.5 h-3.5" />,  key: "social_whatsapp"  },
     { icon: <FaInstagram className="w-3.5 h-3.5" />, key: "social_instagram" },
     { icon: <FaFacebookF className="w-3.5 h-3.5" />, key: "social_facebook"  },
+  ];
+
+  const quickLinks = [
+    { label_ar: "الرئيسية",   label_en: "Home",        href: `/${locale}`             },
+    { label_ar: "العقارات",   label_en: "Properties",  href: `/${locale}/properties`  },
+    { label_ar: "عن عقار",    label_en: "About Us",    href: `/${locale}/about`       },
+    { label_ar: "المقالات",   label_en: "Blog",        href: `/${locale}/blog`        },
+    { label_ar: "اتصل بنا",   label_en: "Contact",     href: `/${locale}/contact`     },
+    { label_ar: "أضف إعلانك", label_en: "Add Listing", href: `/${locale}/add-listing` },
   ];
 
   return (
@@ -42,13 +53,8 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               {socials.map((social) =>
                 settings[social.key] ? (
-                  
-                   <a key={social.key}
-                    href={settings[social.key]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-aura-accent flex items-center justify-center transition-all duration-300"
-                  >
+                  <a key={social.key} href={settings[social.key]} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-aura-accent flex items-center justify-center transition-all duration-300">
                     {social.icon}
                   </a>
                 ) : null
@@ -62,37 +68,34 @@ export default function Footer() {
               {isAr ? "روابط سريعة" : "Quick Links"}
             </h4>
             <nav className="flex flex-col gap-3">
-              {[
-                { label_ar: "الرئيسية",   label_en: "Home",        href: `/${locale}`              },
-                { label_ar: "العقارات",   label_en: "Properties",  href: `/${locale}#properties`   },
-                { label_ar: "عن عقار",    label_en: "About Us",    href: `/${locale}#bento`        },
-                { label_ar: "اتصل بنا",   label_en: "Contact",     href: `/${locale}/contact`      },
-                { label_ar: "أضف إعلانك", label_en: "Add Listing", href: `/${locale}/add-listing`  },
-              ].map((link) => (
-                <a key={link.href} href={link.href} className="text-sm text-white/50 hover:text-white transition-colors duration-200">
+              {quickLinks.map((link) => (
+                <a key={link.href} href={link.href}
+                  className="text-sm text-white/50 hover:text-white transition-colors duration-200">
                   {isAr ? link.label_ar : link.label_en}
                 </a>
               ))}
             </nav>
           </div>
 
-          {/* أنواع العقارات */}
+          {/* أنواع العقارات — ديناميك */}
           <div>
             <h4 className="text-xs tracking-[0.2em] uppercase text-white/40 mb-6">
               {isAr ? "أنواع العقارات" : "Property Types"}
             </h4>
             <nav className="flex flex-col gap-3">
-              {[
-                { label_ar: "شقق سكنية",    label_en: "Apartments" },
-                { label_ar: "فيلات",         label_en: "Villas"     },
-                { label_ar: "محلات تجارية", label_en: "Commercial" },
-                { label_ar: "أراضي",         label_en: "Land"       },
-                { label_ar: "مكاتب إدارية", label_en: "Offices"    },
-              ].map((type) => (
-                <a key={type.label_en} href={`/${locale}#properties`} className="text-sm text-white/50 hover:text-white transition-colors duration-200">
-                  {isAr ? type.label_ar : type.label_en}
+              {propertyTypes.length > 0 ? propertyTypes.map((type) => (
+                <a key={type.value}
+                  href={`/${locale}/properties?type=${type.value}`}
+                  className="text-sm text-white/50 hover:text-white transition-colors duration-200">
+                  {isAr ? type.name_ar : type.name_en}
                 </a>
-              ))}
+              )) : (
+                <>
+                  <a href={`/${locale}/properties?type=apartment`} className="text-sm text-white/50 hover:text-white transition-colors">{isAr ? "شقق سكنية" : "Apartments"}</a>
+                  <a href={`/${locale}/properties?type=villa`} className="text-sm text-white/50 hover:text-white transition-colors">{isAr ? "فيلات" : "Villas"}</a>
+                  <a href={`/${locale}/properties?type=commercial`} className="text-sm text-white/50 hover:text-white transition-colors">{isAr ? "تجاري" : "Commercial"}</a>
+                </>
+              )}
             </nav>
           </div>
 
@@ -102,16 +105,20 @@ export default function Footer() {
               {isAr ? "تواصل معنا" : "Contact Us"}
             </h4>
             <div className="flex flex-col gap-4">
+              {settings.footer_phone && (
+                <a href={`tel:${settings.footer_phone}`} className="flex items-start gap-3 text-white/50 hover:text-white transition-colors">
+                  <span className="text-aura-accent mt-0.5"><HiOutlinePhone className="w-4 h-4 shrink-0"/></span>
+                  <span className="text-sm" dir="ltr">{settings.footer_phone}</span>
+                </a>
+              )}
+              {settings.footer_email && (
+                <a href={`mailto:${settings.footer_email}`} className="flex items-start gap-3 text-white/50 hover:text-white transition-colors">
+                  <span className="text-aura-accent mt-0.5"><HiOutlineEnvelope className="w-4 h-4 shrink-0"/></span>
+                  <span className="text-sm" dir="ltr">{settings.footer_email}</span>
+                </a>
+              )}
               <div className="flex items-start gap-3 text-white/50">
-                <span className="text-aura-accent mt-0.5"><HiOutlinePhone className="w-4 h-4 shrink-0" /></span>
-                <span className="text-sm" dir="ltr">{settings.footer_phone || "920001234"}</span>
-              </div>
-              <div className="flex items-start gap-3 text-white/50">
-                <span className="text-aura-accent mt-0.5"><HiOutlineEnvelope className="w-4 h-4 shrink-0" /></span>
-                <span className="text-sm" dir="ltr">{settings.footer_email || "info@aqar-online.com"}</span>
-              </div>
-              <div className="flex items-start gap-3 text-white/50">
-                <span className="text-aura-accent mt-0.5"><HiOutlineMapPin className="w-4 h-4 shrink-0" /></span>
+                <span className="text-aura-accent mt-0.5"><HiOutlineMapPin className="w-4 h-4 shrink-0"/></span>
                 <span className="text-sm">{isAr ? (settings.footer_address_ar || "التجمع الخامس، القاهرة") : (settings.footer_address_en || "New Cairo, Egypt")}</span>
               </div>
             </div>
@@ -129,14 +136,12 @@ export default function Footer() {
               : `© ${new Date().getFullYear()} ${settings.site_name_en || "Aqar Online"} — All rights reserved`}
           </p>
           <div className="flex items-center gap-6">
-            {[
-              { label_ar: "سياسة الخصوصية", label_en: "Privacy Policy"  },
-              { label_ar: "الشروط والأحكام", label_en: "Terms of Service" },
-            ].map((link) => (
-              <a key={link.label_en} href="#" className="text-white/30 hover:text-white/60 text-xs transition-colors">
-                {isAr ? link.label_ar : link.label_en}
-              </a>
-            ))}
+            <a href={`/${locale}/privacy`} className="text-white/30 hover:text-white/60 text-xs transition-colors">
+              {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
+            </a>
+            <a href={`/${locale}/terms`} className="text-white/30 hover:text-white/60 text-xs transition-colors">
+              {isAr ? "الشروط والأحكام" : "Terms of Service"}
+            </a>
           </div>
         </div>
       </div>

@@ -8,20 +8,12 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import {
-  HiOutlineSun,
-  HiOutlineMoon,
-  HiOutlineBars3,
-  HiOutlineXMark,
-  HiOutlinePhone,
-  HiOutlineGlobeAlt,
-  HiOutlineHeart,
+  HiOutlineSun, HiOutlineMoon, HiOutlineBars3, HiOutlineXMark,
+  HiOutlinePhone, HiOutlineGlobeAlt, HiOutlineHeart,
 } from "react-icons/hi2";
 import {
-  MdOutlinePersonOutline,
-  MdOutlineListAlt,
-  MdOutlineLogout,
-  MdOutlineAddHome,
-  MdOutlineAdminPanelSettings,
+  MdOutlinePersonOutline, MdOutlineListAlt, MdOutlineLogout,
+  MdOutlineAddHome, MdOutlineAdminPanelSettings,
 } from "react-icons/md";
 
 export default function Navbar() {
@@ -38,6 +30,8 @@ export default function Navbar() {
   const { liked } = useWishlist();
   const { user, signOut } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
 
   useEffect(() => setMounted(true), []);
 
@@ -57,16 +51,11 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // تحقق من الـ role
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
     const checkRole = async () => {
       const supabase = createClient();
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+      const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
       setIsAdmin(data?.role === "admin");
     };
     checkRole();
@@ -96,6 +85,13 @@ export default function Navbar() {
     );
   };
 
+  const navLinks = [
+    { href: `/${locale}`,            label_ar: "الرئيسية", label_en: "Home"       },
+    { href: `/${locale}/about`,      label_ar: "عن عقار",  label_en: "About"      },
+    { href: `/${locale}/properties`, label_ar: "العقارات", label_en: "Properties" },
+    { href: `/${locale}/contact`,    label_ar: "اتصل بنا", label_en: "Contact"    },
+  ];
+
   return (
     <>
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-aura-card/80 backdrop-blur-xl shadow-sm border-b border-aura-border/50" : "bg-transparent"}`}>
@@ -103,22 +99,23 @@ export default function Navbar() {
 
           {/* روابط الـ Desktop */}
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#hero" className="text-xs font-semibold text-aura-dark hover:text-aura-accent tracking-wider transition-colors">
-              {isAr ? "الرئيسية" : "Home"}
-            </a>
-            <a href="#bento" className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
-              {isAr ? "عن عقار" : "About"}
-            </a>
-            <a href={`/${locale}/properties`} className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
-              {isAr ? "العقارات" : "Properties"}
-            </a>
-            <a href={`/${locale}/contact`} className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
-              {isAr ? "اتصل بنا" : "Contact"}
-            </a>
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <a key={link.href} href={link.href}
+                  className={`text-xs tracking-wider transition-colors ${
+                    isActive
+                      ? "font-semibold text-aura-dark"
+                      : "font-light text-aura-muted hover:text-aura-dark"
+                  }`}>
+                  {isAr ? link.label_ar : link.label_en}
+                </a>
+              );
+            })}
           </nav>
 
           {/* اللوجو */}
-          <a href="/" className="flex flex-col items-center justify-center select-none">
+          <a href={`/${locale}`} className="flex flex-col items-center justify-center select-none">
             <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-3xl text-aura-dark">عقار</span>
             <span className="text-[9px] tracking-[0.5em] text-aura-muted -mt-1 uppercase">Online</span>
           </a>
@@ -126,7 +123,7 @@ export default function Navbar() {
           {/* الجانب الأيسر */}
           <div className="flex items-center gap-3">
 
-            {/* زر الـ Wishlist */}
+            {/* Wishlist */}
             <a href={`/${locale}/wishlist`} className="relative w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300" aria-label="Wishlist">
               <HiOutlineHeart className="w-4 h-4" />
               {liked.length > 0 && (
@@ -136,14 +133,7 @@ export default function Navbar() {
               )}
             </a>
 
-            {/* زر Dark/Light Mode */}
-            {/* {mounted && (
-              <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300" aria-label="Toggle theme">
-                {theme === "dark" ? <HiOutlineSun className="w-4 h-4" /> : <HiOutlineMoon className="w-4 h-4" />}
-              </button>
-            )} */}
-
-            {/* زر اللغة */}
+            {/* اللغة */}
             <button onClick={toggleLanguage} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300" aria-label="Toggle language">
               <HiOutlineGlobeAlt className="w-4 h-4" />
             </button>
@@ -166,31 +156,24 @@ export default function Navbar() {
 
                   {dropdownOpen && (
                     <div className="absolute top-full mt-2 left-0 w-56 bg-aura-card border border-aura-border rounded-2xl shadow-xl overflow-hidden z-50">
-                      
-                      {/* هيدر */}
                       <div className="flex items-center gap-3 px-4 py-3 border-b border-aura-border bg-aura-canvas">
                         <Avatar size="md" />
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-aura-dark truncate">
-                            {user.user_metadata?.full_name || user.email?.split("@")[0]}
-                          </p>
+                          <p className="text-xs font-medium text-aura-dark truncate">{user.user_metadata?.full_name || user.email?.split("@")[0]}</p>
                           <p className="text-[10px] text-aura-muted truncate">{user.email}</p>
                         </div>
                       </div>
 
-                      {/* الصفحة الشخصية */}
                       <a href={`/${locale}/profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors">
                         <MdOutlinePersonOutline className="w-4 h-4 text-aura-accent shrink-0" />
                         {isAr ? "الصفحة الشخصية" : "My Profile"}
                       </a>
 
-                      {/* إعلاناتي */}
                       <a href={`/${locale}/dashboard`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors">
                         <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0" />
                         {isAr ? "إعلاناتي" : "My Listings"}
                       </a>
 
-                      {/* لوحة الإدارة — للأدمن بس */}
                       {isAdmin && (
                         <a href={`/${locale}/admin`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
                           <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
@@ -198,7 +181,6 @@ export default function Navbar() {
                         </a>
                       )}
 
-                      {/* تسجيل الخروج */}
                       <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-aura-border">
                         <MdOutlineLogout className="w-4 h-4 shrink-0" />
                         {isAr ? "تسجيل الخروج" : "Sign Out"}
@@ -213,11 +195,10 @@ export default function Navbar() {
               </a>
             )}
 
-            {/* زر Mobile Menu */}
+            {/* Mobile Menu Button */}
             <button onClick={() => setMobileOpen(true)} className="md:hidden text-aura-dark p-2" aria-label="Menu">
               <HiOutlineBars3 className="w-5 h-5" />
             </button>
-
           </div>
         </div>
       </header>
@@ -234,10 +215,12 @@ export default function Navbar() {
               </button>
             </div>
             <nav className="flex flex-col gap-6">
-              <a href="#hero" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-aura-dark">{isAr ? "الرئيسية" : "Home"}</a>
-              <a href="#bento" onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "عن عقار" : "About"}</a>
-              <a href={`/${locale}/properties`}onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "العقارات" : "Properties"}</a>
-              <a href={`/${locale}/contact`} onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "اتصل بنا" : "Contact"}</a>
+              {navLinks.map((link) => (
+                <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
+                  className={`text-sm transition-colors ${pathname === link.href ? "font-medium text-aura-dark" : "font-light text-aura-muted"}`}>
+                  {isAr ? link.label_ar : link.label_en}
+                </a>
+              ))}
             </nav>
           </div>
 
@@ -247,9 +230,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-3 pb-3 border-b border-aura-border">
                   <Avatar size="md" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-aura-dark truncate">
-                      {user.user_metadata?.full_name || user.email?.split("@")[0]}
-                    </p>
+                    <p className="text-sm font-medium text-aura-dark truncate">{user.user_metadata?.full_name || user.email?.split("@")[0]}</p>
                     <p className="text-xs text-aura-muted truncate">{user.email}</p>
                   </div>
                 </div>
@@ -269,7 +250,6 @@ export default function Navbar() {
                   {isAr ? "إعلاناتي" : "My Listings"}
                 </a>
 
-                {/* لوحة الإدارة في الموبايل */}
                 {isAdmin && (
                   <a href={`/${locale}/admin`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />

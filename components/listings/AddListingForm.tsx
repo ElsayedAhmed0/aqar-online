@@ -99,6 +99,7 @@ export default function AddListingForm() {
     try {
       const created = await addListing({
         type: form.type as any,
+        purpose: (form as any).purpose || "sale", // ← أضف السطر ده
         title_ar: form.title_ar.trim(),
         title_en: form.title_en.trim(),
         description_ar: form.description_ar.trim(),
