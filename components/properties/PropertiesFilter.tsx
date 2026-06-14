@@ -32,7 +32,7 @@ export default function PropertiesFilter({
     || maxPrice < 10000000 || minArea > 0 || minBeds > 0;
 
   return (
-    <div className="sticky top-28 bg-aura-card border border-aura-border rounded-3xl p-6 shadow-sm space-y-6">
+    <div className="bg-aura-card border border-aura-border rounded-3xl p-6 shadow-sm space-y-6">
 
       {/* الهيدر */}
       <div className="flex justify-between items-center border-b border-aura-border pb-4">
@@ -48,28 +48,6 @@ export default function PropertiesFilter({
         )}
       </div>
 
-      {/* بيع أو إيجار */}
-      <div className="space-y-2">
-        <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
-          {isAr ? "الغرض" : "Purpose"}
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { value: "all", label_ar: "الكل", label_en: "All" },
-            { value: "sale", label_ar: "للبيع", label_en: "For Sale" },
-            { value: "rent", label_ar: "للإيجار", label_en: "For Rent" },
-          ].map((p) => (
-            <button key={p.value} onClick={() => setPurpose(p.value)}
-              className={`py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${purpose === p.value
-                  ? "bg-aura-dark text-white"
-                  : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
-                }`}>
-              {isAr ? p.label_ar : p.label_en}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* بحث */}
       <div className="space-y-2">
         <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
@@ -83,23 +61,24 @@ export default function PropertiesFilter({
         </div>
       </div>
 
-      {/* نوع العقار */}
-      <div className="space-y-2">
+      {/* نوع العقار + بيع/إيجار */}
+      <div className="space-y-3">
         <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
           {isAr ? "نوع العقار" : "Property Type"}
         </label>
 
-        {/* تابات بيع / إيجار */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        {/* للبيع / للإيجار تحت الـ label مباشرة */}
+        <div className="grid grid-cols-2 gap-2">
           {[
-            { value: "sale", label_ar: "للبيع", label_en: "For Sale" },
+            { value: "sale", label_ar: "للبيع",   label_en: "For Sale" },
             { value: "rent", label_ar: "للإيجار", label_en: "For Rent" },
           ].map((p) => (
             <button key={p.value} onClick={() => setPurpose(p.value)}
-              className={`py-3 text-xs font-medium rounded-2xl transition-all duration-300 ${purpose === p.value
+              className={`py-3 text-xs font-medium rounded-2xl transition-all duration-300 ${
+                purpose === p.value
                   ? "bg-aura-dark text-white shadow-sm"
                   : "bg-aura-canvas text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
-                }`}>
+              }`}>
               {isAr ? p.label_ar : p.label_en}
             </button>
           ))}
@@ -108,19 +87,21 @@ export default function PropertiesFilter({
         {/* أنواع العقارات */}
         <div className="grid grid-cols-2 gap-2">
           <button onClick={() => setActiveType("all")}
-            className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${activeType === "all"
+            className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${
+              activeType === "all"
                 ? "bg-aura-dark text-white"
                 : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
-              }`}>
+            }`}>
             <HiOutlineHome className="w-3.5 h-3.5" />
             {isAr ? "الكل" : "All"}
           </button>
           {types.map((t) => (
             <button key={t.value} onClick={() => setActiveType(t.value)}
-              className={`py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${activeType === t.value
+              className={`py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${
+                activeType === t.value
                   ? "bg-aura-dark text-white"
                   : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
-                }`}>
+              }`}>
               {isAr ? t.name_ar : t.name_en}
             </button>
           ))}
@@ -167,10 +148,11 @@ export default function PropertiesFilter({
         <div className="flex gap-1.5">
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <button key={n} onClick={() => setMinBeds(n)}
-              className={`flex-1 py-2 text-xs rounded-xl border transition-all ${minBeds === n
+              className={`flex-1 py-2 text-xs rounded-xl border transition-all ${
+                minBeds === n
                   ? "bg-aura-dark text-white border-aura-dark"
                   : "border-aura-border text-aura-muted hover:border-aura-accent"
-                }`}>
+              }`}>
               {n === 0 ? (isAr ? "الكل" : "All") : n === 5 ? "5+" : n}
             </button>
           ))}
