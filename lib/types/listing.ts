@@ -4,7 +4,8 @@ export type UserListing = {
   id: string;
   userId: string;
   createdAt: string;
-  type: "apartment" | "villa" | "commercial";
+  type: string;
+  purpose?: string;
   title_ar: string;
   title_en: string;
   description_ar: string;
@@ -23,7 +24,8 @@ export type UserListing = {
 };
 
 export type ListingFormData = {
-  type: "apartment" | "villa" | "commercial" | "";
+  type: string;
+  purpose: string;
   title_ar: string;
   title_en: string;
   description_ar: string;
@@ -40,6 +42,7 @@ export type ListingFormData = {
 
 export const emptyListingForm = (): ListingFormData => ({
   type: "",
+  purpose: "sale",
   title_ar: "",
   title_en: "",
   description_ar: "",

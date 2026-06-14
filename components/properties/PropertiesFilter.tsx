@@ -1,8 +1,7 @@
-
 "use client";
 
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
-import { HiOutlineXMark } from "react-icons/hi2";
+import { HiOutlineXMark, HiOutlineMagnifyingGlass, HiOutlineHome } from "react-icons/hi2";
 
 type Props = {
   isAr: boolean;
@@ -10,6 +9,8 @@ type Props = {
   setSearchQuery: (v: string) => void;
   activeType: string;
   setActiveType: (v: string) => void;
+  purpose: string;
+  setPurpose: (v: string) => void;
   maxPrice: number;
   setMaxPrice: (v: number) => void;
   minArea: number;
@@ -22,11 +23,13 @@ type Props = {
 
 export default function PropertiesFilter({
   isAr, searchQuery, setSearchQuery, activeType, setActiveType,
-  maxPrice, setMaxPrice, minArea, setMinArea, minBeds, setMinBeds,
-  total, onClear,
+  purpose, setPurpose, maxPrice, setMaxPrice, minArea, setMinArea,
+  minBeds, setMinBeds, total, onClear,
 }: Props) {
   const { types } = usePropertyTypes();
-  const hasFilters = searchQuery || activeType !== "all" || maxPrice < 10000000 || minArea > 0 || minBeds > 0;
+
+  const hasFilters = searchQuery || activeType !== "all" || purpose !== "all"
+    || maxPrice < 10000000 || minArea > 0 || minBeds > 0;
 
   return (
     <div className="sticky top-28 bg-aura-card border border-aura-border rounded-3xl p-6 shadow-sm space-y-6">
@@ -34,7 +37,7 @@ export default function PropertiesFilter({
       {/* الهيدر */}
       <div className="flex justify-between items-center border-b border-aura-border pb-4">
         <h3 className="text-sm font-medium text-aura-dark flex items-center gap-2">
-          <span className="text-aura-accent">⚙</span>
+          <span className="text-aura-accent text-base">⚙</span>
           {isAr ? "خيارات التصفية" : "Filter Options"}
         </h3>
         {hasFilters && (
@@ -45,20 +48,39 @@ export default function PropertiesFilter({
         )}
       </div>
 
+      {/* بيع أو إيجار */}
+      <div className="space-y-2">
+        <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
+          {isAr ? "الغرض" : "Purpose"}
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { value: "all",  label_ar: "الكل",    label_en: "All"      },
+            { value: "sale", label_ar: "للبيع",   label_en: "For Sale" },
+            { value: "rent", label_ar: "للإيجار", label_en: "For Rent" },
+          ].map((p) => (
+            <button key={p.value} onClick={() => setPurpose(p.value)}
+              className={`py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${
+                purpose === p.value
+                  ? "bg-aura-dark text-white"
+                  : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
+              }`}>
+              {isAr ? p.label_ar : p.label_en}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* بحث */}
       <div className="space-y-2">
         <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
-          {isAr ? "ابحث بكلمة دلالية أو حي" : "Search by keyword or area"}
+          {isAr ? "ابحث بكلمة أو حي" : "Search by keyword"}
         </label>
         <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={isAr ? "مثال: التجمع، مسبح..." : "e.g. New Cairo, pool..."}
-            className="w-full text-xs px-4 py-3.5 bg-aura-canvas border border-aura-border rounded-2xl focus:border-aura-accent outline-none text-aura-dark pr-10 transition-colors"
-          />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-aura-muted text-xs">🔍</span>
+          <HiOutlineMagnifyingGlass className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-muted" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={isAr ? "مثال: التجمع، مسبح..." : "e.g. New Cairo..."}
+            className="w-full text-xs pr-10 pl-4 py-3 bg-aura-canvas border border-aura-border rounded-2xl focus:border-aura-accent outline-none text-aura-dark transition-colors" />
         </div>
       </div>
 
@@ -68,14 +90,22 @@ export default function PropertiesFilter({
           {isAr ? "نوع العقار" : "Property Type"}
         </label>
         <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setActiveType("all")}
-            className={`py-3 text-xs font-medium rounded-xl transition-all duration-300 ${activeType === "all" ? "bg-aura-dark text-white" : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"}`}>
+          <button onClick={() => setActiveType("all")}
+            className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${
+              activeType === "all"
+                ? "bg-aura-dark text-white"
+                : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
+            }`}>
+            <HiOutlineHome className="w-3.5 h-3.5" />
             {isAr ? "الكل" : "All"}
           </button>
           {types.map((t) => (
             <button key={t.value} onClick={() => setActiveType(t.value)}
-              className={`py-3 text-xs font-medium rounded-xl transition-all duration-300 ${activeType === t.value ? "bg-aura-dark text-white" : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"}`}>
+              className={`py-2.5 text-xs font-medium rounded-xl transition-all duration-300 ${
+                activeType === t.value
+                  ? "bg-aura-dark text-white"
+                  : "bg-white text-aura-muted border border-aura-border hover:border-aura-accent hover:text-aura-dark"
+              }`}>
               {isAr ? t.name_ar : t.name_en}
             </button>
           ))}
@@ -119,10 +149,14 @@ export default function PropertiesFilter({
         <label className="block text-[10px] text-aura-muted uppercase tracking-wider font-medium">
           {isAr ? "الحد الأدنى للغرف" : "Min Bedrooms"}
         </label>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <button key={n} onClick={() => setMinBeds(n)}
-              className={`flex-1 py-2 text-xs rounded-xl border transition-all ${minBeds === n ? "bg-aura-dark text-white border-aura-dark" : "border-aura-border text-aura-muted hover:border-aura-accent"}`}>
+              className={`flex-1 py-2 text-xs rounded-xl border transition-all ${
+                minBeds === n
+                  ? "bg-aura-dark text-white border-aura-dark"
+                  : "border-aura-border text-aura-muted hover:border-aura-accent"
+              }`}>
               {n === 0 ? (isAr ? "الكل" : "All") : n === 5 ? "5+" : n}
             </button>
           ))}
@@ -135,6 +169,7 @@ export default function PropertiesFilter({
           {isAr ? `${total} عقار متاح` : `${total} properties available`}
         </p>
       </div>
+
     </div>
   );
 }

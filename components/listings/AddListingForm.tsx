@@ -16,12 +16,12 @@ import {
 } from "react-icons/hi2";
 
 const sections = [
-  { id: "type",    icon: HiOutlineHome,          label_ar: "نوع العقار",          label_en: "Property Type"  },
-  { id: "basic",   icon: HiOutlineDocumentText,   label_ar: "المعلومات الأساسية",  label_en: "Basic Info"     },
-  { id: "location",icon: HiOutlineMapPin,         label_ar: "الموقع",              label_en: "Location"       },
-  { id: "details", icon: HiOutlineCurrencyDollar, label_ar: "التفاصيل والسعر",     label_en: "Details & Price"},
-  { id: "media",   icon: HiOutlinePhoto,          label_ar: "الصور",               label_en: "Photos"         },
-  { id: "contact", icon: HiOutlinePhone,          label_ar: "التواصل",             label_en: "Contact"        },
+  { id: "type", icon: HiOutlineHome, label_ar: "نوع العقار", label_en: "Property Type" },
+  { id: "basic", icon: HiOutlineDocumentText, label_ar: "المعلومات الأساسية", label_en: "Basic Info" },
+  { id: "location", icon: HiOutlineMapPin, label_ar: "الموقع", label_en: "Location" },
+  { id: "details", icon: HiOutlineCurrencyDollar, label_ar: "التفاصيل والسعر", label_en: "Details & Price" },
+  { id: "media", icon: HiOutlinePhoto, label_ar: "الصور", label_en: "Photos" },
+  { id: "contact", icon: HiOutlinePhone, label_ar: "التواصل", label_en: "Contact" },
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
@@ -63,17 +63,17 @@ export default function AddListingForm() {
 
   const validateSection = (id: SectionId): string | null => {
     switch (id) {
-      case "type":    return !form.type ? (isAr ? "اختر نوع العقار" : "Select property type") : null;
-      case "basic":   return (!form.title_ar.trim() || !form.title_en.trim()) ? (isAr ? "أدخل عنوان الإعلان بالعربية والإنجليزية" : "Enter title in Arabic and English") : null;
-      case "location":return (!form.location_ar.trim() || !form.location_en.trim()) ? (isAr ? "أدخل موقع العقار" : "Enter property location") : null;
+      case "type": return !form.type ? (isAr ? "اختر نوع العقار" : "Select property type") : null;
+      case "basic": return (!form.title_ar.trim() || !form.title_en.trim()) ? (isAr ? "أدخل عنوان الإعلان بالعربية والإنجليزية" : "Enter title in Arabic and English") : null;
+      case "location": return (!form.location_ar.trim() || !form.location_en.trim()) ? (isAr ? "أدخل موقع العقار" : "Enter property location") : null;
       case "details":
         if (!form.price || Number(form.price) <= 0) return isAr ? "أدخل سعر صحيح" : "Enter a valid price";
         if (!form.area || Number(form.area) <= 0) return isAr ? "أدخل المساحة" : "Enter area";
         if (!form.baths || Number(form.baths) < 0) return isAr ? "أدخل عدد الحمامات" : "Enter bathrooms count";
         return null;
-      case "media":   return form.images.length === 0 ? (isAr ? "أضف صورة واحدة على الأقل" : "Add at least one image") : null;
+      case "media": return form.images.length === 0 ? (isAr ? "أضف صورة واحدة على الأقل" : "Add at least one image") : null;
       case "contact": return !form.phone.trim() ? (isAr ? "أدخل رقم التواصل" : "Enter contact phone") : null;
-      default:        return null;
+      default: return null;
     }
   };
 
@@ -200,30 +200,61 @@ export default function AddListingForm() {
 
           {/* نوع العقار — ديناميك من Supabase */}
           {activeSection === "type" && (
-            <>
-              {typesLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {propertyTypes.map((t) => {
-                    const selected = form.type === t.value;
+            <div className="space-y-6">
+
+              {/* بيع أو إيجار */}
+              <div>
+                <p className="text-sm font-medium text-aura-dark mb-3">
+                  {isAr ? "الغرض من الإعلان" : "Listing Purpose"}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: "sale", label_ar: "للبيع", label_en: "For Sale", icon: "🏷️" },
+                    { value: "rent", label_ar: "للإيجار", label_en: "For Rent", icon: "🔑" },
+                  ].map((p) => {
+                    const selected = (form as any).purpose === p.value || (!((form as any).purpose) && p.value === "sale");
                     return (
-                      <button key={t.value} type="button" onClick={() => update({ type: t.value as any })}
-                        className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all duration-300 text-center ${selected ? "border-aura-accent bg-aura-accent/5 shadow-md" : "border-aura-border hover:border-aura-accent/40"}`}>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${selected ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"}`}>
-                          🏠
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-aura-dark">{isAr ? t.name_ar : t.name_en}</p>
-                        </div>
+                      <button key={p.value} type="button"
+                        onClick={() => update({ ...form, purpose: p.value } as any)}
+                        className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
+                        <span>{p.icon}</span>
+                        {isAr ? p.label_ar : p.label_en}
                       </button>
                     );
                   })}
                 </div>
-              )}
-            </>
+              </div>
+
+              {/* نوع العقار */}
+              <div>
+                <p className="text-sm font-medium text-aura-dark mb-3">
+                  {isAr ? "نوع العقار" : "Property Type"}
+                </p>
+                {typesLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {propertyTypes.map((t) => {
+                      const selected = form.type === t.value;
+                      return (
+                        <button key={t.value} type="button"
+                          onClick={() => update({ type: t.value as any })}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-center ${selected ? "border-aura-accent bg-aura-accent/5 shadow-md" : "border-aura-border hover:border-aura-accent/40"}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selected ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"}`}>
+                            <HiOutlineHome className="w-5 h-5" />
+                          </div>
+                          <p className="text-xs font-medium text-aura-dark leading-tight">
+                            {isAr ? t.name_ar : t.name_en}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* معلومات أساسية */}

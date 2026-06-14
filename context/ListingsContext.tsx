@@ -1,12 +1,7 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  ReactNode,
+  createContext, useContext, useState, useEffect, useCallback, ReactNode,
 } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
@@ -17,7 +12,8 @@ type ListingsContextType = {
   loading: boolean;
   addListing: (
     listing: Omit<UserListing, "id" | "userId" | "createdAt">,
-    rawImages: string[]
+    rawImages: string[],
+    purpose?: string
   ) => Promise<UserListing | null>;
   removeListing: (id: string) => Promise<void>;
 };
@@ -35,11 +31,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) {
-      setListings([]);
-      setLoading(false);
-      return;
-    }
+    if (!user?.id) { setListings([]); setLoading(false); return; }
 
     const fetchListings = async () => {
       setLoading(true);
@@ -56,6 +48,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           userId: l.user_id,
           createdAt: l.created_at,
           type: l.type,
+          purpose: l.purpose || "sale",
           title_ar: l.title_ar,
           title_en: l.title_en,
           description_ar: l.description_ar || "",
@@ -79,7 +72,6 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     fetchListings();
   }, [user?.id]);
 
-  // رفع صورة واحدة لـ Supabase Storage
   const uploadImage = async (
     supabase: ReturnType<typeof createClient>,
     base64: string,
@@ -90,33 +82,24 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       const blob = await fetch(base64).then((r) => r.blob());
       const ext = blob.type.split("/")[1] || "jpg";
       const fileName = `${userId}/${Date.now()}_${index}.${ext}`;
-
       const { data, error } = await supabase.storage
         .from("listings")
         .upload(fileName, blob, { contentType: blob.type });
-
       if (error || !data) return null;
-
-      const { data: urlData } = supabase.storage
-        .from("listings")
-        .getPublicUrl(data.path);
-
+      const { data: urlData } = supabase.storage.from("listings").getPublicUrl(data.path);
       return urlData.publicUrl;
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   };
 
   const addListing = useCallback(
     async (
       listing: Omit<UserListing, "id" | "userId" | "createdAt">,
-      rawImages: string[]
+      rawImages: string[],
+      purpose: string = "sale"
     ): Promise<UserListing | null> => {
       if (!user?.id) return null;
-
       const supabase = createClient();
 
-      // ارفع الصور الأول
       const uploadedUrls: string[] = [];
       for (let i = 0; i < rawImages.length; i++) {
         const img = rawImages[i];
@@ -128,12 +111,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // حفظ الإعلان في الـ DB بالـ URLs
       const { data, error } = await supabase
         .from("listings")
         .insert({
           user_id: user.id,
           type: listing.type,
+          purpose: (listing as any).purpose || purpose,
           title_ar: listing.title_ar,
           title_en: listing.title_en,
           description_ar: listing.description_ar,
@@ -152,16 +135,14 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .select()
         .single();
 
-      if (error || !data) {
-        console.error("Insert error:", error);
-        return null;
-      }
+      if (error || !data) { console.error("Insert error:", error); return null; }
 
       const newListing: UserListing = {
         id: data.id,
         userId: data.user_id,
         createdAt: data.created_at,
         type: data.type,
+        purpose: data.purpose || "sale",
         title_ar: data.title_ar,
         title_en: data.title_en,
         description_ar: data.description_ar || "",
