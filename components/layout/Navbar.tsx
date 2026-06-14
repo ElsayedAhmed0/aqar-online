@@ -109,7 +109,7 @@ export default function Navbar() {
             <a href="#bento" className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
               {isAr ? "عن عقار" : "About"}
             </a>
-            <a href="#properties" className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
+            <a href={`/${locale}/properties`} className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
               {isAr ? "العقارات" : "Properties"}
             </a>
             <a href={`/${locale}/contact`} className="text-xs font-light text-aura-muted hover:text-aura-dark tracking-wider transition-colors">
@@ -236,7 +236,7 @@ export default function Navbar() {
             <nav className="flex flex-col gap-6">
               <a href="#hero" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-aura-dark">{isAr ? "الرئيسية" : "Home"}</a>
               <a href="#bento" onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "عن عقار" : "About"}</a>
-              <a href="#properties" onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "العقارات" : "Properties"}</a>
+              <a href={`/${locale}/properties`}onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "العقارات" : "Properties"}</a>
               <a href={`/${locale}/contact`} onClick={() => setMobileOpen(false)} className="text-sm font-light text-aura-muted">{isAr ? "اتصل بنا" : "Contact"}</a>
             </nav>
           </div>

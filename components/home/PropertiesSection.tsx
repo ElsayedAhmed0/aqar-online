@@ -145,9 +145,10 @@ export default function PropertiesSection() {
         {/* زر عرض الكل */}
         {!loadingProps && filtered.length > 0 && (
           <div className="text-center mt-12">
-            <button className="px-10 py-4 rounded-full border border-aura-border text-aura-dark text-sm font-medium hover:bg-aura-dark hover:text-white transition-all duration-300">
+            <a href={`/${locale}/properties`}
+              className="px-10 py-4 rounded-full border border-aura-border text-aura-dark text-sm font-medium hover:bg-aura-dark hover:text-white transition-all duration-300 inline-block">
               {isAr ? "عرض جميع العقارات" : "View All Properties"}
-            </button>
+            </a>
           </div>
         )}
 
