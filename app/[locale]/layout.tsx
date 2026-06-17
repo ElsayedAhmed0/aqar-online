@@ -57,6 +57,7 @@ export default async function LocaleLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
+          forcedTheme="light"
           disableTransitionOnChange={false}
         >
           <AuthProvider>
