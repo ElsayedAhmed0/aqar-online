@@ -43,6 +43,11 @@ export default function LoginForm() {
       return;
     }
 
+    // ✅ لو مش تذكرني — امسح الـ session لما يقفل البروزر
+    if (!form.remember) {
+      localStorage.removeItem("aqar-online-auth");
+    }
+
     window.location.href = `/${locale}`;
   };
 
