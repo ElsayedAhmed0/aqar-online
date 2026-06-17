@@ -1,45 +1,24 @@
 "use client";
 
-import { HiOutlineMapPin, HiOutlineShare } from "react-icons/hi2";
+import { HiOutlineMapPin, HiOutlineShare, HiOutlineTag } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 
-const typeLabels = {
-  apartment: { ar: "شقة سكنية", en: "Apartment" },
-  villa:     { ar: "فيلا",       en: "Villa"      },
-  commercial:{ ar: "تجاري",      en: "Commercial" },
-};
-
-const typeIcons = {
-  apartment:  MdOutlineApartment,
-  villa:      MdOutlineVilla,
+const typeIcons: Record<string, any> = {
+  apartment: MdOutlineApartment,
+  villa: MdOutlineVilla,
   commercial: MdOutlineStorefront,
 };
 
-export default function PropertyInfo({
-  property,
-  isAr,
-}: {
-  property: any;
-  isAr: boolean;
-}) {
-  const TypeIcon = typeIcons[property.type as keyof typeof typeIcons] || MdOutlineApartment;
-  const typeLabel = typeLabels[property.type as keyof typeof typeLabels];
+export default function PropertyInfo({ property, isAr }: { property: any; isAr: boolean }) {
+  const TypeIcon = typeIcons[property.type] || MdOutlineApartment;
 
   const formatPrice = (price: number) =>
-    isAr
-      ? `${(price / 1000000).toFixed(1)} مليون جنيه`
-      : `EGP ${(price / 1000000).toFixed(1)}M`;
+    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
 
   const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: isAr ? property.title_ar : property.title_en,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-    }
+    if (navigator.share) navigator.share({ title: isAr ? property.title_ar : property.title_en, url: window.location.href });
+    else navigator.clipboard.writeText(window.location.href);
   };
 
   return (
@@ -47,28 +26,39 @@ export default function PropertyInfo({
 
       {/* النوع والمشاركة */}
       <div className="flex items-center justify-between mb-4">
-        <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-aura-accent/10 text-aura-accent text-xs font-medium">
-          <TypeIcon className="w-4 h-4" />
-          {isAr ? typeLabel?.ar : typeLabel?.en}
-        </span>
-        <button
-          onClick={handleShare}
-          className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300"
-        >
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-aura-accent/10 text-aura-accent text-xs font-medium">
+            <TypeIcon className="w-4 h-4" />
+            {property.type}
+          </span>
+          {property.purpose && (
+            <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${property.purpose === "rent" ? "bg-blue-50 text-blue-600" : "bg-green-50 text-green-600"}`}>
+              {property.purpose === "rent" ? (isAr ? "للإيجار" : "For Rent") : (isAr ? "للبيع" : "For Sale")}
+            </span>
+          )}
+          {property.negotiable && (
+            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-xs font-medium">
+              <HiOutlineTag className="w-3 h-3" />
+              {isAr ? "قابل للتفاوض" : "Negotiable"}
+            </span>
+          )}
+          {property.delivery_status && (
+            <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${property.delivery_status === "ready" ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-600"}`}>
+              {property.delivery_status === "ready" ? (isAr ? "✅ جاهز للتسليم" : "✅ Ready") : (isAr ? "🏗️ قيد الإنشاء" : "🏗️ Under Construction")}
+            </span>
+          )}
+        </div>
+        <button onClick={handleShare} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300">
           <HiOutlineShare className="w-4 h-4" />
         </button>
       </div>
 
       {/* السعر */}
       <div className="mb-6">
-        <p className="text-3xl font-light text-aura-dark mb-1">
-          {formatPrice(property.price)}
-        </p>
+        <p className="text-3xl font-light text-aura-dark mb-1">{formatPrice(property.price)}</p>
         <div className="flex items-center gap-1.5 text-aura-muted">
           <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
-          <span className="text-sm">
-            {isAr ? property.location_ar : property.location_en}
-          </span>
+          <span className="text-sm">{isAr ? property.location_ar : property.location_en}</span>
         </div>
       </div>
 
@@ -102,16 +92,12 @@ export default function PropertyInfo({
       {/* الوصف */}
       {(property.description_ar || property.description_en) && (
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-aura-dark mb-3">
-            {isAr ? "وصف العقار" : "Property Description"}
-          </h3>
+          <h3 className="text-sm font-medium text-aura-dark mb-3">{isAr ? "وصف العقار" : "Property Description"}</h3>
           <p className="text-sm text-aura-muted font-light leading-relaxed">
             {isAr ? property.description_ar : property.description_en}
           </p>
         </div>
       )}
-
-      
     </div>
   );
 }

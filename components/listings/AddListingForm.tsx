@@ -12,19 +12,46 @@ import {
   HiOutlineHome, HiOutlineMapPin, HiOutlineCurrencyDollar,
   HiOutlinePhoto, HiOutlinePhone, HiOutlineDocumentText,
   HiOutlineCheck, HiOutlineChevronLeft, HiOutlineChevronRight,
-  HiOutlineCloudArrowUp, HiOutlineXMark,
+  HiOutlineCloudArrowUp, HiOutlineXMark, HiOutlineSparkles,
+  HiOutlinePlus,
 } from "react-icons/hi2";
+import { FaWhatsapp } from "react-icons/fa6";
 
 const sections = [
-  { id: "type", icon: HiOutlineHome, label_ar: "نوع العقار", label_en: "Property Type" },
-  { id: "basic", icon: HiOutlineDocumentText, label_ar: "المعلومات الأساسية", label_en: "Basic Info" },
-  { id: "location", icon: HiOutlineMapPin, label_ar: "الموقع", label_en: "Location" },
-  { id: "details", icon: HiOutlineCurrencyDollar, label_ar: "التفاصيل والسعر", label_en: "Details & Price" },
-  { id: "media", icon: HiOutlinePhoto, label_ar: "الصور", label_en: "Photos" },
-  { id: "contact", icon: HiOutlinePhone, label_ar: "التواصل", label_en: "Contact" },
+  { id: "type",     icon: HiOutlineHome,          label_ar: "نوع العقار",         label_en: "Property Type"  },
+  { id: "basic",    icon: HiOutlineDocumentText,   label_ar: "المعلومات الأساسية", label_en: "Basic Info"     },
+  { id: "location", icon: HiOutlineMapPin,         label_ar: "الموقع",             label_en: "Location"       },
+  { id: "details",  icon: HiOutlineCurrencyDollar, label_ar: "التفاصيل والسعر",    label_en: "Details & Price"},
+  { id: "features", icon: HiOutlineSparkles,       label_ar: "المميزات",           label_en: "Features"       },
+  { id: "media",    icon: HiOutlinePhoto,          label_ar: "الصور",              label_en: "Photos"         },
+  { id: "contact",  icon: HiOutlinePhone,          label_ar: "التواصل",            label_en: "Contact"        },
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
+
+const FEATURES = [
+  { key: "parking",    ar: "موقف سيارة",      en: "Parking"        },
+  { key: "pool",       ar: "حمام سباحة",       en: "Swimming Pool"  },
+  { key: "gym",        ar: "جيم",              en: "Gym"            },
+  { key: "security",   ar: "أمن وحراسة",       en: "Security"       },
+  { key: "elevator",   ar: "أسانسير",          en: "Elevator"       },
+  { key: "garden",     ar: "حديقة",            en: "Garden"         },
+  { key: "ac",         ar: "تكييف مركزي",      en: "Central A/C"    },
+  { key: "furnished",  ar: "مفروشة",           en: "Furnished"      },
+  { key: "balcony",    ar: "بلكونة",           en: "Balcony"        },
+  { key: "storage",    ar: "غرفة مخزن",        en: "Storage Room"   },
+  { key: "maid_room",  ar: "غرفة خادمة",       en: "Maid's Room"    },
+  { key: "view",       ar: "إطلالة مميزة",     en: "Special View"   },
+  { key: "solar",      ar: "طاقة شمسية",       en: "Solar Energy"   },
+  { key: "intercom",   ar: "إنتركم",           en: "Intercom"       },
+  { key: "pets",       ar: "يسمح بالحيوانات", en: "Pets Allowed"   },
+  { key: "smart_home", ar: "منزل ذكي",         en: "Smart Home"     },
+];
+
+const DELIVERY_OPTIONS = [
+  { value: "ready",              label_ar: "جاهز للتسليم", label_en: "Ready",                icon: "✅" },
+  { value: "under_construction", label_ar: "قيد الإنشاء",  label_en: "Under Construction",   icon: "🏗️" },
+];
 
 export default function AddListingForm() {
   const locale = useLocale();
@@ -36,10 +63,19 @@ export default function AddListingForm() {
 
   const [activeSection, setActiveSection] = useState<SectionId>("type");
   const [form, setForm] = useState<ListingFormData>(emptyListingForm());
+  const [purpose, setPurpose] = useState<"sale"|"rent">("sale");
+  const [negotiable, setNegotiable] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [deliveryStatus, setDeliveryStatus] = useState<"ready"|"under_construction">("ready");
+  const [whatsapp, setWhatsapp] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showEnTitle, setShowEnTitle] = useState(false);
+  const [showEnDesc, setShowEnDesc] = useState(false);
+  const [showEnLocation, setShowEnLocation] = useState(false);
 
   const MAX_IMAGES = 6;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -59,21 +95,26 @@ export default function AddListingForm() {
     setError("");
   };
 
+  const toggleFeature = (key: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]
+    );
+  };
+
   const sectionIndex = sections.findIndex((s) => s.id === activeSection);
 
   const validateSection = (id: SectionId): string | null => {
     switch (id) {
-      case "type": return !form.type ? (isAr ? "اختر نوع العقار" : "Select property type") : null;
-      case "basic": return (!form.title_ar.trim() || !form.title_en.trim()) ? (isAr ? "أدخل عنوان الإعلان بالعربية والإنجليزية" : "Enter title in Arabic and English") : null;
-      case "location": return (!form.location_ar.trim() || !form.location_en.trim()) ? (isAr ? "أدخل موقع العقار" : "Enter property location") : null;
+      case "type":     return !form.type ? (isAr ? "اختر نوع العقار" : "Select property type") : null;
+      case "basic":    return !form.title_ar.trim() ? (isAr ? "أدخل عنوان الإعلان" : "Enter listing title") : null;
+      case "location": return !form.location_ar.trim() ? (isAr ? "أدخل موقع العقار" : "Enter property location") : null;
       case "details":
         if (!form.price || Number(form.price) <= 0) return isAr ? "أدخل سعر صحيح" : "Enter a valid price";
-        if (!form.area || Number(form.area) <= 0) return isAr ? "أدخل المساحة" : "Enter area";
-        if (!form.baths || Number(form.baths) < 0) return isAr ? "أدخل عدد الحمامات" : "Enter bathrooms count";
+        if (!form.area || Number(form.area) <= 0)   return isAr ? "أدخل المساحة" : "Enter area";
         return null;
-      case "media": return form.images.length === 0 ? (isAr ? "أضف صورة واحدة على الأقل" : "Add at least one image") : null;
-      case "contact": return !form.phone.trim() ? (isAr ? "أدخل رقم التواصل" : "Enter contact phone") : null;
-      default: return null;
+      case "media":    return form.images.length === 0 ? (isAr ? "أضف صورة واحدة على الأقل" : "Add at least one image") : null;
+      case "contact":  return !form.phone.trim() ? (isAr ? "أدخل رقم التواصل" : "Enter contact phone") : null;
+      default:         return null;
     }
   };
 
@@ -99,23 +140,27 @@ export default function AddListingForm() {
     try {
       const created = await addListing({
         type: form.type as any,
-        purpose: (form as any).purpose || "sale", // ← أضف السطر ده
+        purpose,
         title_ar: form.title_ar.trim(),
-        title_en: form.title_en.trim(),
+        title_en: showEnTitle ? form.title_en.trim() : form.title_ar.trim(),
         description_ar: form.description_ar.trim(),
-        description_en: form.description_en.trim(),
+        description_en: showEnDesc ? form.description_en.trim() : form.description_ar.trim(),
         location_ar: form.location_ar.trim(),
-        location_en: form.location_en.trim(),
+        location_en: showEnLocation ? form.location_en.trim() : form.location_ar.trim(),
         price: Number(form.price),
         beds: Number(form.beds) || 0,
-        baths: Number(form.baths),
+        baths: Number(form.baths) || 0,
         area: Number(form.area),
         img: form.images[0],
         images: [],
         phone: form.phone.trim(),
         featured: false,
         status: "pending",
-      }, form.images);
+        negotiable,
+        features: selectedFeatures,
+        delivery_status: deliveryStatus,
+        whatsapp: whatsapp.trim() || null,
+      } as any, form.images);
 
       if (created) router.push(`/${locale}/dashboard`);
       else setError(isAr ? "فشل حفظ الإعلان" : "Failed to save listing");
@@ -145,17 +190,21 @@ export default function AddListingForm() {
   if (loading || !user) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
       </div>
     );
   }
 
   const inputCls = "w-full px-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50";
 
-  // نوع العقار — commercial لو ملوش غرف
-  const selectedType = propertyTypes.find((t) => t.value === form.type);
-  const isCommercialType = form.type && !["apartment", "villa"].includes(form.type) &&
-    !propertyTypes.find((t) => t.value === form.type && (t.value === "apartment" || t.value === "villa"));
+  const EnToggle = ({ show, onShow, label }: { show: boolean; onShow: () => void; label: string }) =>
+    !show ? (
+      <button type="button" onClick={onShow}
+        className="flex items-center gap-1.5 text-xs text-aura-accent hover:text-aura-dark transition-colors mt-1 w-fit">
+        <HiOutlinePlus className="w-3.5 h-3.5"/>
+        {label}
+      </button>
+    ) : null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -175,7 +224,7 @@ export default function AddListingForm() {
                 <button key={s.id} onClick={() => { setActiveSection(s.id); setError(""); }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-medium transition-all duration-300 shrink-0 lg:shrink ${isActive ? "bg-aura-dark text-white" : "bg-aura-canvas text-aura-muted hover:text-aura-dark border border-aura-border"}`}>
                   <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-white/20" : isDone ? "bg-green-100 text-green-600" : "bg-aura-card"}`}>
-                    {isDone && !isActive ? <HiOutlineCheck className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                    {isDone && !isActive ? <HiOutlineCheck className="w-4 h-4"/> : <Icon className="w-4 h-4"/>}
                   </span>
                   <span className="whitespace-nowrap lg:whitespace-normal text-right">
                     <span className="hidden lg:inline text-aura-muted/60 ml-1">{i + 1}.</span>
@@ -199,137 +248,201 @@ export default function AddListingForm() {
             <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-sm">{error}</div>
           )}
 
-          {/* نوع العقار — ديناميك من Supabase */}
+          {/* ── نوع العقار ── */}
           {activeSection === "type" && (
             <div className="space-y-6">
-
-              {/* بيع أو إيجار */}
               <div>
-                <p className="text-sm font-medium text-aura-dark mb-3">
-                  {isAr ? "الغرض من الإعلان" : "Listing Purpose"}
-                </p>
+                <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "الغرض من الإعلان" : "Listing Purpose"}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { value: "sale", label_ar: "للبيع", label_en: "For Sale", icon: "🏷️" },
+                    { value: "sale", label_ar: "للبيع",   label_en: "For Sale", icon: "🏷️" },
                     { value: "rent", label_ar: "للإيجار", label_en: "For Rent", icon: "🔑" },
-                  ].map((p) => {
-                    const selected = (form as any).purpose === p.value || (!((form as any).purpose) && p.value === "sale");
-                    return (
-                      <button key={p.value} type="button"
-                        onClick={() => update({ ...form, purpose: p.value } as any)}
-                        className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
-                        <span>{p.icon}</span>
-                        {isAr ? p.label_ar : p.label_en}
-                      </button>
-                    );
-                  })}
+                  ].map((p) => (
+                    <button key={p.value} type="button" onClick={() => setPurpose(p.value as any)}
+                      className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${purpose === p.value ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
+                      <span>{p.icon}</span>
+                      {isAr ? p.label_ar : p.label_en}
+                    </button>
+                  ))}
                 </div>
               </div>
-
-              {/* نوع العقار */}
               <div>
-                <p className="text-sm font-medium text-aura-dark mb-3">
-                  {isAr ? "نوع العقار" : "Property Type"}
-                </p>
+                <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "نوع العقار" : "Property Type"}</p>
                 {typesLoading ? (
                   <div className="flex items-center justify-center py-12">
-                    <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {propertyTypes.map((t) => {
-                      const selected = form.type === t.value;
-                      return (
-                        <button key={t.value} type="button"
-                          onClick={() => update({ type: t.value as any })}
-                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-center ${selected ? "border-aura-accent bg-aura-accent/5 shadow-md" : "border-aura-border hover:border-aura-accent/40"}`}>
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selected ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"}`}>
-                            <HiOutlineHome className="w-5 h-5" />
-                          </div>
-                          <p className="text-xs font-medium text-aura-dark leading-tight">
-                            {isAr ? t.name_ar : t.name_en}
-                          </p>
-                        </button>
-                      );
-                    })}
+                    {propertyTypes.map((t) => (
+                      <button key={t.value} type="button" onClick={() => update({ type: t.value as any })}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-center ${form.type === t.value ? "border-aura-accent bg-aura-accent/5 shadow-md" : "border-aura-border hover:border-aura-accent/40"}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${form.type === t.value ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"}`}>
+                          <HiOutlineHome className="w-5 h-5"/>
+                        </div>
+                        <p className="text-xs font-medium text-aura-dark leading-tight">{isAr ? t.name_ar : t.name_en}</p>
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* معلومات أساسية */}
+          {/* ── المعلومات الأساسية ── */}
           {activeSection === "basic" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان (عربي)" : "Title (Arabic)"}</label>
-                  <input type="text" value={form.title_ar} onChange={(e) => update({ title_ar: e.target.value })} placeholder={isAr ? "مثال: شقة فاخرة بالتجمع الخامس" : "e.g. Luxury apartment"} className={inputCls} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان (إنجليزي)" : "Title (English)"}</label>
-                  <input type="text" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })} placeholder="Luxury Apartment in New Cairo" className={inputCls} dir="ltr" />
-                </div>
-              </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "وصف الإعلان (عربي)" : "Description (Arabic)"}</label>
-                <textarea rows={4} value={form.description_ar} onChange={(e) => update({ description_ar: e.target.value })} placeholder={isAr ? "اكتب وصفاً تفصيلياً للعقار..." : "Write a detailed description..."} className={`${inputCls} resize-none`} />
+                <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان *" : "Title *"}</label>
+                <input type="text" value={form.title_ar} onChange={(e) => update({ title_ar: e.target.value })}
+                  placeholder={isAr ? "مثال: شقة فاخرة بالتجمع الخامس" : "e.g. Luxury apartment in New Cairo"} className={inputCls}/>
+                <EnToggle show={showEnTitle} onShow={() => setShowEnTitle(true)}
+                  label={isAr ? "أضف العنوان بالإنجليزية" : "Add English title"}/>
               </div>
+              {showEnTitle && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "العنوان (إنجليزي)" : "Title (English)"}</label>
+                  <input type="text" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })}
+                    placeholder="Luxury Apartment in New Cairo" className={inputCls} dir="ltr"/>
+                </div>
+              )}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "وصف الإعلان (إنجليزي)" : "Description (English)"}</label>
-                <textarea rows={4} value={form.description_en} onChange={(e) => update({ description_en: e.target.value })} placeholder="Detailed property description..." className={`${inputCls} resize-none`} dir="ltr" />
+                <label className="text-xs font-medium text-aura-dark">{isAr ? "وصف الإعلان" : "Description"}</label>
+                <textarea rows={4} value={form.description_ar} onChange={(e) => update({ description_ar: e.target.value })}
+                  placeholder={isAr ? "اكتب وصفاً تفصيلياً للعقار..." : "Write a detailed description..."} className={`${inputCls} resize-none`}/>
+                <EnToggle show={showEnDesc} onShow={() => setShowEnDesc(true)}
+                  label={isAr ? "أضف الوصف بالإنجليزية" : "Add English description"}/>
               </div>
+              {showEnDesc && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "الوصف (إنجليزي)" : "Description (English)"}</label>
+                  <textarea rows={4} value={form.description_en} onChange={(e) => update({ description_en: e.target.value })}
+                    placeholder="Detailed property description..." className={`${inputCls} resize-none`} dir="ltr"/>
+                </div>
+              )}
             </div>
           )}
 
-          {/* الموقع */}
+          {/* ── الموقع ── */}
           {activeSection === "location" && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "الموقع (عربي)" : "Location (Arabic)"}</label>
-                <input type="text" value={form.location_ar} onChange={(e) => update({ location_ar: e.target.value })} placeholder={isAr ? "مثال: التجمع الخامس، القاهرة" : "e.g. New Cairo"} className={inputCls} />
+                <label className="text-xs font-medium text-aura-dark">{isAr ? "الموقع *" : "Location *"}</label>
+                <input type="text" value={form.location_ar} onChange={(e) => update({ location_ar: e.target.value })}
+                  placeholder={isAr ? "مثال: التجمع الخامس، القاهرة" : "e.g. New Cairo, Cairo"} className={inputCls}/>
+                <EnToggle show={showEnLocation} onShow={() => setShowEnLocation(true)}
+                  label={isAr ? "أضف الموقع بالإنجليزية" : "Add English location"}/>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "الموقع (إنجليزي)" : "Location (English)"}</label>
-                <input type="text" value={form.location_en} onChange={(e) => update({ location_en: e.target.value })} placeholder="New Cairo, Cairo" className={inputCls} dir="ltr" />
-              </div>
+              {showEnLocation && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "الموقع (إنجليزي)" : "Location (English)"}</label>
+                  <input type="text" value={form.location_en} onChange={(e) => update({ location_en: e.target.value })}
+                    placeholder="New Cairo, Cairo" className={inputCls} dir="ltr"/>
+                </div>
+              )}
             </div>
           )}
 
-          {/* التفاصيل والسعر */}
+          {/* ── التفاصيل والسعر ── */}
           {activeSection === "details" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "السعر (جنيه مصري)" : "Price (EGP)"}</label>
-                <input type="number" value={form.price} onChange={(e) => update({ price: e.target.value })} placeholder="2500000" className={inputCls} dir="ltr" min={0} />
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "السعر (جنيه مصري) *" : "Price (EGP) *"}</label>
+                  <input type="number" value={form.price} onChange={(e) => update({ price: e.target.value })}
+                    placeholder="2500000" className={inputCls} dir="ltr" min={0}/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "عدد الغرف" : "Bedrooms"}</label>
+                  <input type="number" value={form.beds} onChange={(e) => update({ beds: e.target.value })}
+                    placeholder="3" className={inputCls} dir="ltr" min={0}/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "عدد الحمامات" : "Bathrooms"}</label>
+                  <input type="number" value={form.baths} onChange={(e) => update({ baths: e.target.value })}
+                    placeholder="2" className={inputCls} dir="ltr" min={0}/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "المساحة (م²) *" : "Area (m²) *"}</label>
+                  <input type="number" value={form.area} onChange={(e) => update({ area: e.target.value })}
+                    placeholder="180" className={inputCls} dir="ltr" min={0}/>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "عدد الغرف" : "Bedrooms"}</label>
-                <input type="number" value={form.beds} onChange={(e) => update({ beds: e.target.value })} placeholder="3" className={inputCls} dir="ltr" min={0} />
+              <button type="button" onClick={() => setNegotiable(!negotiable)}
+                className={`flex items-center gap-3 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${negotiable ? "border-aura-accent bg-aura-accent/5" : "border-aura-border hover:border-aura-accent/40"}`}>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${negotiable ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
+                  {negotiable && <HiOutlineCheck className="w-3 h-3 text-white"/>}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-aura-dark">{isAr ? "السعر قابل للتفاوض" : "Price is Negotiable"}</p>
+                  <p className="text-xs text-aura-muted">{isAr ? "سيظهر بادج على إعلانك" : "A badge will appear on your listing"}</p>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* ── المميزات ── */}
+          {activeSection === "features" && (
+            <div className="space-y-6">
+
+              {/* حالة العقار */}
+              <div>
+                <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "حالة العقار" : "Property Status"}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {DELIVERY_OPTIONS.map((opt) => {
+                    const selected = deliveryStatus === opt.value;
+                    return (
+                      <button key={opt.value} type="button" onClick={() => setDeliveryStatus(opt.value as any)}
+                        className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selected ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
+                          {selected && <div className="w-2 h-2 rounded-full bg-white"/>}
+                        </div>
+                        <span>{opt.icon}</span>
+                        {isAr ? opt.label_ar : opt.label_en}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "عدد الحمامات" : "Bathrooms"}</label>
-                <input type="number" value={form.baths} onChange={(e) => update({ baths: e.target.value })} placeholder="2" className={inputCls} dir="ltr" min={0} />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "المساحة (م²)" : "Area (m²)"}</label>
-                <input type="number" value={form.area} onChange={(e) => update({ area: e.target.value })} placeholder="180" className={inputCls} dir="ltr" min={0} />
+
+              {/* مميزات العقار */}
+              <div>
+                <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "مميزات العقار" : "Property Features"}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {FEATURES.map((f) => {
+                    const selected = selectedFeatures.includes(f.key);
+                    return (
+                      <button key={f.key} type="button" onClick={() => toggleFeature(f.key)}
+                        className={`flex items-center gap-2 p-3 rounded-2xl border-2 text-xs font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${selected ? "bg-aura-accent" : "border border-aura-border bg-white"}`}>
+                          {selected && <HiOutlineCheck className="w-2.5 h-2.5 text-white"/>}
+                        </div>
+                        {isAr ? f.ar : f.en}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedFeatures.length > 0 && (
+                  <p className="text-xs text-aura-accent mt-3">
+                    {isAr ? `تم اختيار ${selectedFeatures.length} ميزة` : `${selectedFeatures.length} features selected`}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
-          {/* الصور */}
+          {/* ── الصور ── */}
           {activeSection === "media" && (
             <div className="space-y-5">
-              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)}/>
               {form.images.length < MAX_IMAGES && (
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
                   disabled={uploading}
                   className="w-full flex flex-col items-center justify-center gap-3 py-12 rounded-2xl border-2 border-dashed border-aura-border hover:border-aura-accent bg-aura-canvas/50 hover:bg-aura-accent/5 transition-all duration-300 disabled:opacity-50">
-                  {uploading ? <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" /> : (
+                  {uploading ? <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/> : (
                     <div className="w-14 h-14 rounded-2xl bg-aura-accent/10 flex items-center justify-center">
-                      <HiOutlineCloudArrowUp className="w-7 h-7 text-aura-accent" />
+                      <HiOutlineCloudArrowUp className="w-7 h-7 text-aura-accent"/>
                     </div>
                   )}
                   <div className="text-center">
@@ -344,11 +457,11 @@ export default function AddListingForm() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {form.images.map((src, i) => (
                       <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-aura-border group">
-                        <img src={src} alt={`${i + 1}`} className="w-full h-full object-cover" />
+                        <img src={src} alt={`${i + 1}`} className="w-full h-full object-cover"/>
                         {i === 0 && <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-aura-accent text-white text-[10px] font-medium">{isAr ? "الغلاف" : "Cover"}</span>}
                         <button type="button" onClick={() => update({ images: form.images.filter((_, idx) => idx !== i) })}
                           className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-500">
-                          <HiOutlineXMark className="w-4 h-4" />
+                          <HiOutlineXMark className="w-4 h-4"/>
                         </button>
                       </div>
                     ))}
@@ -358,17 +471,53 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* التواصل */}
+          {/* ── التواصل ── */}
           {activeSection === "contact" && (
             <div className="space-y-4">
+
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم التواصل" : "Contact Phone"}</label>
-                <input type="tel" value={form.phone} onChange={(e) => update({ phone: e.target.value })} placeholder="01xxxxxxxxx" className={inputCls} dir="ltr" />
+                <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم الهاتف *" : "Phone Number *"}</label>
+                <div className="relative">
+                  <HiOutlinePhone className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent"/>
+                  <input type="tel" value={form.phone} onChange={(e) => update({ phone: e.target.value })}
+                    placeholder="01xxxxxxxxx" className={`${inputCls} pr-11`} dir="ltr"/>
+                </div>
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-aura-dark">
+                  {isAr ? "رقم الواتساب (اختياري)" : "WhatsApp Number (optional)"}
+                </label>
+                <div className="relative">
+                  <FaWhatsapp className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500"/>
+                  <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder={isAr ? "لو مختلف عن رقم الهاتف..." : "If different from phone number..."} className={`${inputCls} pr-11`} dir="ltr"/>
+                </div>
+                <p className="text-[11px] text-aura-muted">{isAr ? "اتركه فارغاً لو نفس رقم الهاتف" : "Leave empty if same as phone number"}</p>
+              </div>
+
               <div className="p-4 rounded-2xl bg-aura-canvas border border-aura-border">
                 <p className="text-xs text-aura-muted leading-relaxed">
                   {isAr ? "سيظهر رقمك للمهتمين بالعقار. تأكد من صحته قبل النشر." : "Your number will be visible to interested buyers. Verify it before publishing."}
                 </p>
+              </div>
+
+              {/* ملخص الإعلان */}
+              <div className="mt-2 p-5 rounded-2xl bg-aura-canvas border border-aura-border space-y-2">
+                <p className="text-xs font-medium text-aura-dark mb-3">{isAr ? "ملخص الإعلان" : "Listing Summary"}</p>
+                {[
+                  { label_ar: "النوع",      label_en: "Type",     value: form.type || "-" },
+                  { label_ar: "الغرض",     label_en: "Purpose",  value: purpose === "sale" ? (isAr ? "للبيع" : "For Sale") : (isAr ? "للإيجار" : "For Rent") },
+                  { label_ar: "السعر",      label_en: "Price",    value: form.price ? `${Number(form.price).toLocaleString()} EGP${negotiable ? (isAr ? " (قابل للتفاوض)" : " (Negotiable)") : ""}` : "-" },
+                  { label_ar: "حالة العقار", label_en: "Status",  value: deliveryStatus === "ready" ? (isAr ? "✅ جاهز للتسليم" : "✅ Ready") : (isAr ? "🏗️ قيد الإنشاء" : "🏗️ Under Construction") },
+                  { label_ar: "المميزات",  label_en: "Features", value: selectedFeatures.length > 0 ? (isAr ? `${selectedFeatures.length} ميزة` : `${selectedFeatures.length} features`) : "-" },
+                  { label_ar: "الصور",     label_en: "Photos",   value: String(form.images.length) },
+                ].map((row) => (
+                  <div key={row.label_en} className="flex items-center justify-between text-xs">
+                    <span className="text-aura-muted">{isAr ? row.label_ar : row.label_en}</span>
+                    <span className="text-aura-dark font-medium">{row.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -377,14 +526,14 @@ export default function AddListingForm() {
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-aura-border">
             <button type="button" onClick={goPrev} disabled={sectionIndex === 0}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm text-aura-muted border border-aura-border hover:text-aura-dark transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed">
-              <HiOutlineChevronRight className="w-4 h-4" />
+              <HiOutlineChevronRight className="w-4 h-4"/>
               {isAr ? "السابق" : "Previous"}
             </button>
             {sectionIndex < sections.length - 1 ? (
               <button type="button" onClick={goNext}
                 className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300">
                 {isAr ? "التالي" : "Next"}
-                <HiOutlineChevronLeft className="w-4 h-4" />
+                <HiOutlineChevronLeft className="w-4 h-4"/>
               </button>
             ) : (
               <button type="button" onClick={handleSubmit} disabled={submitting}
@@ -394,7 +543,7 @@ export default function AddListingForm() {
             )}
           </div>
         </div>
-      </div>
+    </div>
     </div>
   );
 }

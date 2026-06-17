@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSettings } from "@/lib/hooks/useSettings";
 import { createClient } from "@/lib/supabase/client";
 import {
   HiOutlineSun, HiOutlineMoon, HiOutlineBars3, HiOutlineXMark,
@@ -29,6 +30,7 @@ export default function Navbar() {
   const isAr = locale === "ar";
   const { liked } = useWishlist();
   const { user, signOut } = useAuth();
+  const { settings } = useSettings();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
@@ -76,7 +78,7 @@ export default function Navbar() {
   const Avatar = ({ size = "sm" }: { size?: "sm" | "md" }) => {
     const cls = size === "sm" ? "w-7 h-7 text-[10px]" : "w-9 h-9 text-xs";
     if (user?.user_metadata?.avatar_url) {
-      return <img src={user.user_metadata.avatar_url} className={`${cls} rounded-full object-cover`} alt="avatar" />;
+      return <img src={user.user_metadata.avatar_url} className={`${cls} rounded-full object-cover`} alt="avatar"/>;
     }
     return (
       <div className={`${cls} rounded-full bg-aura-accent flex items-center justify-center text-white font-semibold shrink-0`}>
@@ -84,6 +86,18 @@ export default function Navbar() {
       </div>
     );
   };
+
+  const Logo = ({ size = "md" }: { size?: "sm" | "md" }) => (
+    <a href={`/${locale}`} className="flex flex-col items-center justify-center select-none">
+      <span style={{ fontFamily: "var(--font-reem-kufi)" }}
+        className={`${size === "sm" ? "text-2xl" : "text-3xl"} text-aura-dark`}>
+        {settings.site_name_ar || "عقار"}
+      </span>
+      <span className="text-[9px] tracking-[0.5em] text-aura-muted -mt-1 uppercase">
+        {settings.site_name_en || "Online"}
+      </span>
+    </a>
+  );
 
   const navLinks = [
     { href: `/${locale}`,            label_ar: "الرئيسية", label_en: "Home"       },
@@ -103,11 +117,7 @@ export default function Navbar() {
               const isActive = pathname === link.href;
               return (
                 <a key={link.href} href={link.href}
-                  className={`text-xs tracking-wider transition-colors ${
-                    isActive
-                      ? "font-semibold text-aura-dark"
-                      : "font-light text-aura-muted hover:text-aura-dark"
-                  }`}>
+                  className={`text-xs tracking-wider transition-colors ${isActive ? "font-semibold text-aura-dark" : "font-light text-aura-muted hover:text-aura-dark"}`}>
                   {isAr ? link.label_ar : link.label_en}
                 </a>
               );
@@ -115,17 +125,16 @@ export default function Navbar() {
           </nav>
 
           {/* اللوجو */}
-          <a href={`/${locale}`} className="flex flex-col items-center justify-center select-none">
-            <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-3xl text-aura-dark">عقار</span>
-            <span className="text-[9px] tracking-[0.5em] text-aura-muted -mt-1 uppercase">Online</span>
-          </a>
+          <Logo size="md"/>
 
           {/* الجانب الأيسر */}
           <div className="flex items-center gap-3">
 
             {/* Wishlist */}
-            <a href={`/${locale}/wishlist`} className="relative w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300" aria-label="Wishlist">
-              <HiOutlineHeart className="w-4 h-4" />
+            <a href={`/${locale}/wishlist`}
+              className="relative w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300"
+              aria-label="Wishlist">
+              <HiOutlineHeart className="w-4 h-4"/>
               {liked.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-medium">
                   {liked.length}
@@ -134,21 +143,25 @@ export default function Navbar() {
             </a>
 
             {/* اللغة */}
-            <button onClick={toggleLanguage} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300" aria-label="Toggle language">
-              <HiOutlineGlobeAlt className="w-4 h-4" />
+            <button onClick={toggleLanguage}
+              className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300"
+              aria-label="Toggle language">
+              <HiOutlineGlobeAlt className="w-4 h-4"/>
             </button>
 
             {/* لو logged in */}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
-                <a href={`/${locale}/add-listing`} className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-medium text-aura-accent border border-aura-accent hover:bg-aura-accent hover:text-white transition-all duration-300">
-                  <MdOutlineAddHome className="w-4 h-4" />
+                <a href={`/${locale}/add-listing`}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-medium text-aura-accent border border-aura-accent hover:bg-aura-accent hover:text-white transition-all duration-300">
+                  <MdOutlineAddHome className="w-4 h-4"/>
                   {isAr ? "أضف إعلانك" : "Add Listing"}
                 </a>
 
                 <div className="relative" ref={dropdownRef}>
-                  <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-2 px-3 py-2 rounded-full border border-aura-border hover:border-aura-accent transition-all duration-300">
-                    <Avatar size="sm" />
+                  <button onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-full border border-aura-border hover:border-aura-accent transition-all duration-300">
+                    <Avatar size="sm"/>
                     <span className="text-xs text-aura-dark">
                       {user.user_metadata?.full_name?.split(" ")[0] || user.email?.split("@")[0]}
                     </span>
@@ -157,32 +170,28 @@ export default function Navbar() {
                   {dropdownOpen && (
                     <div className="absolute top-full mt-2 left-0 w-56 bg-aura-card border border-aura-border rounded-2xl shadow-xl overflow-hidden z-50">
                       <div className="flex items-center gap-3 px-4 py-3 border-b border-aura-border bg-aura-canvas">
-                        <Avatar size="md" />
+                        <Avatar size="md"/>
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-aura-dark truncate">{user.user_metadata?.full_name || user.email?.split("@")[0]}</p>
                           <p className="text-[10px] text-aura-muted truncate">{user.email}</p>
                         </div>
                       </div>
-
                       <a href={`/${locale}/profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors">
-                        <MdOutlinePersonOutline className="w-4 h-4 text-aura-accent shrink-0" />
+                        <MdOutlinePersonOutline className="w-4 h-4 text-aura-accent shrink-0"/>
                         {isAr ? "الصفحة الشخصية" : "My Profile"}
                       </a>
-
                       <a href={`/${locale}/dashboard`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors">
-                        <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0" />
+                        <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0"/>
                         {isAr ? "إعلاناتي" : "My Listings"}
                       </a>
-
                       {isAdmin && (
                         <a href={`/${locale}/admin`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
-                          <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
+                          <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0"/>
                           {isAr ? "لوحة الإدارة" : "Admin Panel"}
                         </a>
                       )}
-
                       <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-aura-border">
-                        <MdOutlineLogout className="w-4 h-4 shrink-0" />
+                        <MdOutlineLogout className="w-4 h-4 shrink-0"/>
                         {isAr ? "تسجيل الخروج" : "Sign Out"}
                       </button>
                     </div>
@@ -197,7 +206,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <button onClick={() => setMobileOpen(true)} className="md:hidden text-aura-dark p-2" aria-label="Menu">
-              <HiOutlineBars3 className="w-5 h-5" />
+              <HiOutlineBars3 className="w-5 h-5"/>
             </button>
           </div>
         </div>
@@ -205,13 +214,13 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       <div className={`fixed inset-0 z-50 transition-all duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-        <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setMobileOpen(false)} />
+        <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setMobileOpen(false)}/>
         <div className={`absolute top-0 left-0 w-80 h-full bg-aura-card p-8 flex flex-col justify-between transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <span style={{ fontFamily: "var(--font-reem-kufi)" }} className="text-2xl text-aura-dark">عقار</span>
+              <Logo size="sm"/>
               <button onClick={() => setMobileOpen(false)} className="text-aura-dark">
-                <HiOutlineXMark className="w-5 h-5" />
+                <HiOutlineXMark className="w-5 h-5"/>
               </button>
             </div>
             <nav className="flex flex-col gap-6">
@@ -228,37 +237,32 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="flex items-center gap-3 pb-3 border-b border-aura-border">
-                  <Avatar size="md" />
+                  <Avatar size="md"/>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-aura-dark truncate">{user.user_metadata?.full_name || user.email?.split("@")[0]}</p>
                     <p className="text-xs text-aura-muted truncate">{user.email}</p>
                   </div>
                 </div>
-
                 <a href={`/${locale}/add-listing`} onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-white bg-aura-accent transition-all duration-300">
-                  <MdOutlineAddHome className="w-4 h-4" />
+                  <MdOutlineAddHome className="w-4 h-4"/>
                   {isAr ? "أضف إعلانك" : "Add Listing"}
                 </a>
-
                 <a href={`/${locale}/profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-dark border border-aura-border transition-all duration-300">
-                  <MdOutlinePersonOutline className="w-4 h-4 text-aura-accent" />
+                  <MdOutlinePersonOutline className="w-4 h-4 text-aura-accent"/>
                   {isAr ? "الصفحة الشخصية" : "My Profile"}
                 </a>
-
                 <a href={`/${locale}/dashboard`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-dark border border-aura-border transition-all duration-300">
-                  <MdOutlineListAlt className="w-4 h-4 text-aura-accent" />
+                  <MdOutlineListAlt className="w-4 h-4 text-aura-accent"/>
                   {isAr ? "إعلاناتي" : "My Listings"}
                 </a>
-
                 {isAdmin && (
                   <a href={`/${locale}/admin`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
-                    <MdOutlineAdminPanelSettings className="w-4 h-4" />
+                    <MdOutlineAdminPanelSettings className="w-4 h-4"/>
                     {isAr ? "لوحة الإدارة" : "Admin Panel"}
                   </a>
                 )}
-
                 <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-red-500 border border-red-100 transition-all duration-300">
-                  <MdOutlineLogout className="w-4 h-4" />
+                  <MdOutlineLogout className="w-4 h-4"/>
                   {isAr ? "تسجيل الخروج" : "Sign Out"}
                 </button>
               </>
@@ -267,12 +271,11 @@ export default function Navbar() {
                 {isAr ? "تسجيل الدخول" : "Login"}
               </a>
             )}
-
             <div className="pt-2">
               <p className="text-xs text-aura-muted mb-3">{isAr ? "هل تحتاج إلى مساعدة؟" : "Need help?"}</p>
-              <a href="tel:920001234" className="flex items-center gap-2 text-sm font-medium text-aura-dark">
-                <HiOutlinePhone className="w-4 h-4 text-aura-accent" />
-                920001234
+              <a href={`tel:${settings.footer_phone || "920001234"}`} className="flex items-center gap-2 text-sm font-medium text-aura-dark">
+                <HiOutlinePhone className="w-4 h-4 text-aura-accent"/>
+                {settings.footer_phone || "920001234"}
               </a>
             </div>
           </div>

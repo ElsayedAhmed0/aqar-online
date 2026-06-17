@@ -19,8 +19,12 @@ export type UserListing = {
   img: string;
   images: string[];
   phone: string;
+  whatsapp?: string;
   featured: boolean;
   status: ListingStatus;
+  negotiable?: boolean;
+  features?: string[];
+  delivery_status?: string;
 };
 
 export type ListingFormData = {
@@ -38,6 +42,10 @@ export type ListingFormData = {
   area: string;
   images: string[];
   phone: string;
+  whatsapp?: string;
+  negotiable?: boolean;
+  features?: string[];
+  delivery_status?: string;
 };
 
 export const emptyListingForm = (): ListingFormData => ({
@@ -55,4 +63,8 @@ export const emptyListingForm = (): ListingFormData => ({
   area: "",
   images: [],
   phone: "",
+  whatsapp: "",
+  negotiable: false,
+  features: [],
+  delivery_status: "ready",
 });

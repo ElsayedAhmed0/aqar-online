@@ -2,52 +2,49 @@
 
 import { HiOutlineCheckCircle } from "react-icons/hi2";
 
-const features = {
-  apartment: {
-    ar: ["تكييف مركزي", "أمن 24 ساعة", "مواقف سيارات", "مصعد", "إنترنت فايبر", "مطبخ مجهز"],
-    en: ["Central AC", "24/7 Security", "Parking", "Elevator", "Fiber Internet", "Fitted Kitchen"],
-  },
-  villa: {
-    ar: ["حمام سباحة خاص", "حديقة", "جراج", "نظام أمن ذكي", "غرفة خادمة", "مسبح"],
-    en: ["Private Pool", "Garden", "Garage", "Smart Security", "Maid's Room", "Swimming Pool"],
-  },
-  commercial: {
-    ar: ["واجهة زجاجية", "مواقف عملاء", "تكييف مركزي", "أمن 24 ساعة", "إنترنت فايبر", "مولد كهربائي"],
-    en: ["Glass Facade", "Customer Parking", "Central AC", "24/7 Security", "Fiber Internet", "Generator"],
-  },
+const FEATURES_MAP: Record<string, { ar: string; en: string }> = {
+  parking:    { ar: "موقف سيارة",       en: "Parking"        },
+  pool:       { ar: "حمام سباحة",        en: "Swimming Pool"  },
+  gym:        { ar: "جيم",              en: "Gym"            },
+  security:   { ar: "أمن وحراسة",       en: "Security"       },
+  elevator:   { ar: "أسانسير",          en: "Elevator"       },
+  garden:     { ar: "حديقة",            en: "Garden"         },
+  ac:         { ar: "تكييف مركزي",      en: "Central A/C"    },
+  furnished:  { ar: "مفروشة",           en: "Furnished"      },
+  balcony:    { ar: "بلكونة",           en: "Balcony"        },
+  storage:    { ar: "غرفة مخزن",        en: "Storage Room"   },
+  maid_room:  { ar: "غرفة خادمة",       en: "Maid's Room"    },
+  view:       { ar: "إطلالة مميزة",     en: "Special View"   },
+  solar:      { ar: "طاقة شمسية",       en: "Solar Energy"   },
+  intercom:   { ar: "إنتركم",           en: "Intercom"       },
+  pets:       { ar: "يسمح بالحيوانات", en: "Pets Allowed"   },
+  smart_home: { ar: "منزل ذكي",         en: "Smart Home"     },
 };
 
-export default function PropertyFeatures({
-  property,
-  isAr,
-}: {
-  property: any;
-  isAr: boolean;
-}) {
-  const type = property.type as keyof typeof features;
-  const featureList = isAr
-    ? features[type]?.ar || features.apartment.ar
-    : features[type]?.en || features.apartment.en;
+export default function PropertyFeatures({ property, isAr }: { property: any; isAr: boolean }) {
+  const features: string[] = property.features || [];
+
+  if (features.length === 0) return null;
 
   return (
-    <div className="">
+    <div>
       <h3 className="text-xl font-light text-aura-dark mb-6">
         {isAr ? "مميزات العقار" : "Property Features"}
         <span className="block font-serif italic text-aura-accent text-base mt-0.5">
           {isAr ? "ما يميز هذا العقار" : "What makes it special"}
         </span>
       </h3>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {featureList.map((feature, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 p-3 rounded-2xl bg-aura-canvas border border-aura-border hover:border-aura-accent transition-all duration-300"
-          >
-            <HiOutlineCheckCircle className="w-4 h-4 text-aura-accent shrink-0" />
-            <span className="text-xs text-aura-dark">{feature}</span>
-          </div>
-        ))}
+        {features.map((key) => {
+          const label = FEATURES_MAP[key];
+          if (!label) return null;
+          return (
+            <div key={key} className="flex items-center gap-3 p-3 rounded-2xl bg-aura-canvas border border-aura-border hover:border-aura-accent transition-all duration-300">
+              <HiOutlineCheckCircle className="w-4 h-4 text-aura-accent shrink-0"/>
+              <span className="text-xs text-aura-dark">{isAr ? label.ar : label.en}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

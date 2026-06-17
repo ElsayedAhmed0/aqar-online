@@ -8,6 +8,7 @@ import SimilarProperties from "@/components/properties/SimilarProperties";
 // import MortgageCalculator from "@/components/properties/MortgageCalculator";
 import PropertyFeatures from "@/components/properties/PropertyFeatures";
 import PropertyInfo from "@/components/properties/PropertyInfo";
+import ContactCard from "@/components/properties/ContactCard";
 
 
 export default async function PropertyDetailsPage({
@@ -45,13 +46,13 @@ export default async function PropertyDetailsPage({
 
         {/* العنوان */}
         <div className="mb-8">
-          
-            <a
-              href={`/${locale}`}
-              className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
-            >
-              ← {isAr ? "العودة للرئيسية" : "Back to Home"}
-            </a>
+
+          <a
+            href={`/${locale}`}
+            className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
+          >
+            ← {isAr ? "العودة للرئيسية" : "Back to Home"}
+          </a>
           <h1 className="text-4xl md:text-5xl font-light text-aura-dark">
             {isAr ? property.title_ar : property.title_en}
           </h1>
@@ -75,7 +76,7 @@ export default async function PropertyDetailsPage({
 
           {/* اليسار — حجز موعد */}
           <div className="lg:col-span-1">
-            <BookingForm property={property} isAr={isAr} />
+            <ContactCard property={property} isAr={isAr} />
           </div>
 
         </div>

@@ -62,8 +62,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           img: l.images?.[0] || "",
           images: l.images || [],
           phone: l.phone || "",
+          whatsapp: l.whatsapp || "",
           featured: l.featured || false,
           status: l.status,
+          negotiable: l.negotiable || false,
+          features: l.features || [],
+          delivery_status: l.delivery_status || "ready",
         })));
       }
       setLoading(false);
@@ -131,6 +135,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           phone: listing.phone,
           featured: false,
           status: "pending",
+          negotiable: (listing as any).negotiable || false,
+          features: (listing as any).features || [],
+          delivery_status: (listing as any).delivery_status || "ready",
+          whatsapp: (listing as any).whatsapp || null,
         })
         .select()
         .single();
@@ -156,8 +164,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         img: uploadedUrls[0] || "",
         images: uploadedUrls,
         phone: data.phone || "",
+        whatsapp: data.whatsapp || "",
         featured: data.featured || false,
         status: data.status,
+        negotiable: data.negotiable || false,
+        features: data.features || [],
+        delivery_status: data.delivery_status || "ready",
       };
 
       setListings((prev) => [newListing, ...prev]);
