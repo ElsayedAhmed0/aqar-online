@@ -49,18 +49,15 @@ export default function PropertiesSection() {
     isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
 
   return (
-    <section id="properties" className="py-18 px-6 lg:px-12 bg-aura-canvas">
-      <div className="max-w-7xl mx-auto">
+    <section id="properties" className="py-16 md:py-20 bg-aura-canvas">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        {/* العنوان + فلاتر + زرار كل العقارات في سطر */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-
-          {/* العنوان */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
           <div>
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
               {isAr ? "عقاراتنا المميزة" : "Featured Properties"}
             </p>
-            <h2 className="text-4xl md:text-5xl font-light text-aura-dark">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
               {isAr ? "اختر عقارك" : "Choose Your"}
               <span className="block font-serif italic text-aura-accent mt-1">
                 {isAr ? "المثالي" : "Perfect Home"}
@@ -68,39 +65,44 @@ export default function PropertiesSection() {
             </h2>
           </div>
 
-          {/* الفلاتر + زرار عرض الكل */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-
-            {/* الفلاتر الديناميك */}
             <div className="flex items-center gap-2 bg-aura-card rounded-2xl p-1.5 border border-aura-border flex-wrap">
-              {/* الكل */}
-              <button onClick={() => setActiveFilter("all")}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === "all" ? "bg-aura-dark text-white shadow-sm" : "text-aura-muted hover:text-aura-dark"
-                  }`}>
+              <button
+                onClick={() => setActiveFilter("all")}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${
+                  activeFilter === "all"
+                    ? "bg-aura-dark text-white shadow-sm"
+                    : "text-aura-muted hover:text-aura-dark"
+                }`}
+              >
                 <HiOutlineHome className="w-4 h-4" />
                 {isAr ? "الكل" : "All"}
               </button>
 
-              {/* // إلى: أول 3 بس */}
               {propertyTypes.slice(0, 2).map((t) => (
-
-                <button key={t.value} onClick={() => setActiveFilter(t.value)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === t.value ? "bg-aura-dark text-white shadow-sm" : "text-aura-muted hover:text-aura-dark"
-                    }`}>
+                <button
+                  key={t.value}
+                  onClick={() => setActiveFilter(t.value)}
+                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${
+                    activeFilter === t.value
+                      ? "bg-aura-dark text-white shadow-sm"
+                      : "text-aura-muted hover:text-aura-dark"
+                  }`}
+                >
                   {isAr ? t.name_ar : t.name_en}
                 </button>
               ))}
             </div>
 
-            {/* زرار عرض جميع العقارات */}
-            <a href={`/${locale}/properties`}
-              className="px-5 py-3 rounded-2xl border border-aura-accent text-aura-accent text-xs font-medium hover:bg-aura-accent hover:text-white transition-all duration-300 whitespace-nowrap">
+            
+              <a href={`/${locale}/properties`}
+              className="px-5 py-3 rounded-2xl border border-aura-accent text-aura-accent text-xs font-medium hover:bg-aura-accent hover:text-white transition-all duration-300 whitespace-nowrap"
+            >
               {isAr ? "عرض كل العقارات ←" : "View All Properties →"}
             </a>
           </div>
         </div>
 
-        {/* الكروت */}
         {loadingProps ? (
           <div className="flex items-center justify-center py-24">
             <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
@@ -112,7 +114,7 @@ export default function PropertiesSection() {
             </p>
           </div>
         ) : (
-          <div key={activeFilter} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div key={activeFilter} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filtered.map((property) => (
               <PropertyCard
                 key={property.id}

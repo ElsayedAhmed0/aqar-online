@@ -25,7 +25,7 @@ export default function PropertiesGrid({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
+      <div className="flex items-center justify-center py-24 md:py-32">
         <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -33,13 +33,15 @@ export default function PropertiesGrid({
 
   if (properties.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4 bg-aura-card rounded-3xl border border-aura-border">
+      <div className="flex flex-col items-center justify-center py-20 md:py-32 gap-4 bg-aura-card rounded-3xl border border-aura-border">
         <p className="text-4xl">🏠</p>
-        <p className="text-aura-muted font-light text-lg">
+        <p className="text-aura-muted font-light text-base md:text-lg text-center px-4">
           {isAr ? "لا توجد عقارات مطابقة" : "No properties found"}
         </p>
-        <button onClick={onClearFilters}
-          className="text-sm text-aura-accent hover:text-aura-dark transition-colors">
+        <button
+          onClick={onClearFilters}
+          className="text-sm text-aura-accent hover:text-aura-dark transition-colors"
+        >
           {isAr ? "مسح الفلاتر" : "Clear filters"}
         </button>
       </div>
@@ -48,7 +50,8 @@ export default function PropertiesGrid({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* ✅ 1 col موبايل — 2 cols تابلت وفوق */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
         {properties.map((property) => (
           <PropertyCard
             key={property.id}

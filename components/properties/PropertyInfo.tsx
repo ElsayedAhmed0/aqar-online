@@ -1,6 +1,6 @@
 "use client";
 
-import { HiOutlineMapPin, HiOutlineShare, HiOutlineTag } from "react-icons/hi2";
+import { HiOutlineMapPin, HiOutlineShare, HiOutlineTag, HiOutlineEye } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 
@@ -22,10 +22,10 @@ export default function PropertyInfo({ property, isAr }: { property: any; isAr: 
   };
 
   return (
-    <div className="bento-card bg-aura-card rounded-3xl p-8 border border-aura-border">
+    <div className="bento-card bg-aura-card rounded-3xl p-5 sm:p-6 md:p-8 border border-aura-border">
 
       {/* النوع والمشاركة */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-aura-accent/10 text-aura-accent text-xs font-medium">
             <TypeIcon className="w-4 h-4" />
@@ -48,50 +48,65 @@ export default function PropertyInfo({ property, isAr }: { property: any; isAr: 
             </span>
           )}
         </div>
-        <button onClick={handleShare} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300">
+        <button
+          onClick={handleShare}
+          className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300 shrink-0"
+        >
           <HiOutlineShare className="w-4 h-4" />
         </button>
       </div>
 
       {/* السعر */}
       <div className="mb-6">
-        <p className="text-3xl font-light text-aura-dark mb-1">{formatPrice(property.price)}</p>
-        <div className="flex items-center gap-1.5 text-aura-muted">
-          <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
-          <span className="text-sm">{isAr ? property.location_ar : property.location_en}</span>
+        <p className="text-2xl sm:text-3xl font-light text-aura-dark mb-1">{formatPrice(property.price)}</p>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-1.5 text-aura-muted">
+            <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-sm">{isAr ? property.location_ar : property.location_en}</span>
+          </div>
+
+          {/* ✅ عداد المشاهدات */}
+          {property.views > 0 && (
+            <div className="flex items-center gap-1.5 text-aura-muted">
+              <HiOutlineEye className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-xs">
+                {property.views.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "مشاهدة" : "views"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* الخصائص */}
-      <div className="grid grid-cols-3 gap-4 py-6 border-y border-aura-border">
+      <div className="grid grid-cols-3 gap-3 md:gap-4 py-5 md:py-6 border-y border-aura-border">
         {property.beds > 0 && (
           <div className="text-center">
-            <div className="w-10 h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
-              <LuBedDouble className="w-5 h-5 text-aura-accent" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
+              <LuBedDouble className="w-4 h-4 sm:w-5 sm:h-5 text-aura-accent" />
             </div>
-            <p className="text-lg font-light text-aura-dark">{property.beds}</p>
+            <p className="text-base sm:text-lg font-light text-aura-dark">{property.beds}</p>
             <p className="text-[10px] text-aura-muted">{isAr ? "غرفة نوم" : "Bedrooms"}</p>
           </div>
         )}
         <div className="text-center">
-          <div className="w-10 h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
-            <LuBath className="w-5 h-5 text-aura-accent" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
+            <LuBath className="w-4 h-4 sm:w-5 sm:h-5 text-aura-accent" />
           </div>
-          <p className="text-lg font-light text-aura-dark">{property.baths}</p>
+          <p className="text-base sm:text-lg font-light text-aura-dark">{property.baths}</p>
           <p className="text-[10px] text-aura-muted">{isAr ? "حمام" : "Bathrooms"}</p>
         </div>
         <div className="text-center">
-          <div className="w-10 h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
-            <LuMaximize className="w-5 h-5 text-aura-accent" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-aura-canvas flex items-center justify-center mx-auto mb-2">
+            <LuMaximize className="w-4 h-4 sm:w-5 sm:h-5 text-aura-accent" />
           </div>
-          <p className="text-lg font-light text-aura-dark">{property.area}</p>
+          <p className="text-base sm:text-lg font-light text-aura-dark">{property.area}</p>
           <p className="text-[10px] text-aura-muted">{isAr ? "م²" : "m²"}</p>
         </div>
       </div>
 
       {/* الوصف */}
       {(property.description_ar || property.description_en) && (
-        <div className="mt-6">
+        <div className="mt-5 md:mt-6">
           <h3 className="text-sm font-medium text-aura-dark mb-3">{isAr ? "وصف العقار" : "Property Description"}</h3>
           <p className="text-sm text-aura-muted font-light leading-relaxed">
             {isAr ? property.description_ar : property.description_en}

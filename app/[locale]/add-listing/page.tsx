@@ -13,13 +13,13 @@ export default function AddListingPage() {
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
 
-      <section className="py-16 lg:py-24 px-6 lg:px-12">
+      <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-12">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-10 lg:mb-12">
+          <div className="mb-8 md:mb-10 lg:mb-12">
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
               {isAr ? "أضف عقارك" : "List Your Property"}
             </p>
-            <h1 className="text-4xl md:text-5xl font-light text-aura-dark">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
               {isAr ? "إضافة" : "Add"}
               <span className="block font-serif italic text-aura-accent mt-1">
                 {isAr ? "إعلان جديد" : "New Listing"}

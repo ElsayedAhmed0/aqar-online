@@ -51,7 +51,6 @@ export default function HeroSection() {
     setPropertyType(value);
     setActiveFilter(value);
     setDropdownOpen(false);
-    // لو اختار نوع معين يوديه للصفحة مباشرة
     if (value !== "all") {
       router.push(`/${locale}/properties?type=${value}`);
     }
@@ -75,31 +74,37 @@ export default function HeroSection() {
       <div className="glow-sphere absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-aura-accent-light z-0" />
 
       {/* المحتوى */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto w-full">
+      <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto w-full">
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs mb-6 md:mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-aura-accent animate-pulse" />
           {isAr ? "منصة العقارات الأولى في مصر" : "Egypt's #1 Real Estate Platform"}
         </div>
 
         {/* العنوان */}
-        <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight">
-          {isAr ? (settings.hero_title_ar || "اكتشف عقارك المثالي") : (settings.hero_title_en || "Find Your Perfect Property")}
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-light text-white mb-4 md:mb-6 leading-tight">
+          {isAr
+            ? (settings.hero_title_ar || "اكتشف عقارك المثالي")
+            : (settings.hero_title_en || "Find Your Perfect Property")}
         </h1>
 
         {/* الوصف */}
-        <p className="text-white/70 font-light text-lg mb-12 max-w-xl mx-auto">
-          {isAr ? (settings.hero_subtitle_ar || "آلاف العقارات المميزة في انتظارك") : (settings.hero_subtitle_en || "Thousands of premium properties await")}
+        <p className="text-white/70 font-light text-base md:text-lg mb-8 md:mb-12 max-w-xl mx-auto">
+          {isAr
+            ? (settings.hero_subtitle_ar || "آلاف العقارات المميزة في انتظارك")
+            : (settings.hero_subtitle_en || "Thousands of premium properties await")}
         </p>
 
         {/* شريط البحث */}
-        <div className="bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-3 flex flex-col md:flex-row gap-3 max-w-2xl mx-auto">
+        <div className="bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-3 flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
 
           {/* Dropdown */}
-          <div ref={dropdownRef} className="relative md:w-48">
-            <button onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-full flex items-center justify-between gap-2 bg-black/40 hover:bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white text-sm transition-all duration-200">
+          <div ref={dropdownRef} className="relative sm:w-48">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-full flex items-center justify-between gap-2 bg-black/40 hover:bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white text-sm transition-all duration-200"
+            >
               <span className="flex items-center gap-2">
                 <span className="text-aura-accent text-base">{currentType.icon}</span>
                 <span>{currentType.label}</span>
@@ -110,8 +115,11 @@ export default function HeroSection() {
             {dropdownOpen && (
               <div className="absolute top-full mt-2 w-full bg-black/70 backdrop-blur-2xl border border-white/20 rounded-xl overflow-hidden z-50 shadow-2xl">
                 {types.map((type) => (
-                  <button key={type.value} onClick={() => handleTypeSelect(type.value)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-white/10 ${propertyType === type.value ? "bg-white/10 text-white" : "text-white/70"}`}>
+                  <button
+                    key={type.value}
+                    onClick={() => handleTypeSelect(type.value)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-150 hover:bg-white/10 ${propertyType === type.value ? "bg-white/10 text-white" : "text-white/70"}`}
+                  >
                     <span className="text-aura-accent text-base">{type.icon}</span>
                     <span>{type.label}</span>
                     {propertyType === type.value && <HiOutlineCheckCircle className="mr-auto w-4 h-4 text-aura-accent" />}
@@ -124,32 +132,38 @@ export default function HeroSection() {
           {/* حقل البحث */}
           <div className="flex-1 flex items-center gap-2 bg-black/40 border border-white/20 rounded-xl px-4">
             <HiOutlineMapPin className="w-4 h-4 text-white/50 shrink-0" />
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder={isAr ? "ابحث بالمنطقة أو المدينة..." : "Search by area or city..."}
-              className="flex-1 bg-transparent text-white placeholder-white/40 text-sm outline-none py-3" />
+              className="flex-1 bg-transparent text-white placeholder-white/40 text-sm outline-none py-3"
+            />
             {searchQuery && (
               <button onClick={() => setSearchQuery("")} className="text-white/30 hover:text-white/60 transition-colors text-xs">✕</button>
             )}
           </div>
 
           {/* زر البحث */}
-          <button onClick={handleSearch}
-            className="search-pill-btn flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-white text-sm font-medium">
+          <button
+            onClick={handleSearch}
+            className="search-pill-btn flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-white text-sm font-medium"
+          >
             <HiOutlineSearch className="w-4 h-4" />
             {isAr ? "بحث" : "Search"}
           </button>
         </div>
 
         {/* Stats */}
-        <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
+        <div className="flex items-center justify-center gap-6 sm:gap-8 mt-10 md:mt-12 flex-wrap">
           {[
             { num: `${settings.stats_properties || "2,500"}+`, label: isAr ? "عقار مميز" : "Properties" },
             { num: `${settings.stats_clients || "1,200"}+`,    label: isAr ? "عميل سعيد" : "Happy Clients" },
             { num: `${settings.stats_years || "15"}+`,         label: isAr ? "سنة خبرة" : "Years Experience" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <p className="text-2xl font-light text-white">{stat.num}</p>
+              <p className="text-xl sm:text-2xl font-light text-white">{stat.num}</p>
               <p className="text-xs text-white/50 mt-1">{stat.label}</p>
             </div>
           ))}

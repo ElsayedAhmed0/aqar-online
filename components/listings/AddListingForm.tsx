@@ -209,22 +209,31 @@ export default function AddListingForm() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      {/* قائمة الأقسام */}
+      {/* ✅ قائمة الأقسام — أفقية على الموبايل وعمودية على الديسكتوب */}
       <aside className="lg:col-span-4 xl:col-span-3">
-        <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 lg:sticky lg:top-28">
-          <p className="text-xs tracking-[0.2em] text-aura-accent uppercase mb-4">
+        <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-4 md:p-5 lg:sticky lg:top-28">
+          <p className="text-xs tracking-[0.2em] text-aura-accent uppercase mb-3 md:mb-4">
             {isAr ? "خطوات الإعلان" : "Listing Steps"}
           </p>
-          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide">
             {sections.map((s, i) => {
               const Icon = s.icon;
               const isActive = activeSection === s.id;
               const isDone = isSectionComplete(s.id);
               return (
-                <button key={s.id} onClick={() => { setActiveSection(s.id); setError(""); }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-medium transition-all duration-300 shrink-0 lg:shrink ${isActive ? "bg-aura-dark text-white" : "bg-aura-canvas text-aura-muted hover:text-aura-dark border border-aura-border"}`}>
-                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-white/20" : isDone ? "bg-green-100 text-green-600" : "bg-aura-card"}`}>
-                    {isDone && !isActive ? <HiOutlineCheck className="w-4 h-4"/> : <Icon className="w-4 h-4"/>}
+                <button
+                  key={s.id}
+                  onClick={() => { setActiveSection(s.id); setError(""); }}
+                  className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-2xl text-xs font-medium transition-all duration-300 shrink-0 lg:shrink ${
+                    isActive
+                      ? "bg-aura-dark text-white"
+                      : "bg-aura-canvas text-aura-muted hover:text-aura-dark border border-aura-border"
+                  }`}
+                >
+                  <span className={`w-6 h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    isActive ? "bg-white/20" : isDone ? "bg-green-100 text-green-600" : "bg-aura-card"
+                  }`}>
+                    {isDone && !isActive ? <HiOutlineCheck className="w-3.5 h-3.5"/> : <Icon className="w-3.5 h-3.5"/>}
                   </span>
                   <span className="whitespace-nowrap lg:whitespace-normal text-right">
                     <span className="hidden lg:inline text-aura-muted/60 ml-1">{i + 1}.</span>
@@ -239,8 +248,8 @@ export default function AddListingForm() {
 
       {/* محتوى القسم */}
       <div className="lg:col-span-8 xl:col-span-9">
-        <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-6 md:p-8">
-          <h3 className="text-xl font-light text-aura-dark mb-6">
+        <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 md:p-6 lg:p-8">
+          <h3 className="text-lg md:text-xl font-light text-aura-dark mb-5 md:mb-6">
             {isAr ? sections[sectionIndex].label_ar : sections[sectionIndex].label_en}
           </h3>
 
@@ -259,7 +268,11 @@ export default function AddListingForm() {
                     { value: "rent", label_ar: "للإيجار", label_en: "For Rent", icon: "🔑" },
                   ].map((p) => (
                     <button key={p.value} type="button" onClick={() => setPurpose(p.value as any)}
-                      className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${purpose === p.value ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
+                      className={`flex items-center justify-center gap-2 py-3 md:py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${
+                        purpose === p.value
+                          ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md"
+                          : "border-aura-border hover:border-aura-accent/40 text-aura-muted"
+                      }`}>
                       <span>{p.icon}</span>
                       {isAr ? p.label_ar : p.label_en}
                     </button>
@@ -273,12 +286,18 @@ export default function AddListingForm() {
                     <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {propertyTypes.map((t) => (
                       <button key={t.value} type="button" onClick={() => update({ type: t.value as any })}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-center ${form.type === t.value ? "border-aura-accent bg-aura-accent/5 shadow-md" : "border-aura-border hover:border-aura-accent/40"}`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${form.type === t.value ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"}`}>
-                          <HiOutlineHome className="w-5 h-5"/>
+                        className={`flex flex-col items-center gap-2 p-3 md:p-4 rounded-2xl border-2 transition-all duration-300 text-center ${
+                          form.type === t.value
+                            ? "border-aura-accent bg-aura-accent/5 shadow-md"
+                            : "border-aura-border hover:border-aura-accent/40"
+                        }`}>
+                        <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center ${
+                          form.type === t.value ? "bg-aura-accent text-white" : "bg-aura-canvas text-aura-accent"
+                        }`}>
+                          <HiOutlineHome className="w-4 h-4 md:w-5 md:h-5"/>
                         </div>
                         <p className="text-xs font-medium text-aura-dark leading-tight">{isAr ? t.name_ar : t.name_en}</p>
                       </button>
@@ -362,15 +381,19 @@ export default function AddListingForm() {
                   <input type="number" value={form.baths} onChange={(e) => update({ baths: e.target.value })}
                     placeholder="2" className={inputCls} dir="ltr" min={0}/>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-medium text-aura-dark">{isAr ? "المساحة (م²) *" : "Area (m²) *"}</label>
                   <input type="number" value={form.area} onChange={(e) => update({ area: e.target.value })}
                     placeholder="180" className={inputCls} dir="ltr" min={0}/>
                 </div>
               </div>
               <button type="button" onClick={() => setNegotiable(!negotiable)}
-                className={`flex items-center gap-3 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${negotiable ? "border-aura-accent bg-aura-accent/5" : "border-aura-border hover:border-aura-accent/40"}`}>
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${negotiable ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
+                className={`flex items-center gap-3 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  negotiable ? "border-aura-accent bg-aura-accent/5" : "border-aura-border hover:border-aura-accent/40"
+                }`}>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${
+                  negotiable ? "bg-aura-accent border-aura-accent" : "border-aura-border"
+                }`}>
                   {negotiable && <HiOutlineCheck className="w-3 h-3 text-white"/>}
                 </div>
                 <div className="text-right">
@@ -384,8 +407,6 @@ export default function AddListingForm() {
           {/* ── المميزات ── */}
           {activeSection === "features" && (
             <div className="space-y-6">
-
-              {/* حالة العقار */}
               <div>
                 <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "حالة العقار" : "Property Status"}</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -393,28 +414,39 @@ export default function AddListingForm() {
                     const selected = deliveryStatus === opt.value;
                     return (
                       <button key={opt.value} type="button" onClick={() => setDeliveryStatus(opt.value as any)}
-                        className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selected ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
+                        className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${
+                          selected
+                            ? "border-aura-accent bg-aura-accent/5 text-aura-dark"
+                            : "border-aura-border hover:border-aura-accent/40 text-aura-muted"
+                        }`}>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          selected ? "bg-aura-accent border-aura-accent" : "border-aura-border"
+                        }`}>
                           {selected && <div className="w-2 h-2 rounded-full bg-white"/>}
                         </div>
                         <span>{opt.icon}</span>
-                        {isAr ? opt.label_ar : opt.label_en}
+                        <span className="text-xs sm:text-sm">{isAr ? opt.label_ar : opt.label_en}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* مميزات العقار */}
               <div>
                 <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "مميزات العقار" : "Property Features"}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
                   {FEATURES.map((f) => {
                     const selected = selectedFeatures.includes(f.key);
                     return (
                       <button key={f.key} type="button" onClick={() => toggleFeature(f.key)}
-                        className={`flex items-center gap-2 p-3 rounded-2xl border-2 text-xs font-medium transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}>
-                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${selected ? "bg-aura-accent" : "border border-aura-border bg-white"}`}>
+                        className={`flex items-center gap-2 p-2.5 md:p-3 rounded-2xl border-2 text-xs font-medium transition-all duration-300 ${
+                          selected
+                            ? "border-aura-accent bg-aura-accent/5 text-aura-dark"
+                            : "border-aura-border hover:border-aura-accent/40 text-aura-muted"
+                        }`}>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${
+                          selected ? "bg-aura-accent" : "border border-aura-border bg-white"
+                        }`}>
                           {selected && <HiOutlineCheck className="w-2.5 h-2.5 text-white"/>}
                         </div>
                         {isAr ? f.ar : f.en}
@@ -434,32 +466,53 @@ export default function AddListingForm() {
           {/* ── الصور ── */}
           {activeSection === "media" && (
             <div className="space-y-5">
-              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)}/>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}/>
               {form.images.length < MAX_IMAGES && (
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
                   disabled={uploading}
-                  className="w-full flex flex-col items-center justify-center gap-3 py-12 rounded-2xl border-2 border-dashed border-aura-border hover:border-aura-accent bg-aura-canvas/50 hover:bg-aura-accent/5 transition-all duration-300 disabled:opacity-50">
-                  {uploading ? <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/> : (
-                    <div className="w-14 h-14 rounded-2xl bg-aura-accent/10 flex items-center justify-center">
-                      <HiOutlineCloudArrowUp className="w-7 h-7 text-aura-accent"/>
+                  className="w-full flex flex-col items-center justify-center gap-3 py-10 md:py-12 rounded-2xl border-2 border-dashed border-aura-border hover:border-aura-accent bg-aura-canvas/50 hover:bg-aura-accent/5 transition-all duration-300 disabled:opacity-50">
+                  {uploading ? (
+                    <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
+                  ) : (
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-aura-accent/10 flex items-center justify-center">
+                      <HiOutlineCloudArrowUp className="w-6 h-6 md:w-7 md:h-7 text-aura-accent"/>
                     </div>
                   )}
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-aura-dark">{uploading ? (isAr ? "جاري رفع الصور..." : "Uploading...") : (isAr ? "اضغط أو اسحب الصور هنا" : "Click or drag images here")}</p>
-                    <p className="text-[11px] text-aura-muted mt-1">{isAr ? `JPG, PNG, WEBP — حتى ${MAX_IMAGES} صور (5 ميجا لكل صورة)` : `JPG, PNG, WEBP — up to ${MAX_IMAGES} images (5MB each)`}</p>
+                  <div className="text-center px-4">
+                    <p className="text-sm font-medium text-aura-dark">
+                      {uploading
+                        ? (isAr ? "جاري رفع الصور..." : "Uploading...")
+                        : (isAr ? "اضغط أو اسحب الصور هنا" : "Click or drag images here")}
+                    </p>
+                    <p className="text-[11px] text-aura-muted mt-1">
+                      {isAr
+                        ? `JPG, PNG, WEBP — حتى ${MAX_IMAGES} صور (5 ميجا لكل صورة)`
+                        : `JPG, PNG, WEBP — up to ${MAX_IMAGES} images (5MB each)`}
+                    </p>
                   </div>
                 </button>
               )}
               {form.images.length > 0 && (
                 <div>
-                  <p className="text-xs text-aura-muted mb-3">{isAr ? `${form.images.length} / ${MAX_IMAGES} صور — الأولى هي صورة الغلاف` : `${form.images.length} / ${MAX_IMAGES} images — first is cover`}</p>
+                  <p className="text-xs text-aura-muted mb-3">
+                    {isAr
+                      ? `${form.images.length} / ${MAX_IMAGES} صور — الأولى هي صورة الغلاف`
+                      : `${form.images.length} / ${MAX_IMAGES} images — first is cover`}
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {form.images.map((src, i) => (
                       <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-aura-border group">
                         <img src={src} alt={`${i + 1}`} className="w-full h-full object-cover"/>
-                        {i === 0 && <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-aura-accent text-white text-[10px] font-medium">{isAr ? "الغلاف" : "Cover"}</span>}
-                        <button type="button" onClick={() => update({ images: form.images.filter((_, idx) => idx !== i) })}
+                        {i === 0 && (
+                          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-aura-accent text-white text-[10px] font-medium">
+                            {isAr ? "الغلاف" : "Cover"}
+                          </span>
+                        )}
+                        <button type="button"
+                          onClick={() => update({ images: form.images.filter((_, idx) => idx !== i) })}
                           className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-500">
                           <HiOutlineXMark className="w-4 h-4"/>
                         </button>
@@ -474,7 +527,6 @@ export default function AddListingForm() {
           {/* ── التواصل ── */}
           {activeSection === "contact" && (
             <div className="space-y-4">
-
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم الهاتف *" : "Phone Number *"}</label>
                 <div className="relative">
@@ -491,27 +543,34 @@ export default function AddListingForm() {
                 <div className="relative">
                   <FaWhatsapp className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500"/>
                   <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder={isAr ? "لو مختلف عن رقم الهاتف..." : "If different from phone number..."} className={`${inputCls} pr-11`} dir="ltr"/>
+                    placeholder={isAr ? "لو مختلف عن رقم الهاتف..." : "If different from phone number..."}
+                    className={`${inputCls} pr-11`} dir="ltr"/>
                 </div>
-                <p className="text-[11px] text-aura-muted">{isAr ? "اتركه فارغاً لو نفس رقم الهاتف" : "Leave empty if same as phone number"}</p>
+                <p className="text-[11px] text-aura-muted">
+                  {isAr ? "اتركه فارغاً لو نفس رقم الهاتف" : "Leave empty if same as phone number"}
+                </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-aura-canvas border border-aura-border">
                 <p className="text-xs text-aura-muted leading-relaxed">
-                  {isAr ? "سيظهر رقمك للمهتمين بالعقار. تأكد من صحته قبل النشر." : "Your number will be visible to interested buyers. Verify it before publishing."}
+                  {isAr
+                    ? "سيظهر رقمك للمهتمين بالعقار. تأكد من صحته قبل النشر."
+                    : "Your number will be visible to interested buyers. Verify it before publishing."}
                 </p>
               </div>
 
               {/* ملخص الإعلان */}
-              <div className="mt-2 p-5 rounded-2xl bg-aura-canvas border border-aura-border space-y-2">
-                <p className="text-xs font-medium text-aura-dark mb-3">{isAr ? "ملخص الإعلان" : "Listing Summary"}</p>
+              <div className="mt-2 p-4 md:p-5 rounded-2xl bg-aura-canvas border border-aura-border space-y-2">
+                <p className="text-xs font-medium text-aura-dark mb-3">
+                  {isAr ? "ملخص الإعلان" : "Listing Summary"}
+                </p>
                 {[
-                  { label_ar: "النوع",      label_en: "Type",     value: form.type || "-" },
-                  { label_ar: "الغرض",     label_en: "Purpose",  value: purpose === "sale" ? (isAr ? "للبيع" : "For Sale") : (isAr ? "للإيجار" : "For Rent") },
-                  { label_ar: "السعر",      label_en: "Price",    value: form.price ? `${Number(form.price).toLocaleString()} EGP${negotiable ? (isAr ? " (قابل للتفاوض)" : " (Negotiable)") : ""}` : "-" },
+                  { label_ar: "النوع",       label_en: "Type",     value: form.type || "-" },
+                  { label_ar: "الغرض",      label_en: "Purpose",  value: purpose === "sale" ? (isAr ? "للبيع" : "For Sale") : (isAr ? "للإيجار" : "For Rent") },
+                  { label_ar: "السعر",       label_en: "Price",    value: form.price ? `${Number(form.price).toLocaleString()} EGP${negotiable ? (isAr ? " (قابل للتفاوض)" : " (Negotiable)") : ""}` : "-" },
                   { label_ar: "حالة العقار", label_en: "Status",  value: deliveryStatus === "ready" ? (isAr ? "✅ جاهز للتسليم" : "✅ Ready") : (isAr ? "🏗️ قيد الإنشاء" : "🏗️ Under Construction") },
-                  { label_ar: "المميزات",  label_en: "Features", value: selectedFeatures.length > 0 ? (isAr ? `${selectedFeatures.length} ميزة` : `${selectedFeatures.length} features`) : "-" },
-                  { label_ar: "الصور",     label_en: "Photos",   value: String(form.images.length) },
+                  { label_ar: "المميزات",   label_en: "Features", value: selectedFeatures.length > 0 ? (isAr ? `${selectedFeatures.length} ميزة` : `${selectedFeatures.length} features`) : "-" },
+                  { label_ar: "الصور",      label_en: "Photos",   value: String(form.images.length) },
                 ].map((row) => (
                   <div key={row.label_en} className="flex items-center justify-between text-xs">
                     <span className="text-aura-muted">{isAr ? row.label_ar : row.label_en}</span>
@@ -523,27 +582,29 @@ export default function AddListingForm() {
           )}
 
           {/* أزرار التنقل */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-aura-border">
+          <div className="flex items-center justify-between mt-6 md:mt-8 pt-5 md:pt-6 border-t border-aura-border">
             <button type="button" onClick={goPrev} disabled={sectionIndex === 0}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm text-aura-muted border border-aura-border hover:text-aura-dark transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed">
+              className="flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-2xl text-sm text-aura-muted border border-aura-border hover:text-aura-dark transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed">
               <HiOutlineChevronRight className="w-4 h-4"/>
               {isAr ? "السابق" : "Previous"}
             </button>
             {sectionIndex < sections.length - 1 ? (
               <button type="button" onClick={goNext}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300">
+                className="flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 rounded-2xl text-sm font-medium text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300">
                 {isAr ? "التالي" : "Next"}
                 <HiOutlineChevronLeft className="w-4 h-4"/>
               </button>
             ) : (
               <button type="button" onClick={handleSubmit} disabled={submitting}
-                className="flex items-center gap-2 px-8 py-3 rounded-2xl text-sm font-medium text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300 disabled:opacity-50">
-                {submitting ? (isAr ? "جاري النشر..." : "Publishing...") : (isAr ? "نشر الإعلان" : "Publish Listing")}
+                className="flex items-center gap-2 px-6 md:px-8 py-2.5 md:py-3 rounded-2xl text-sm font-medium text-white bg-aura-accent hover:bg-aura-dark transition-all duration-300 disabled:opacity-50">
+                {submitting
+                  ? (isAr ? "جاري النشر..." : "Publishing...")
+                  : (isAr ? "نشر الإعلان" : "Publish Listing")}
               </button>
             )}
           </div>
         </div>
-    </div>
+      </div>
     </div>
   );
 }

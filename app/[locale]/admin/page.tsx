@@ -13,7 +13,7 @@ import {
   HiOutlineMagnifyingGlass, HiOutlineArrowDownTray,
   HiOutlineCog6Tooth, HiOutlineCheckBadge, HiOutlineMegaphone,
   HiOutlinePhoto, HiOutlineTag, HiOutlineBuildingOffice2,
-  HiOutlineNewspaper, HiOutlineInbox,
+  HiOutlineNewspaper, HiOutlineInbox, HiOutlineChevronDown,
 } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
@@ -49,9 +49,9 @@ type Message = {
 };
 
 const statusConfig = {
-  pending: { ar: "انتظار", en: "Pending", cls: "bg-amber-50 text-amber-600 border-amber-200" },
+  pending:  { ar: "انتظار",      en: "Pending",  cls: "bg-amber-50 text-amber-600 border-amber-200" },
   approved: { ar: "موافق عليه", en: "Approved", cls: "bg-green-50 text-green-600 border-green-200" },
-  rejected: { ar: "مرفوض", en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200" },
+  rejected: { ar: "مرفوض",      en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200" },
 };
 
 const settingsGroups = [
@@ -143,6 +143,7 @@ export default function AdminPage() {
   const { user, loading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<"listings" | "users" | "settings" | "ads" | "types" | "partners" | "blog" | "messages">("listings");
+  const [mobileTabOpen, setMobileTabOpen] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [listings, setListings] = useState<Listing[]>([]);
@@ -229,7 +230,6 @@ export default function AdminPage() {
   const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user") => {
     const supabase = createClient();
     const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
-    console.log("changeUserRole:", role, error);
     if (!error) setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
   };
 
@@ -237,8 +237,7 @@ export default function AdminPage() {
     setSavingSettings(true);
     const supabase = createClient();
     for (const [key, value] of Object.entries(siteSettings)) {
-      const { error } = await supabase.from("site_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
-      if (error) console.error("Settings error:", key, error);
+      await supabase.from("site_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
     }
     setSavingSettings(false); setSettingsSaved(true);
     setTimeout(() => setSettingsSaved(false), 3000);
@@ -432,43 +431,90 @@ export default function AdminPage() {
   ];
 
   const tabs = isFullAdmin ? allTabs : allTabs.filter((t) => ["listings", "users", "messages"].includes(t.id));
+  const activeTabData = tabs.find((t) => t.id === activeTab);
 
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
-      <section className="py-16 lg:py-24 px-6 lg:px-12">
+      <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
 
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-12 rounded-2xl bg-aura-accent/10 flex items-center justify-center">
-              <MdOutlineAdminPanelSettings className="w-6 h-6 text-aura-accent" />
+          {/* الهيدر */}
+          <div className="flex items-center gap-4 mb-8 md:mb-10">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-aura-accent/10 flex items-center justify-center shrink-0">
+              <MdOutlineAdminPanelSettings className="w-5 h-5 md:w-6 md:h-6 text-aura-accent" />
             </div>
             <div>
               <p className="text-xs tracking-[0.3em] text-aura-accent uppercase">{isAr ? "لوحة الإدارة" : "Admin Panel"}</p>
-              <h1 className="text-3xl font-light text-aura-dark">{isAr ? "إدارة الموقع" : "Site Management"}</h1>
+              <h1 className="text-2xl md:text-3xl font-light text-aura-dark">{isAr ? "إدارة الموقع" : "Site Management"}</h1>
               {!isFullAdmin && <p className="text-xs text-aura-muted mt-1">{isAr ? "مساعد أدمن — صلاحيات محدودة" : "Sub Admin — Limited Access"}</p>}
             </div>
           </div>
 
-          <div className="flex gap-2 mb-8 bg-aura-card p-1.5 rounded-2xl border border-aura-border w-fit flex-wrap">
-            {tabs.map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${activeTab === tab.id ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"}`}>
-                {tab.icon}{isAr ? tab.ar : tab.en}
-                {tab.count !== null && tab.count > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? "bg-white/20" : tab.id === "messages" && unreadCount > 0 ? "bg-red-500 text-white" : "bg-aura-canvas"}`}>{tab.count}</span>}
+          {/* ✅ Tabs — dropdown على الموبايل، أفقية على الديسكتوب */}
+          <div className="mb-6 md:mb-8">
+            {/* موبايل — dropdown */}
+            <div className="md:hidden relative">
+              <button
+                onClick={() => setMobileTabOpen(!mobileTabOpen)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-aura-card border border-aura-border text-sm font-medium text-aura-dark"
+              >
+                <span className="flex items-center gap-2">
+                  {activeTabData?.icon}
+                  {isAr ? activeTabData?.ar : activeTabData?.en}
+                </span>
+                <HiOutlineChevronDown className={`w-4 h-4 text-aura-muted transition-transform ${mobileTabOpen ? "rotate-180" : ""}`} />
               </button>
-            ))}
+              {mobileTabOpen && (
+                <div className="absolute top-full mt-2 w-full bg-aura-card border border-aura-border rounded-2xl shadow-xl overflow-hidden z-20">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id as any); setMobileTabOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${activeTab === tab.id ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"}`}
+                    >
+                      {tab.icon}
+                      {isAr ? tab.ar : tab.en}
+                      {tab.count !== null && tab.count > 0 && (
+                        <span className={`mr-auto text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? "bg-white/20" : tab.id === "messages" && unreadCount > 0 ? "bg-red-500 text-white" : "bg-aura-canvas"}`}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ديسكتوب — أفقية scrollable */}
+            <div className="hidden md:flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border overflow-x-auto scrollbar-hide">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap shrink-0 ${activeTab === tab.id ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"}`}
+                >
+                  {tab.icon}
+                  {isAr ? tab.ar : tab.en}
+                  {tab.count !== null && tab.count > 0 && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? "bg-white/20" : tab.id === "messages" && unreadCount > 0 ? "bg-red-500 text-white" : "bg-aura-canvas"}`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ── الإعلانات ── */}
           {activeTab === "listings" && (
             <>
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                 {(["pending", "approved", "rejected"] as const).map((s) => (
                   <button key={s} onClick={() => setListingFilter(s)}
-                    className={`p-4 rounded-2xl border text-center transition-all duration-300 ${listingFilter === s ? "bg-aura-dark text-white border-aura-dark" : "bg-aura-card border-aura-border hover:border-aura-accent"}`}>
-                    <p className="text-2xl font-light">{listings.filter((l) => l.status === s).length}</p>
-                    <p className="text-xs mt-1 opacity-70">{isAr ? statusConfig[s].ar : statusConfig[s].en}</p>
+                    className={`p-3 md:p-4 rounded-2xl border text-center transition-all duration-300 ${listingFilter === s ? "bg-aura-dark text-white border-aura-dark" : "bg-aura-card border-aura-border hover:border-aura-accent"}`}>
+                    <p className="text-xl md:text-2xl font-light">{listings.filter((l) => l.status === s).length}</p>
+                    <p className="text-[10px] md:text-xs mt-1 opacity-70">{isAr ? statusConfig[s].ar : statusConfig[s].en}</p>
                   </button>
                 ))}
               </div>
@@ -478,19 +524,19 @@ export default function AdminPage() {
                   <p className="text-aura-muted font-light">{isAr ? "لا توجد إعلانات" : "No listings"}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {filteredListings.map((listing) => (
                     <div key={listing.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-44 md:h-48 overflow-hidden">
                         <img src={listing.images?.[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"} alt={listing.title_en} className="w-full h-full object-cover img-hover" />
-                        <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-sm text-white text-sm font-medium">{formatPrice(listing.price)}</div>
-                        <span className={`absolute top-4 right-4 px-3 py-1 rounded-full border text-[10px] font-medium ${statusConfig[listing.status].cls}`}>{isAr ? statusConfig[listing.status].ar : statusConfig[listing.status].en}</span>
+                        <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-sm text-white text-xs md:text-sm font-medium">{formatPrice(listing.price)}</div>
+                        <span className={`absolute top-3 right-3 px-3 py-1 rounded-full border text-[10px] font-medium ${statusConfig[listing.status].cls}`}>{isAr ? statusConfig[listing.status].ar : statusConfig[listing.status].en}</span>
                       </div>
-                      <div className="p-5">
-                        <h3 className="text-sm font-medium text-aura-dark mb-1">{isAr ? listing.title_ar : listing.title_en}</h3>
+                      <div className="p-4 md:p-5">
+                        <h3 className="text-sm font-medium text-aura-dark mb-1 line-clamp-1">{isAr ? listing.title_ar : listing.title_en}</h3>
                         <div className="flex items-center gap-1.5 text-aura-muted mb-3">
                           <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
-                          <span className="text-xs">{isAr ? listing.location_ar : listing.location_en}</span>
+                          <span className="text-xs truncate">{isAr ? listing.location_ar : listing.location_en}</span>
                         </div>
                         {listing.profiles && (
                           <div className="px-3 py-2 rounded-xl bg-aura-canvas border border-aura-border mb-3">
@@ -529,87 +575,80 @@ export default function AdminPage() {
           {/* ── المستخدمين ── */}
           {activeTab === "users" && (
             <>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border w-fit flex-wrap">
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border flex-wrap">
                   {(["all", "admin", "subadmin", "user"] as const).map((f) => (
                     <button key={f} onClick={() => setUserFilter(f)}
-                      className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${userFilter === f ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"}`}>
+                      className={`px-3 md:px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${userFilter === f ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"}`}>
                       {f === "all" ? (isAr ? "الكل" : "All") : f === "admin" ? (isAr ? "أدمن" : "Admin") : f === "subadmin" ? (isAr ? "مساعد" : "Sub") : (isAr ? "مستخدم" : "User")}
                     </button>
                   ))}
                 </div>
-                <div className="relative flex-1 max-w-sm">
+                <div className="relative flex-1">
                   <HiOutlineMagnifyingGlass className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={isAr ? "بحث بالاسم أو البريد..." : "Search by name or email..."}
                     className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all" />
                 </div>
-                <button onClick={exportUsersExcel} className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-aura-dark text-white text-xs font-medium hover:bg-aura-accent transition-all duration-300">
-                  <HiOutlineArrowDownTray className="w-4 h-4" />{isAr ? "تصدير Excel" : "Export Excel"}
+                <button onClick={exportUsersExcel} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-aura-dark text-white text-xs font-medium hover:bg-aura-accent transition-all duration-300 shrink-0">
+                  <HiOutlineArrowDownTray className="w-4 h-4" />{isAr ? "تصدير" : "Export"}
                 </button>
               </div>
+
+              {/* ✅ جدول scrollable على الموبايل */}
               <div className="bg-aura-card rounded-3xl border border-aura-border overflow-hidden">
-                <table className="w-full" dir={isAr ? "rtl" : "ltr"}>
-                  <thead>
-                    <tr className="border-b border-aura-border bg-aura-canvas">
-                      {[isAr ? "الاسم" : "Name", isAr ? "البريد" : "Email", isAr ? "الهاتف" : "Phone", isAr ? "الدور" : "Role", isAr ? "الإعلانات" : "Listings", isAr ? "تاريخ التسجيل" : "Joined",
-                      ...(isFullAdmin ? [isAr ? "الصلاحيات" : "Permissions"] : [])].map((h) => (
-                        <th key={h} className="px-6 py-4 text-start text-xs font-medium text-aura-muted">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.length === 0 ? (
-                      <tr><td colSpan={7} className="text-center py-12 text-aura-muted text-sm">{isAr ? "لا توجد نتائج" : "No results"}</td></tr>
-                    ) : filteredUsers.map((u, i) => (
-                      <tr key={u.id} className={`border-b border-aura-border hover:bg-aura-canvas transition-colors ${i % 2 === 0 ? "" : "bg-aura-canvas/30"}`}>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-aura-accent/20 flex items-center justify-center text-aura-accent text-xs font-medium shrink-0">{u.full_name?.charAt(0) || u.email?.charAt(0) || "?"}</div>
-                            <span className="text-sm text-aura-dark">{u.full_name || "-"}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-aura-muted">{u.email || "-"}</td>
-                        <td className="px-6 py-4 text-sm text-aura-muted">{u.phone || "-"}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${u.role === "admin" ? "bg-aura-accent/10 text-aura-accent" :
-                              u.role === "subadmin" ? "bg-blue-50 text-blue-500 border border-blue-200" :
-                                "bg-aura-canvas text-aura-muted border border-aura-border"}`}>
-                            {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub Admin") : (isAr ? "مستخدم" : "User")}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-aura-dark">{u.listings_count || 0}</td>
-                        <td className="px-6 py-4 text-xs text-aura-muted">{new Date(u.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}</td>
-                        {isFullAdmin && (
-                          <td className="px-6 py-4">
-                            {u.id !== user?.id && (
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {u.role === "user" && (
-                                  <>
-                                    <button onClick={() => changeUserRole(u.id, "subadmin")}
-                                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-500 text-[10px] font-medium hover:bg-blue-100 transition-all border border-blue-200">
-                                      {isAr ? "مساعد" : "Sub"}
-                                    </button>
-                                    <button onClick={() => changeUserRole(u.id, "admin")}
-                                      className="px-3 py-1.5 rounded-lg bg-aura-accent/10 text-aura-accent text-[10px] font-medium hover:bg-aura-accent/20 transition-all">
-                                      {isAr ? "أدمن" : "Admin"}
-                                    </button>
-                                  </>
-                                )}
-                                {(u.role === "admin" || u.role === "subadmin") && (
-                                  <button onClick={() => changeUserRole(u.id, "user")}
-                                    className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-[10px] font-medium hover:bg-red-100 transition-all border border-red-200">
-                                    {isAr ? "إلغاء" : "Revoke"}
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </td>
-                        )}
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px]" dir={isAr ? "rtl" : "ltr"}>
+                    <thead>
+                      <tr className="border-b border-aura-border bg-aura-canvas">
+                        {[isAr ? "الاسم" : "Name", isAr ? "البريد" : "Email", isAr ? "الهاتف" : "Phone", isAr ? "الدور" : "Role", isAr ? "الإعلانات" : "Listings", isAr ? "تاريخ التسجيل" : "Joined",
+                        ...(isFullAdmin ? [isAr ? "الصلاحيات" : "Permissions"] : [])].map((h) => (
+                          <th key={h} className="px-4 md:px-6 py-4 text-start text-xs font-medium text-aura-muted whitespace-nowrap">{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-12 text-aura-muted text-sm">{isAr ? "لا توجد نتائج" : "No results"}</td></tr>
+                      ) : filteredUsers.map((u, i) => (
+                        <tr key={u.id} className={`border-b border-aura-border hover:bg-aura-canvas transition-colors ${i % 2 === 0 ? "" : "bg-aura-canvas/30"}`}>
+                          <td className="px-4 md:px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-aura-accent/20 flex items-center justify-center text-aura-accent text-xs font-medium shrink-0">{u.full_name?.charAt(0) || u.email?.charAt(0) || "?"}</div>
+                              <span className="text-sm text-aura-dark whitespace-nowrap">{u.full_name || "-"}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.email || "-"}</td>
+                          <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.phone || "-"}</td>
+                          <td className="px-4 md:px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap ${u.role === "admin" ? "bg-aura-accent/10 text-aura-accent" : u.role === "subadmin" ? "bg-blue-50 text-blue-500 border border-blue-200" : "bg-aura-canvas text-aura-muted border border-aura-border"}`}>
+                              {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub Admin") : (isAr ? "مستخدم" : "User")}
+                            </span>
+                          </td>
+                          <td className="px-4 md:px-6 py-4 text-sm text-aura-dark">{u.listings_count || 0}</td>
+                          <td className="px-4 md:px-6 py-4 text-xs text-aura-muted whitespace-nowrap">{new Date(u.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}</td>
+                          {isFullAdmin && (
+                            <td className="px-4 md:px-6 py-4">
+                              {u.id !== user?.id && (
+                                <div className="flex items-center gap-2">
+                                  {u.role === "user" && (
+                                    <>
+                                      <button onClick={() => changeUserRole(u.id, "subadmin")} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-500 text-[10px] font-medium hover:bg-blue-100 transition-all border border-blue-200 whitespace-nowrap">{isAr ? "مساعد" : "Sub"}</button>
+                                      <button onClick={() => changeUserRole(u.id, "admin")} className="px-3 py-1.5 rounded-lg bg-aura-accent/10 text-aura-accent text-[10px] font-medium hover:bg-aura-accent/20 transition-all whitespace-nowrap">{isAr ? "أدمن" : "Admin"}</button>
+                                    </>
+                                  )}
+                                  {(u.role === "admin" || u.role === "subadmin") && (
+                                    <button onClick={() => changeUserRole(u.id, "user")} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-[10px] font-medium hover:bg-red-100 transition-all border border-red-200 whitespace-nowrap">{isAr ? "إلغاء" : "Revoke"}</button>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
@@ -619,7 +658,7 @@ export default function AdminPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-light text-aura-dark">{isAr ? "رسائل العملاء" : "Customer Messages"}</h2>
+                  <h2 className="text-lg md:text-xl font-light text-aura-dark">{isAr ? "رسائل العملاء" : "Customer Messages"}</h2>
                   {unreadCount > 0 && <p className="text-xs text-aura-accent mt-1">{isAr ? `${unreadCount} رسالة غير مقروءة` : `${unreadCount} unread messages`}</p>}
                 </div>
               </div>
@@ -631,13 +670,13 @@ export default function AdminPage() {
               ) : (
                 messages.map((msg) => (
                   <div key={msg.id} onClick={() => { if (!msg.read) markMessageRead(msg.id); }}
-                    className={`bento-card rounded-3xl p-6 border cursor-pointer transition-all ${msg.read ? "bg-aura-card border-aura-border" : "bg-aura-accent/5 border-aura-accent/30"}`}>
+                    className={`bento-card rounded-3xl p-4 md:p-6 border cursor-pointer transition-all ${msg.read ? "bg-aura-card border-aura-border" : "bg-aura-accent/5 border-aura-accent/30"}`}>
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-aura-accent/20 flex items-center justify-center text-aura-accent font-medium text-sm shrink-0">{msg.name.charAt(0).toUpperCase()}</div>
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-aura-accent/20 flex items-center justify-center text-aura-accent font-medium text-sm shrink-0">{msg.name.charAt(0).toUpperCase()}</div>
                         <div>
                           <p className="text-sm font-medium text-aura-dark">{msg.name}</p>
-                          <div className="flex items-center gap-3 text-xs text-aura-muted mt-0.5 flex-wrap">
+                          <div className="flex items-center gap-2 text-xs text-aura-muted mt-0.5 flex-wrap">
                             {msg.phone && <span dir="ltr">📞 {msg.phone}</span>}
                             {msg.email && <span dir="ltr">✉️ {msg.email}</span>}
                           </div>
@@ -650,7 +689,7 @@ export default function AdminPage() {
                     </div>
                     {msg.subject && <p className="text-xs font-medium text-aura-dark mb-2 px-3 py-1.5 rounded-lg bg-aura-canvas w-fit">{msg.subject}</p>}
                     <p className="text-sm text-aura-muted leading-relaxed mb-4">{msg.message}</p>
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                       {msg.phone && <a href={`tel:${msg.phone}`} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-aura-dark text-white text-xs hover:bg-aura-accent transition-all">📞 {isAr ? "اتصل" : "Call"}</a>}
                       {msg.email && <a href={`mailto:${msg.email}`} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-aura-border text-aura-dark text-xs hover:border-aura-accent transition-all">✉️ {isAr ? "راسل" : "Email"}</a>}
                       <button onClick={() => deleteMessage(msg.id)} className="mr-auto px-4 py-2 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Delete"}</button>
@@ -664,7 +703,7 @@ export default function AdminPage() {
           {/* ── الإعلانات الجانبية ── */}
           {activeTab === "ads" && isFullAdmin && (
             <div className="space-y-8">
-              <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+              <div className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
                 <h3 className="text-base font-medium text-aura-dark mb-1">{editingAd ? (isAr ? "تعديل إعلان" : "Edit Ad") : (isAr ? "إضافة إعلان جديد" : "Add New Ad")}</h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -693,22 +732,22 @@ export default function AdminPage() {
                 </div>
               </div>
               {ads.length === 0 ? <div className="text-center py-16 text-aura-muted bg-aura-card rounded-3xl border border-aura-border">{isAr ? "لا توجد إعلانات جانبية بعد" : "No side ads yet"}</div> : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {ads.map((ad) => (
                     <div key={ad.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
                       {ad.image_url && <div className="h-40 overflow-hidden"><img src={ad.image_url} alt={isAr ? ad.title_ar : ad.title_en} className="w-full h-full object-cover" /></div>}
-                      <div className="p-5">
+                      <div className="p-4 md:p-5">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="text-sm font-medium text-aura-dark">{isAr ? ad.title_ar : ad.title_en}</h4>
+                          <h4 className="text-sm font-medium text-aura-dark line-clamp-1">{isAr ? ad.title_ar : ad.title_en}</h4>
                           <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${ad.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{ad.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span>
                         </div>
                         {ad.badge_ar && <span className="inline-block px-2 py-0.5 rounded-full bg-aura-accent/10 text-aura-accent text-[10px] mb-2">{isAr ? ad.badge_ar : ad.badge_en}</span>}
-                        <p className="text-xs text-aura-muted mb-1">{isAr ? ad.subtitle_ar : ad.subtitle_en}</p>
+                        <p className="text-xs text-aura-muted mb-1 line-clamp-1">{isAr ? ad.subtitle_ar : ad.subtitle_en}</p>
                         {ad.price && <p className="text-xs font-medium text-aura-accent mb-3">{ad.price}</p>}
                         <div className="flex gap-2">
                           <button onClick={() => { setEditingAd(ad.id); setAdForm({ title_ar: ad.title_ar || "", title_en: ad.title_en || "", subtitle_ar: ad.subtitle_ar || "", subtitle_en: ad.subtitle_en || "", badge_ar: ad.badge_ar || "", badge_en: ad.badge_en || "", price: ad.price || "", image_url: ad.image_url || "", link: ad.link || "", order_num: String(ad.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                           <button onClick={() => toggleAdActive(ad.id, !ad.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${ad.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{ad.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
-                          <button onClick={() => deleteAd(ad.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                          <button onClick={() => deleteAd(ad.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                         </div>
                       </div>
                     </div>
@@ -721,10 +760,10 @@ export default function AdminPage() {
           {/* ── أنواع العقارات ── */}
           {activeTab === "types" && isFullAdmin && (
             <div className="space-y-8">
-              <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+              <div className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
                 <h3 className="text-base font-medium text-aura-dark mb-1">{editingType ? (isAr ? "تعديل نوع" : "Edit Type") : (isAr ? "إضافة نوع جديد" : "Add New Type")}</h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم (عربي)" : "Name (Arabic)"}</label><input type="text" value={typeForm.name_ar} onChange={(e) => setTypeForm((prev) => ({ ...prev, name_ar: e.target.value }))} className={inputCls} /></div>
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم (إنجليزي)" : "Name (English)"}</label><input type="text" value={typeForm.name_en} onChange={(e) => setTypeForm((prev) => ({ ...prev, name_en: e.target.value }))} className={inputCls} /></div>
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "القيمة" : "Value"}</label><input type="text" value={typeForm.value} onChange={(e) => setTypeForm((prev) => ({ ...prev, value: e.target.value.toLowerCase().replace(/\s/g, "_") }))} className={inputCls} dir="ltr" /></div>
@@ -735,9 +774,9 @@ export default function AdminPage() {
                   {editingType && <button onClick={() => { setEditingType(null); setTypeForm(emptyType); }} className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all">{isAr ? "إلغاء" : "Cancel"}</button>}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {propertyTypes.map((type) => (
-                  <div key={type.id} className="bento-card bg-aura-card rounded-2xl p-5 border border-aura-border">
+                  <div key={type.id} className="bento-card bg-aura-card rounded-2xl p-4 md:p-5 border border-aura-border">
                     <div className="flex items-center justify-between mb-3">
                       <div><h4 className="text-sm font-medium text-aura-dark">{isAr ? type.name_ar : type.name_en}</h4><p className="text-[10px] text-aura-muted mt-0.5" dir="ltr">{type.value}</p></div>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${type.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{type.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span>
@@ -745,7 +784,7 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <button onClick={() => { setEditingType(type.id); setTypeForm({ name_ar: type.name_ar, name_en: type.name_en, value: type.value, order_num: String(type.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                       <button onClick={() => toggleTypeActive(type.id, !type.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${type.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{type.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
-                      <button onClick={() => deletePropertyType(type.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                      <button onClick={() => deletePropertyType(type.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                     </div>
                   </div>
                 ))}
@@ -756,13 +795,13 @@ export default function AdminPage() {
           {/* ── الشركاء ── */}
           {activeTab === "partners" && isFullAdmin && (
             <div className="space-y-8">
-              <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+              <div className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
                 <h3 className="text-base font-medium text-aura-dark mb-1">{editingPartner ? (isAr ? "تعديل شريك" : "Edit Partner") : (isAr ? "إضافة شريك جديد" : "Add New Partner")}</h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشريك" : "Partner Name"}</label><input type="text" value={partnerForm.name} onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))} className={inputCls} /></div>
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الترتيب" : "Order"}</label><input type="number" value={partnerForm.order_num} onChange={(e) => setPartnerForm((prev) => ({ ...prev, order_num: e.target.value }))} className={inputCls} dir="ltr" /></div>
-                  <div className="space-y-1.5 md:col-span-2">
+                  <div className="space-y-1.5 sm:col-span-2">
                     <label className="text-xs font-medium text-aura-dark">{isAr ? "لوجو الشريك" : "Partner Logo"}</label>
                     <div className="flex gap-3">
                       <input type="text" value={partnerForm.logo_url} onChange={(e) => setPartnerForm((prev) => ({ ...prev, logo_url: e.target.value }))} placeholder="URL..." className={`${inputCls} flex-1`} />
@@ -780,17 +819,17 @@ export default function AdminPage() {
                   {editingPartner && <button onClick={() => { setEditingPartner(null); setPartnerForm(emptyPartner); }} className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all">{isAr ? "إلغاء" : "Cancel"}</button>}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {partners.map((partner) => (
-                  <div key={partner.id} className="bento-card bg-aura-card rounded-2xl p-5 border border-aura-border">
+                  <div key={partner.id} className="bento-card bg-aura-card rounded-2xl p-4 md:p-5 border border-aura-border">
                     <div className="flex items-center gap-4 mb-4">
-                      {partner.logo_url ? <div className="w-14 h-14 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden"><img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-1" /></div> : <div className="w-14 h-14 rounded-xl bg-aura-accent/10 flex items-center justify-center"><span className="text-sm font-bold text-aura-accent">{partner.name.slice(0, 2)}</span></div>}
+                      {partner.logo_url ? <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden shrink-0"><img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-1" /></div> : <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-aura-accent/10 flex items-center justify-center shrink-0"><span className="text-sm font-bold text-aura-accent">{partner.name.slice(0, 2)}</span></div>}
                       <div><h4 className="text-sm font-medium text-aura-dark">{partner.name}</h4><span className={`text-[10px] px-2 py-0.5 rounded-full ${partner.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{partner.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span></div>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => { setEditingPartner(partner.id); setPartnerForm({ name: partner.name, logo_url: partner.logo_url || "", order_num: String(partner.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                       <button onClick={() => togglePartnerActive(partner.id, !partner.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${partner.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{partner.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
-                      <button onClick={() => deletePartner(partner.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                      <button onClick={() => deletePartner(partner.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                     </div>
                   </div>
                 ))}
@@ -801,7 +840,7 @@ export default function AdminPage() {
           {/* ── المقالات ── */}
           {activeTab === "blog" && isFullAdmin && (
             <div className="space-y-8">
-              <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+              <div className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
                 <h3 className="text-base font-medium text-aura-dark mb-1">{editingPost ? (isAr ? "تعديل مقال" : "Edit Post") : (isAr ? "إضافة مقال جديد" : "Add New Post")}</h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -831,11 +870,11 @@ export default function AdminPage() {
                 </div>
               </div>
               {blogPosts.length === 0 ? <div className="text-center py-16 text-aura-muted bg-aura-card rounded-3xl border border-aura-border">{isAr ? "لا توجد مقالات بعد" : "No blog posts yet"}</div> : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {blogPosts.map((post) => (
                     <div key={post.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
                       {post.image_url && <div className="h-40 overflow-hidden"><img src={post.image_url} alt={post.title_en} className="w-full h-full object-cover" /></div>}
-                      <div className="p-5">
+                      <div className="p-4 md:p-5">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="text-sm font-medium text-aura-dark line-clamp-2">{isAr ? post.title_ar : post.title_en}</h4>
                           <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${post.published ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"}`}>{post.published ? (isAr ? "منشور" : "Published") : (isAr ? "مسودة" : "Draft")}</span>
@@ -845,7 +884,7 @@ export default function AdminPage() {
                         <div className="flex gap-2">
                           <button onClick={() => { setEditingPost(post.id); setPostForm({ title_ar: post.title_ar || "", title_en: post.title_en || "", excerpt_ar: post.excerpt_ar || "", excerpt_en: post.excerpt_en || "", content_ar: post.content_ar || "", content_en: post.content_en || "", category: post.category || "", image_url: post.image_url || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                           <button onClick={() => togglePostPublished(post.id, !post.published)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${post.published ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{post.published ? (isAr ? "إلغاء النشر" : "Unpublish") : (isAr ? "نشر" : "Publish")}</button>
-                          <button onClick={() => deletePost(post.id)} className="py-2 px-4 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                          <button onClick={() => deletePost(post.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                         </div>
                       </div>
                     </div>
@@ -857,10 +896,15 @@ export default function AdminPage() {
 
           {/* ── الإعدادات ── */}
           {activeTab === "settings" && isFullAdmin && (
-            <div className="space-y-8">
-              {settingsSaved && <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm"><HiOutlineCheckBadge className="w-4 h-4 shrink-0" />{isAr ? "تم حفظ الإعدادات بنجاح!" : "Settings saved successfully!"}</div>}
+            <div className="space-y-6 md:space-y-8">
+              {settingsSaved && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm">
+                  <HiOutlineCheckBadge className="w-4 h-4 shrink-0" />
+                  {isAr ? "تم حفظ الإعدادات بنجاح!" : "Settings saved successfully!"}
+                </div>
+              )}
               {settingsGroups.map((group) => (
-                <div key={group.title_en} className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border">
+                <div key={group.title_en} className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
                   <h3 className="text-base font-medium text-aura-dark mb-1">{isAr ? group.title_ar : group.title_en}</h3>
                   <div className="w-8 h-0.5 bg-aura-accent mb-5" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -889,7 +933,9 @@ export default function AdminPage() {
                   </div>
                 </div>
               ))}
-              <button onClick={saveSettings} disabled={savingSettings} className="px-8 py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">{savingSettings ? (isAr ? "جاري الحفظ..." : "Saving...") : (isAr ? "حفظ الإعدادات" : "Save Settings")}</button>
+              <button onClick={saveSettings} disabled={savingSettings} className="px-8 py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">
+                {savingSettings ? (isAr ? "جاري الحفظ..." : "Saving...") : (isAr ? "حفظ الإعدادات" : "Save Settings")}
+              </button>
             </div>
           )}
 

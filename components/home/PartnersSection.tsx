@@ -16,17 +16,21 @@ function PartnerCard({ partner }: { partner: Partner }) {
   const initials = partner.name.split(" ").map((w) => w[0]).join("").slice(0, 2);
 
   return (
-    <div className="flex items-center gap-4 px-8 py-5 rounded-2xl bg-aura-card border border-aura-border hover:border-aura-accent/50 hover:shadow-[0_8px_30px_rgba(196,181,165,0.15)] transition-all duration-300 shrink-0 group">
+    <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-aura-card border border-aura-border hover:border-aura-accent/50 hover:shadow-[0_8px_30px_rgba(196,181,165,0.15)] transition-all duration-300 shrink-0 group w-36 sm:w-40">
+      
+      {/* اللوجو فوق */}
       {partner.logo_url ? (
-        <div className="w-12 h-12 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden shrink-0 group-hover:border-aura-accent/30 transition-all duration-300">
-          <img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-1" />
+        <div className="w-16 h-16 rounded-2xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden group-hover:border-aura-accent/30 transition-all duration-300">
+          <img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-2" />
         </div>
       ) : (
-        <div className="w-10 h-10 rounded-xl bg-aura-canvas border border-aura-border flex items-center justify-center shrink-0 group-hover:bg-aura-accent/10 group-hover:border-aura-accent/30 transition-all duration-300">
-          <span className="text-[10px] font-bold tracking-wider text-aura-accent">{initials}</span>
+        <div className="w-16 h-16 rounded-2xl bg-aura-canvas border border-aura-border flex items-center justify-center group-hover:bg-aura-accent/10 group-hover:border-aura-accent/30 transition-all duration-300">
+          <span className="text-lg font-bold text-aura-accent">{initials}</span>
         </div>
       )}
-      <span className="text-sm font-semibold tracking-[0.18em] text-aura-muted group-hover:text-aura-dark transition-colors duration-300 whitespace-nowrap">
+
+      {/* الاسم تحت */}
+      <span className="text-xs font-medium text-aura-muted group-hover:text-aura-dark transition-colors duration-300 text-center leading-tight">
         {partner.name}
       </span>
     </div>
@@ -54,7 +58,7 @@ export default function PartnersSection() {
   if (partners.length === 0) return null;
 
   const MarqueeTrack = () => (
-    <div className="flex shrink-0 items-center gap-5 pr-5">
+    <div className="flex shrink-0 items-center gap-4 sm:gap-5 pr-4 sm:pr-5">
       {partners.map((partner) => (
         <PartnerCard key={partner.id} partner={partner} />
       ))}
@@ -62,13 +66,13 @@ export default function PartnersSection() {
   );
 
   return (
-    <section className="py-20 bg-aura-canvas border-t border-aura-border overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-12">
+    <section className="py-14 md:py-20 bg-aura-canvas border-t border-aura-border overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8 md:mb-12">
         <div className="text-center">
           <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
             {isAr ? "شركاؤنا" : "Our Partners"}
           </p>
-          <h2 className="text-3xl md:text-4xl font-light text-aura-dark">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-aura-dark">
             {isAr ? "نتعاون مع أكبر" : "We Work With"}
             <span className="font-serif italic text-aura-accent mx-2">
               {isAr ? "المطورين العقاريين" : "Top Developers"}
@@ -83,8 +87,8 @@ export default function PartnersSection() {
       </div>
 
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-20 md:w-32 z-10 bg-gradient-to-r from-aura-canvas via-aura-canvas/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-20 md:w-32 z-10 bg-gradient-to-l from-aura-canvas via-aura-canvas/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-32 z-10 bg-gradient-to-r from-aura-canvas via-aura-canvas/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-32 z-10 bg-gradient-to-l from-aura-canvas via-aura-canvas/80 to-transparent" />
         <div className="marquee-viewport">
           <div className="marquee-track">
             <MarqueeTrack />

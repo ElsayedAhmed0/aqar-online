@@ -31,17 +31,17 @@ function StatCard({ icon, number, suffix, label, started }: {
   const count = useCountUp(number, 2000, started);
   return (
     <div className="flex flex-col items-center text-center group">
-      <div className="w-12 h-12 rounded-xl bg-aura-accent/10 flex items-center justify-center text-aura-accent mb-4 group-hover:bg-aura-accent group-hover:text-white transition-all duration-500">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-aura-accent/10 flex items-center justify-center text-aura-accent mb-3 sm:mb-4 group-hover:bg-aura-accent group-hover:text-white transition-all duration-500">
         {icon}
       </div>
       <div className="flex items-end gap-1 mb-2">
-        <span className="text-4xl font-light text-aura-dark tabular-nums">
+        <span className="text-3xl sm:text-4xl font-light text-aura-dark tabular-nums">
           {count.toLocaleString()}
         </span>
-        <span className="text-2xl font-light text-aura-accent mb-1">{suffix}</span>
+        <span className="text-xl sm:text-2xl font-light text-aura-accent mb-1">{suffix}</span>
       </div>
-      <p className="text-aura-muted text-sm font-light">{label}</p>
-      <div className="w-8 h-0.5 bg-aura-accent/30 mt-4 group-hover:w-16 transition-all duration-500" />
+      <p className="text-aura-muted text-xs sm:text-sm font-light">{label}</p>
+      <div className="w-8 h-0.5 bg-aura-accent/30 mt-3 sm:mt-4 group-hover:w-16 transition-all duration-500" />
     </div>
   );
 }
@@ -64,25 +64,25 @@ export default function StatsSection() {
 
   const stats = [
     {
-      icon: <HiOutlineHome className="w-7 h-7" />,
+      icon: <HiOutlineHome className="w-5 h-5 sm:w-7 sm:h-7" />,
       number: Number(settings.stats_properties?.replace(/,/g, "") || 2500),
       suffix: "+",
       label: isAr ? "عقار متاح" : "Properties",
     },
     {
-      icon: <HiOutlineUserGroup className="w-7 h-7" />,
+      icon: <HiOutlineUserGroup className="w-5 h-5 sm:w-7 sm:h-7" />,
       number: Number(settings.stats_clients?.replace(/,/g, "") || 1200),
       suffix: "+",
       label: isAr ? "عميل سعيد" : "Happy Clients",
     },
     {
-      icon: <HiOutlineStar className="w-7 h-7" />,
+      icon: <HiOutlineStar className="w-5 h-5 sm:w-7 sm:h-7" />,
       number: 98,
       suffix: "%",
       label: isAr ? "نسبة الرضا" : "Satisfaction Rate",
     },
     {
-      icon: <HiOutlineBuildingOffice2 className="w-7 h-7" />,
+      icon: <HiOutlineBuildingOffice2 className="w-5 h-5 sm:w-7 sm:h-7" />,
       number: Number(settings.stats_years?.replace(/,/g, "") || 15),
       suffix: "+",
       label: isAr ? "سنة خبرة" : "Years Experience",
@@ -90,14 +90,14 @@ export default function StatsSection() {
   ];
 
   return (
-    <section ref={ref} className="py-14 px-6 lg:px-12 bg-aura-canvas">
-      <div className="max-w-7xl mx-auto">
+    <section ref={ref} className="py-12 md:py-14 bg-aura-canvas">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-8 md:mb-10">
           <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
             {isAr ? "أرقامنا تتكلم" : "Our Numbers Speak"}
           </p>
-          <h2 className="text-3xl md:text-4xl font-light text-aura-dark">
+          <h2 className="text-3xl sm:text-4xl font-light text-aura-dark">
             {isAr ? "ثقة" : "Trusted By"}
             <span className="block font-serif italic text-aura-accent mt-1">
               {isAr ? "آلاف العملاء" : "Thousands"}
@@ -105,7 +105,7 @@ export default function StatsSection() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
           {stats.map((stat, i) => (
             <StatCard key={i} {...stat} started={started} />
           ))}

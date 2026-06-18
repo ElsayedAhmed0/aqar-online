@@ -15,21 +15,26 @@ export default function Home() {
       <Navbar />
       <HeroSection />
 
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
+      {/* ✅ wrapper بـ padding صح */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
         <div className="flex gap-8 items-start">
 
-          {/* المحتوى الرئيسي — 75% */}
-          <div className="flex-1 min-w-0">
+          {/* المحتوى الرئيسي */}
+          <div className="flex-1 min-w-0 overflow-hidden">
             <BentoGrid />
-             <PartnersSection />
+            <PartnersSection />
             <PropertiesSection />
+
+            {/* الإعلانات carousel على الموبايل */}
+            <div className="lg:hidden py-8">
+              <SideAds />
+            </div>
+
             <StatsSection />
-            
-           
             <BlogSection />
           </div>
 
-          {/* الإعلانات الجانبية — 25% sticky */}
+          {/* الإعلانات الجانبية — ديسكتوب فقط */}
           <div className="hidden lg:block w-72 xl:w-80 shrink-0 sticky top-28 py-12">
             <SideAds />
           </div>

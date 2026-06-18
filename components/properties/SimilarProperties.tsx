@@ -28,12 +28,12 @@ export default function SimilarProperties({
   if (!mounted) return null;
 
   return (
-    <section className="mt-16">
-      <div className="mb-8">
+    <section className="mt-12 md:mt-16">
+      <div className="mb-6 md:mb-8">
         <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
           {isAr ? "قد يعجبك أيضاً" : "You May Also Like"}
         </p>
-        <h2 className="text-3xl font-light text-aura-dark">
+        <h2 className="text-2xl sm:text-3xl font-light text-aura-dark">
           {isAr ? "عقارات" : "Similar"}
           <span className="font-serif italic text-aura-accent mx-2">
             {isAr ? "مشابهة" : "Properties"}
@@ -41,7 +41,8 @@ export default function SimilarProperties({
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ✅ 1 col موبايل — 2 cols تابلت — 3 cols ديسكتوب */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {properties.map((property) => (
           <a key={property.id} href={`/${locale}/properties/${property.id}`}>
             <PropertyCard
