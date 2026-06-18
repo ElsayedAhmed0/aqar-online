@@ -49,9 +49,9 @@ type Message = {
 };
 
 const statusConfig = {
-  pending:  { ar: "انتظار",      en: "Pending",  cls: "bg-amber-50 text-amber-600 border-amber-200" },
+  pending: { ar: "انتظار", en: "Pending", cls: "bg-amber-50 text-amber-600 border-amber-200" },
   approved: { ar: "موافق عليه", en: "Approved", cls: "bg-green-50 text-green-600 border-green-200" },
-  rejected: { ar: "مرفوض",      en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200" },
+  rejected: { ar: "مرفوض", en: "Rejected", cls: "bg-red-50 text-red-500 border-red-200" },
 };
 
 const settingsGroups = [
@@ -242,15 +242,27 @@ export default function AdminPage() {
     setSavingSettings(false); setSettingsSaved(true);
     setTimeout(() => setSettingsSaved(false), 3000);
   };
-
+  // ✅ استبدل الفنكشن دي بالكاملة
   const uploadImage = async (file: File, prefix: string): Promise<string | null> => {
-    const supabase = createClient();
-    const ext = file.name.split(".").pop() || "jpg";
-    const fileName = `${prefix}-${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from("listings").upload(fileName, file, { upsert: true, contentType: file.type });
-    if (error || !data) return null;
-    const { data: urlData } = supabase.storage.from("listings").getPublicUrl(data.path);
-    return urlData.publicUrl;
+    try {
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64 }),
+      });
+
+      const data = await res.json();
+      return data.url || null;
+    } catch {
+      return null;
+    }
   };
 
   const saveAd = async () => {

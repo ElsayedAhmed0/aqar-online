@@ -22,7 +22,7 @@ const ListingsContext = createContext<ListingsContextType>({
   listings: [],
   loading: true,
   addListing: async () => null,
-  removeListing: async () => {},
+  removeListing: async () => { },
 });
 
 export function ListingsProvider({ children }: { children: ReactNode }) {
@@ -182,8 +182,17 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       if (!user?.id) return;
       const supabase = createClient();
-      await supabase.from("listings").delete().eq("id", id).eq("user_id", user.id);
-      setListings((prev) => prev.filter((l) => l.id !== id));
+      const { error } = await supabase
+        .from("listings")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (!error) {
+        setListings((prev) => prev.filter((l) => l.id !== id));
+      } else {
+        console.error("Delete error:", error);
+      }
     },
     [user?.id]
   );

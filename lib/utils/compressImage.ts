@@ -39,3 +39,18 @@ export function compressImage(
     reader.readAsDataURL(file);
   });
 }
+
+// ✅ رفع الصورة على Cloudinary
+export async function uploadToCloudinary(file: File): Promise<string> {
+  const base64 = await compressImage(file, 1200, 0.82);
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: base64 }),
+  });
+
+  const data = await res.json();
+  if (!data.url) throw new Error("Upload failed");
+  return data.url;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { compressImage } from "@/lib/utils/compressImage";
+import { uploadToCloudinary } from "@/lib/utils/compressImage";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -49,8 +49,8 @@ const FEATURES = [
 ];
 
 const DELIVERY_OPTIONS = [
-  { value: "ready",              label_ar: "جاهز للتسليم", label_en: "Ready",                icon: "✅" },
-  { value: "under_construction", label_ar: "قيد الإنشاء",  label_en: "Under Construction",   icon: "🏗️" },
+  { value: "ready",              label_ar: "جاهز للتسليم", label_en: "Ready",              icon: "✅" },
+  { value: "under_construction", label_ar: "قيد الإنشاء",  label_en: "Under Construction", icon: "🏗️" },
 ];
 
 export default function AddListingForm() {
@@ -171,6 +171,7 @@ export default function AddListingForm() {
     }
   };
 
+  // ✅ التعديل الوحيد — استخدام uploadToCloudinary بدل compressImage
   const handleFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     setUploading(true);
@@ -178,9 +179,20 @@ export default function AddListingForm() {
     const newImages: string[] = [];
     const remaining = MAX_IMAGES - form.images.length;
     for (const file of Array.from(files).slice(0, remaining)) {
-      if (!file.type.startsWith("image/")) { setError(isAr ? "يُسمح بملفات الصور فقط" : "Only image files are allowed"); continue; }
-      if (file.size > MAX_FILE_SIZE) { setError(isAr ? "حجم الصورة كبير (الحد 5 ميجا)" : "Image too large (max 5MB)"); continue; }
-      try { newImages.push(await compressImage(file, 800, 0.7)); } catch { setError(isAr ? "فشل تحميل الصورة" : "Failed to load image"); }
+      if (!file.type.startsWith("image/")) {
+        setError(isAr ? "يُسمح بملفات الصور فقط" : "Only image files are allowed");
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setError(isAr ? "حجم الصورة كبير (الحد 5 ميجا)" : "Image too large (max 5MB)");
+        continue;
+      }
+      try {
+        const url = await uploadToCloudinary(file);
+        newImages.push(url);
+      } catch {
+        setError(isAr ? "فشل تحميل الصورة" : "Failed to load image");
+      }
     }
     if (newImages.length > 0) update({ images: [...form.images, ...newImages] });
     setUploading(false);
@@ -209,7 +221,6 @@ export default function AddListingForm() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      {/* ✅ قائمة الأقسام — أفقية على الموبايل وعمودية على الديسكتوب */}
       <aside className="lg:col-span-4 xl:col-span-3">
         <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-4 md:p-5 lg:sticky lg:top-28">
           <p className="text-xs tracking-[0.2em] text-aura-accent uppercase mb-3 md:mb-4">
@@ -246,7 +257,6 @@ export default function AddListingForm() {
         </div>
       </aside>
 
-      {/* محتوى القسم */}
       <div className="lg:col-span-8 xl:col-span-9">
         <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 md:p-6 lg:p-8">
           <h3 className="text-lg md:text-xl font-light text-aura-dark mb-5 md:mb-6">
@@ -257,7 +267,6 @@ export default function AddListingForm() {
             <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-sm">{error}</div>
           )}
 
-          {/* ── نوع العقار ── */}
           {activeSection === "type" && (
             <div className="space-y-6">
               <div>
@@ -308,7 +317,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── المعلومات الأساسية ── */}
           {activeSection === "basic" && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -342,7 +350,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── الموقع ── */}
           {activeSection === "location" && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -362,7 +369,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── التفاصيل والسعر ── */}
           {activeSection === "details" && (
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -404,7 +410,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── المميزات ── */}
           {activeSection === "features" && (
             <div className="space-y-6">
               <div>
@@ -431,7 +436,6 @@ export default function AddListingForm() {
                   })}
                 </div>
               </div>
-
               <div>
                 <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "مميزات العقار" : "Property Features"}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
@@ -463,7 +467,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── الصور ── */}
           {activeSection === "media" && (
             <div className="space-y-5">
               <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
@@ -484,7 +487,7 @@ export default function AddListingForm() {
                   <div className="text-center px-4">
                     <p className="text-sm font-medium text-aura-dark">
                       {uploading
-                        ? (isAr ? "جاري رفع الصور..." : "Uploading...")
+                        ? (isAr ? "جاري رفع الصور على Cloudinary..." : "Uploading to Cloudinary...")
                         : (isAr ? "اضغط أو اسحب الصور هنا" : "Click or drag images here")}
                     </p>
                     <p className="text-[11px] text-aura-muted mt-1">
@@ -524,7 +527,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* ── التواصل ── */}
           {activeSection === "contact" && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -535,7 +537,6 @@ export default function AddListingForm() {
                     placeholder="01xxxxxxxxx" className={`${inputCls} pr-11`} dir="ltr"/>
                 </div>
               </div>
-
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">
                   {isAr ? "رقم الواتساب (اختياري)" : "WhatsApp Number (optional)"}
@@ -550,7 +551,6 @@ export default function AddListingForm() {
                   {isAr ? "اتركه فارغاً لو نفس رقم الهاتف" : "Leave empty if same as phone number"}
                 </p>
               </div>
-
               <div className="p-4 rounded-2xl bg-aura-canvas border border-aura-border">
                 <p className="text-xs text-aura-muted leading-relaxed">
                   {isAr
@@ -558,8 +558,6 @@ export default function AddListingForm() {
                     : "Your number will be visible to interested buyers. Verify it before publishing."}
                 </p>
               </div>
-
-              {/* ملخص الإعلان */}
               <div className="mt-2 p-4 md:p-5 rounded-2xl bg-aura-canvas border border-aura-border space-y-2">
                 <p className="text-xs font-medium text-aura-dark mb-3">
                   {isAr ? "ملخص الإعلان" : "Listing Summary"}
@@ -581,7 +579,6 @@ export default function AddListingForm() {
             </div>
           )}
 
-          {/* أزرار التنقل */}
           <div className="flex items-center justify-between mt-6 md:mt-8 pt-5 md:pt-6 border-t border-aura-border">
             <button type="button" onClick={goPrev} disabled={sectionIndex === 0}
               className="flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-2xl text-sm text-aura-muted border border-aura-border hover:text-aura-dark transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed">
