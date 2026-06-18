@@ -400,7 +400,10 @@ export default function AdminPage() {
     return matchRole && matchSearch;
   });
 
-  const formatPrice = (price: number) => isAr ? `${(price / 1000000).toFixed(1)} مليون` : `EGP ${(price / 1000000).toFixed(1)}M`;
+ const formatPrice = (price: number) =>
+  isAr
+    ? `${price.toLocaleString("ar-EG")} جنيه`
+    : `EGP ${price.toLocaleString("en-US")}`;
 
   if (loading || fetching) {
     return (

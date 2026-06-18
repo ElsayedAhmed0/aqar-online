@@ -45,8 +45,10 @@ export default function PropertiesSection() {
     return matchType && matchSearch;
   });
 
-  const formatPrice = (price: number) =>
-    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
+const formatPrice = (price: number) =>
+  isAr
+    ? `${price.toLocaleString("ar-EG")} جنيه`
+    : `EGP ${price.toLocaleString("en-US")}`;
 
   return (
     <section id="properties" className="py-16 md:py-20 bg-aura-canvas">

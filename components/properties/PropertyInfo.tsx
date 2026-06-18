@@ -13,8 +13,10 @@ const typeIcons: Record<string, any> = {
 export default function PropertyInfo({ property, isAr }: { property: any; isAr: boolean }) {
   const TypeIcon = typeIcons[property.type] || MdOutlineApartment;
 
-  const formatPrice = (price: number) =>
-    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
+const formatPrice = (price: number) =>
+  isAr
+    ? `${price.toLocaleString("ar-EG")} جنيه`
+    : `EGP ${price.toLocaleString("en-US")}`;
 
   const handleShare = () => {
     if (navigator.share) navigator.share({ title: isAr ? property.title_ar : property.title_en, url: window.location.href });

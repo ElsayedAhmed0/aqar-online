@@ -20,8 +20,10 @@ export default function PropertiesGrid({
 }: Props) {
   const { liked, toggleLike } = useWishlist();
 
-  const formatPrice = (price: number) =>
-    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
+const formatPrice = (price: number) =>
+  isAr
+    ? `${price.toLocaleString("ar-EG")} جنيه`
+    : `EGP ${price.toLocaleString("en-US")}`;
 
   if (loading) {
     return (

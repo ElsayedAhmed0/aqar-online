@@ -58,8 +58,10 @@ export default function DashboardPage() {
     return list;
   }, [listings, activeFilter, searchQuery]);
 
-  const formatPrice = (price: number) =>
-    isAr ? `${(price / 1000000).toFixed(1)} مليون جنيه` : `EGP ${(price / 1000000).toFixed(1)}M`;
+const formatPrice = (price: number) =>
+  isAr
+    ? `${price.toLocaleString("ar-EG")} جنيه`
+    : `EGP ${price.toLocaleString("en-US")}`;
 
   if (loading || !user) {
     return (
