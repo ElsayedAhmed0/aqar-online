@@ -51,6 +51,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   });
 
   const data = await res.json();
-  if (!data.url) throw new Error("Upload failed");
+  console.error("Upload response:", data); // ✅ هنشوف السبب
+  if (!data.url) throw new Error(data.details || "Upload failed");
   return data.url;
 }
