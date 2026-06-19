@@ -113,7 +113,7 @@ export default function HeroSection() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute top-full mt-2 w-full bg-black/70 backdrop-blur-2xl border border-white/20 rounded-xl overflow-hidden z-50 shadow-2xl">
+              <div className="absolute top-full mt-2 w-full bg-black/70 backdrop-blur-2xl border border-white/20 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto scrollbar-hide">
                 {types.map((type) => (
                   <button
                     key={type.value}
