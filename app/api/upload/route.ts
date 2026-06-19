@@ -1,10 +1,15 @@
 import { v2 as cloudinary } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 
+// cloudinary.config({
+//   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: "de6itr3fm",
+  api_key: "737929629931548",
+  api_secret: "9wDR7ZIZy5vNE4BzCGeXZvVnSzI",
 });
 
 export async function POST(req: NextRequest) {
