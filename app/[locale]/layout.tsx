@@ -31,6 +31,13 @@ const reemKufi = Reem_Kufi({
 export const metadata: Metadata = {
   title: "Aqar Online | عقار أونلاين",
   description: "منصة العقارات الفاخرة — Find your perfect property",
+  other: {
+    "google": "notranslate",
+  },
+  icons: {
+  icon: "/favicon.svg",
+  apple: "/favicon.svg",
+},
 };
 
 export default async function LocaleLayout({
@@ -49,6 +56,7 @@ export default async function LocaleLayout({
       lang={locale}
       dir={isRTL ? "rtl" : "ltr"}
       suppressHydrationWarning
+      translate="no"
     >
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
