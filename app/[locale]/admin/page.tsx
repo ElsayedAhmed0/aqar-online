@@ -583,20 +583,25 @@ export default function AdminPage() {
                           <div className="flex items-center gap-1"><LuMaximize className="w-3.5 h-3.5" /><span className="text-xs">{listing.area} {isAr ? "م²" : "m²"}</span></div>
                         </div>
                         {listing.status === "pending" && (
-                          <div className="flex gap-2">
+                          <div className="flex flex-col gap-2">
+
                             <a href={`/${locale}/properties/${listing.id}`}
                               target="_blank"
-                              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-aura-canvas text-aura-dark border border-aura-border text-xs font-medium hover:border-aura-accent transition-all mb-2"
+                              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-aura-canvas text-aura-dark border border-aura-border text-xs font-medium hover:border-aura-accent transition-all"
                             >
                               <HiOutlineEye className="w-4 h-4" />
                               {isAr ? "معاينة" : "Preview"}
                             </a>
-                            <button onClick={() => updateStatus(listing.id, "approved")} disabled={updating === listing.id} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs font-medium hover:bg-green-100 transition-all disabled:opacity-50">
-                              <HiOutlineCheckCircle className="w-4 h-4" />{isAr ? "موافقة" : "Approve"}
-                            </button>
-                            <button onClick={() => updateStatus(listing.id, "rejected")} disabled={updating === listing.id} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs font-medium hover:bg-red-100 transition-all disabled:opacity-50">
-                              <HiOutlineXCircle className="w-4 h-4" />{isAr ? "رفض" : "Reject"}
-                            </button>
+                            <div className="flex gap-2">
+                              <button onClick={() => updateStatus(listing.id, "approved")} disabled={updating === listing.id}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs font-medium hover:bg-green-100 transition-all disabled:opacity-50">
+                                <HiOutlineCheckCircle className="w-4 h-4" />{isAr ? "موافقة" : "Approve"}
+                              </button>
+                              <button onClick={() => updateStatus(listing.id, "rejected")} disabled={updating === listing.id}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs font-medium hover:bg-red-100 transition-all disabled:opacity-50">
+                                <HiOutlineXCircle className="w-4 h-4" />{isAr ? "رفض" : "Reject"}
+                              </button>
+                            </div>
                           </div>
                         )}
                         {listing.status !== "pending" && (
@@ -982,6 +987,6 @@ export default function AdminPage() {
         </div>
       </section>
       <Footer />
-    </main>
+    </main >
   );
 }
