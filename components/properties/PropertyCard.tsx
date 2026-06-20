@@ -42,7 +42,7 @@ export default function PropertyCard({
 
         {/* مميز */}
         {showFeatured && property.featured && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full bg-aura-accent text-white text-xs font-medium animate-pulse shadow-lg">
+          <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full bg-red-500 text-white text-xs font-medium animate-pulse shadow-lg">
             ⭐ {isAr ? "مميز" : "Featured"}
           </div>
         )}

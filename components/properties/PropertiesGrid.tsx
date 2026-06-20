@@ -19,6 +19,9 @@ export default function PropertiesGrid({
   properties, loading, isAr, locale, page, totalPages, onPageChange, onClearFilters,
 }: Props) {
   const { liked, toggleLike } = useWishlist();
+const sorted = [...properties].sort((a, b) =>
+  (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+);
 
 const formatPrice = (price: number) =>
   isAr
@@ -54,7 +57,7 @@ const formatPrice = (price: number) =>
     <div>
       {/* ✅ 1 col موبايل — 2 cols تابلت وفوق */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        {properties.map((property) => (
+        {sorted.map((property) => (
           <PropertyCard
             key={property.id}
             property={property}
