@@ -17,7 +17,7 @@ import {
 } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
-
+import { HiOutlineEye } from "react-icons/hi2";
 type Listing = {
   id: string; title_ar: string; title_en: string;
   location_ar: string; location_en: string; price: number;
@@ -386,12 +386,30 @@ export default function AdminPage() {
 
   const exportUsersExcel = () => {
     const filtered = getFilteredUsers();
-    const headers = ["الاسم", "البريد", "الهاتف", "الدور", "عدد الإعلانات", "تاريخ التسجيل"];
-    const rows = filtered.map((u) => [u.full_name || "-", u.email || "-", u.phone || "-", u.role === "admin" ? "أدمن" : u.role === "subadmin" ? "مساعد أدمن" : "مستخدم", u.listings_count || 0, new Date(u.created_at).toLocaleDateString("ar-EG")]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+
+    const data = filtered.map((u) => ({
+      "الاسم": u.full_name || "-",
+      "البريد": u.email || "-",
+      "الهاتف": u.phone ? `\t${u.phone}` : "-",
+      "الدور": u.role === "admin" ? "أدمن" : u.role === "subadmin" ? "مساعد أدمن" : "مستخدم",
+      "عدد الإعلانات": u.listings_count || 0,
+      "تاريخ التسجيل": new Date(u.created_at).toLocaleDateString("ar-EG"),
+    }));
+
+    const headers = Object.keys(data[0] || {});
+    const rows = data.map((row) => Object.values(row));
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
     const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "users.csv"; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const getFilteredUsers = () => users.filter((u) => {
@@ -400,10 +418,10 @@ export default function AdminPage() {
     return matchRole && matchSearch;
   });
 
- const formatPrice = (price: number) =>
-  isAr
-    ? `${price.toLocaleString("ar-EG")} جنيه`
-    : `EGP ${price.toLocaleString("en-US")}`;
+  const formatPrice = (price: number) =>
+    isAr
+      ? `${price.toLocaleString("ar-EG")} جنيه`
+      : `EGP ${price.toLocaleString("en-US")}`;
 
   if (loading || fetching) {
     return (
@@ -566,6 +584,13 @@ export default function AdminPage() {
                         </div>
                         {listing.status === "pending" && (
                           <div className="flex gap-2">
+                            <a href={`/${locale}/properties/${listing.id}`}
+                              target="_blank"
+                              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-aura-canvas text-aura-dark border border-aura-border text-xs font-medium hover:border-aura-accent transition-all mb-2"
+                            >
+                              <HiOutlineEye className="w-4 h-4" />
+                              {isAr ? "معاينة" : "Preview"}
+                            </a>
                             <button onClick={() => updateStatus(listing.id, "approved")} disabled={updating === listing.id} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs font-medium hover:bg-green-100 transition-all disabled:opacity-50">
                               <HiOutlineCheckCircle className="w-4 h-4" />{isAr ? "موافقة" : "Approve"}
                             </button>
