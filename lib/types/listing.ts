@@ -25,6 +25,8 @@ export type UserListing = {
   negotiable?: boolean;
   features?: string[];
   delivery_status?: string;
+    views?: number;       
+  show_views?: boolean; 
 };
 
 export type ListingFormData = {
@@ -67,4 +69,5 @@ export const emptyListingForm = (): ListingFormData => ({
   negotiable: false,
   features: [],
   delivery_status: "ready",
+  
 });
