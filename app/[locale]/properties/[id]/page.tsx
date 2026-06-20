@@ -24,7 +24,10 @@ export default async function PropertyDetailsPage({
     .single();
 
   if (!property) notFound();
-
+  await supabase
+    .from("listings")
+    .update({ views: (property.views || 0) + 1 })
+    .eq("id", id);
   const { data: similar } = await supabase
     .from("listings")
     .select("*")
@@ -42,8 +45,8 @@ export default async function PropertyDetailsPage({
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
 
         <div className="mb-8">
-          
-            <a href={`/${locale}`}
+
+          <a href={`/${locale}`}
             className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
           >
             ← {isAr ? "العودة للرئيسية" : "Back to Home"}
