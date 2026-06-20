@@ -7,6 +7,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { FilterProvider } from "@/context/FilterContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ListingsProvider } from "@/context/ListingsContext";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const readex = Readex_Pro({
@@ -35,9 +36,9 @@ export const metadata: Metadata = {
     "google": "notranslate",
   },
   icons: {
-  icon: "/favicon.svg",
-  apple: "/favicon.svg",
-},
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default async function LocaleLayout({
@@ -74,6 +75,7 @@ export default async function LocaleLayout({
                 <FilterProvider>
                   <NextIntlClientProvider messages={messages}>
                     {children}
+                    <Analytics />
                   </NextIntlClientProvider>
                 </FilterProvider>
               </WishlistProvider>
