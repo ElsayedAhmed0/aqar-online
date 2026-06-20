@@ -4,7 +4,7 @@ import { HiOutlineMapPin, HiOutlineTrash, HiOutlineClock, HiOutlineCheckCircle, 
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 import type { UserListing } from "@/lib/types/listing";
-
+import { HiOutlineEye } from "react-icons/hi2";
 const typeLabels = {
   apartment: { ar: "شقة", en: "Apartment", icon: MdOutlineApartment },
   villa: { ar: "فيلا", en: "Villa", icon: MdOutlineVilla },
@@ -89,13 +89,12 @@ export default function MyListingCard({
         </div>
 
         {/* حالة الإعلان */}
-        <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold shadow-lg ${
-          listing.status === "pending"
+        <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold shadow-lg ${listing.status === "pending"
             ? "bg-amber-500 text-white animate-pulse"
             : listing.status === "approved"
-            ? "bg-green-500 text-white"
-            : "bg-red-500 text-white"
-        }`}>
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}>
           <StatusIcon className="w-3.5 h-3.5" />
           {isAr ? status.ar : status.en}
         </div>
@@ -138,7 +137,12 @@ export default function MyListingCard({
             <span className="text-xs">{listing.area} {isAr ? "م²" : "m²"}</span>
           </div>
         </div>
-
+        {(listing as any).show_views && (
+          <div className="flex items-center gap-1.5 text-xs text-aura-muted mt-2">
+            <HiOutlineEye className="w-3.5 h-3.5 text-aura-accent" />
+            <span>{(listing as any).views || 0} {isAr ? "مشاهدة" : "views"}</span>
+          </div>
+        )}
         {/* التاريخ والحذف */}
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-aura-border">
           <span className="text-[10px] text-aura-muted">

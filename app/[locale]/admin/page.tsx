@@ -24,8 +24,10 @@ type Listing = {
   type: string; beds: number; baths: number; area: number;
   images: string[]; status: "pending" | "approved" | "rejected";
   created_at: string; user_id: string; featured: boolean;
+  show_views?: boolean;
   profiles?: { full_name: string; email: string; phone: string };
 };
+
 type UserProfile = {
   id: string; full_name: string; email: string; phone: string;
   role: string; created_at: string; listings_count?: number;
@@ -234,6 +236,16 @@ export default function AdminPage() {
       .eq("id", id);
     if (!error) setListings((prev) =>
       prev.map((l) => l.id === id ? { ...l, featured } : l)
+    );
+  };
+  const toggleShowViews = async (id: string, show_views: boolean) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("listings")
+      .update({ show_views })
+      .eq("id", id);
+    if (!error) setListings((prev) =>
+      prev.map((l) => l.id === id ? { ...l, show_views } : l)
     );
   };
   const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user") => {
@@ -591,6 +603,21 @@ export default function AdminPage() {
                           <div className="flex items-center gap-1"><LuBath className="w-3.5 h-3.5" /><span className="text-xs">{listing.baths}</span></div>
                           <div className="flex items-center gap-1"><LuMaximize className="w-3.5 h-3.5" /><span className="text-xs">{listing.area} {isAr ? "م²" : "m²"}</span></div>
                         </div>
+                        <div className="flex items-center gap-1.5 text-xs text-aura-muted mb-4">
+                          <HiOutlineEye className="w-3.5 h-3.5 text-aura-accent" />
+                          <span>{(listing as any).views || 0} {isAr ? "مشاهدة" : "views"}</span>
+                        </div>
+                        <button
+                          onClick={() => toggleShowViews(listing.id, !listing.show_views)}
+                          className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all border mb-2 ${listing.show_views
+                              ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30"
+                              : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent"
+                            }`}
+                        >
+                          👁 {listing.show_views
+                            ? (isAr ? "إخفاء المشاهدات عن العميل" : "Hide Views from Client")
+                            : (isAr ? "إظهار المشاهدات للعميل" : "Show Views to Client")}
+                        </button>
                         {listing.status === "pending" && (
                           <div className="flex flex-col gap-2">
 
@@ -618,8 +645,8 @@ export default function AdminPage() {
                             <button
                               onClick={() => toggleFeatured(listing.id, !listing.featured)}
                               className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${(listing as any).featured
-                                  ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30 hover:bg-aura-accent/20"
-                                  : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent hover:text-aura-accent"
+                                ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30 hover:bg-aura-accent/20"
+                                : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent hover:text-aura-accent"
                                 }`}
                             >
                               ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
