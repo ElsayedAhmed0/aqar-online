@@ -177,7 +177,7 @@ export default function AdminPage() {
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
-
+  const [totalViews, setTotalViews] = useState(0);
   useEffect(() => {
     if (loading) return;
     if (!user) { router.push(`/${locale}/login`); return; }
@@ -216,6 +216,11 @@ export default function AdminPage() {
       if (partnersRes.data) setPartners(partnersRes.data as Partner[]);
       if (blogRes.data) setBlogPosts(blogRes.data as BlogPost[]);
       if (messagesRes.data) setMessages(messagesRes.data as Message[]);
+      if (listingsRes.data) {
+        const total = listingsRes.data.reduce((sum: number, l: any) => sum + (l.views || 0), 0);
+        setTotalViews(total);
+      }
+      
       setFetching(false);
     };
     checkAdmin();
@@ -504,7 +509,25 @@ export default function AdminPage() {
               {!isFullAdmin && <p className="text-xs text-aura-muted mt-1">{isAr ? "مساعد أدمن — صلاحيات محدودة" : "Sub Admin — Limited Access"}</p>}
             </div>
           </div>
-
+          {/* إحصائيات */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="bento-card bg-aura-card rounded-2xl p-4 border border-aura-border text-center">
+              <p className="text-2xl font-light text-aura-dark">{totalViews.toLocaleString()}</p>
+              <p className="text-xs text-aura-muted mt-1">{isAr ? "إجمالي المشاهدات" : "Total Views"}</p>
+            </div>
+            <div className="bento-card bg-aura-card rounded-2xl p-4 border border-aura-border text-center">
+              <p className="text-2xl font-light text-aura-dark">{listings.length}</p>
+              <p className="text-xs text-aura-muted mt-1">{isAr ? "إجمالي الإعلانات" : "Total Listings"}</p>
+            </div>
+            <div className="bento-card bg-aura-card rounded-2xl p-4 border border-aura-border text-center">
+              <p className="text-2xl font-light text-aura-dark">{users.length}</p>
+              <p className="text-xs text-aura-muted mt-1">{isAr ? "إجمالي المستخدمين" : "Total Users"}</p>
+            </div>
+            <div className="bento-card bg-aura-card rounded-2xl p-4 border border-aura-border text-center">
+              <p className="text-2xl font-light text-aura-dark">{listings.filter(l => l.status === "approved").length}</p>
+              <p className="text-xs text-aura-muted mt-1">{isAr ? "إعلانات نشطة" : "Active Listings"}</p>
+            </div>
+          </div>
           {/* ✅ Tabs — dropdown على الموبايل، أفقية على الديسكتوب */}
           <div className="mb-6 md:mb-8">
             {/* موبايل — dropdown */}
@@ -610,8 +633,8 @@ export default function AdminPage() {
                         <button
                           onClick={() => toggleShowViews(listing.id, !listing.show_views)}
                           className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all border mb-2 ${listing.show_views
-                              ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30"
-                              : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent"
+                            ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30"
+                            : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent"
                             }`}
                         >
                           👁 {listing.show_views
