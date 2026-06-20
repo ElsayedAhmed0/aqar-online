@@ -23,7 +23,7 @@ type Listing = {
   location_ar: string; location_en: string; price: number;
   type: string; beds: number; baths: number; area: number;
   images: string[]; status: "pending" | "approved" | "rejected";
-  created_at: string; user_id: string;
+  created_at: string; user_id: string; featured: boolean;
   profiles?: { full_name: string; email: string; phone: string };
 };
 type UserProfile = {
@@ -226,7 +226,16 @@ export default function AdminPage() {
     if (!error) setListings((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
     setUpdating(null);
   };
-
+  const toggleFeatured = async (id: string, featured: boolean) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("listings")
+      .update({ featured })
+      .eq("id", id);
+    if (!error) setListings((prev) =>
+      prev.map((l) => l.id === id ? { ...l, featured } : l)
+    );
+  };
   const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user") => {
     const supabase = createClient();
     const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
@@ -605,9 +614,24 @@ export default function AdminPage() {
                           </div>
                         )}
                         {listing.status !== "pending" && (
-                          <button onClick={() => updateStatus(listing.id, listing.status === "approved" ? "rejected" : "approved")} disabled={updating === listing.id} className="w-full py-2.5 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all disabled:opacity-50">
-                            {listing.status === "approved" ? (isAr ? "إلغاء الموافقة" : "Revoke") : (isAr ? "إعادة النظر" : "Reconsider")}
-                          </button>
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => toggleFeatured(listing.id, !listing.featured)}
+                              className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${(listing as any).featured
+                                  ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30 hover:bg-aura-accent/20"
+                                  : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent hover:text-aura-accent"
+                                }`}
+                            >
+                              ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
+                            </button>
+                            <button
+                              onClick={() => updateStatus(listing.id, listing.status === "approved" ? "rejected" : "approved")}
+                              disabled={updating === listing.id}
+                              className="w-full py-2.5 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all disabled:opacity-50"
+                            >
+                              {listing.status === "approved" ? (isAr ? "إلغاء الموافقة" : "Revoke") : (isAr ? "إعادة النظر" : "Reconsider")}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
