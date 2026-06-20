@@ -68,6 +68,8 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           negotiable: l.negotiable || false,
           features: l.features || [],
           delivery_status: l.delivery_status || "ready",
+          views: l.views || 0,
+          show_views: l.show_views || false,
         })));
       }
       setLoading(false);
@@ -170,6 +172,8 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         negotiable: data.negotiable || false,
         features: data.features || [],
         delivery_status: data.delivery_status || "ready",
+        views: data.views || 0,
+        show_views: data.show_views || false,
       };
 
       setListings((prev) => [newListing, ...prev]);
