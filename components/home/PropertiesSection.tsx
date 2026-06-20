@@ -44,15 +44,18 @@ export default function PropertiesSection() {
       p.location_en?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchType && matchSearch;
   });
+  const sorted = [...filtered].sort((a, b) =>
+    (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+  );
 
-const formatPrice = (price: number) =>
-  isAr
-    ? `${price.toLocaleString("ar-EG")} جنيه`
-    : `EGP ${price.toLocaleString("en-US")}`;
+  const formatPrice = (price: number) =>
+    isAr
+      ? `${price.toLocaleString("ar-EG")} جنيه`
+      : `EGP ${price.toLocaleString("en-US")}`;
 
   return (
     <section id="properties" className="py-16 md:py-20 bg-aura-canvas">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
           <div>
@@ -71,11 +74,10 @@ const formatPrice = (price: number) =>
             <div className="flex items-center gap-2 bg-aura-card rounded-2xl p-1.5 border border-aura-border flex-wrap">
               <button
                 onClick={() => setActiveFilter("all")}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${
-                  activeFilter === "all"
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === "all"
                     ? "bg-aura-dark text-white shadow-sm"
                     : "text-aura-muted hover:text-aura-dark"
-                }`}
+                  }`}
               >
                 <HiOutlineHome className="w-4 h-4" />
                 {isAr ? "الكل" : "All"}
@@ -85,19 +87,18 @@ const formatPrice = (price: number) =>
                 <button
                   key={t.value}
                   onClick={() => setActiveFilter(t.value)}
-                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${
-                    activeFilter === t.value
+                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === t.value
                       ? "bg-aura-dark text-white shadow-sm"
                       : "text-aura-muted hover:text-aura-dark"
-                  }`}
+                    }`}
                 >
                   {isAr ? t.name_ar : t.name_en}
                 </button>
               ))}
             </div>
 
-            
-              <a href={`/${locale}/properties`}
+
+            <a href={`/${locale}/properties`}
               className="px-5 py-3 rounded-2xl border border-aura-accent text-aura-accent text-xs font-medium hover:bg-aura-accent hover:text-white transition-all duration-300 whitespace-nowrap"
             >
               {isAr ? "عرض كل العقارات ←" : "View All Properties →"}
@@ -117,7 +118,7 @@ const formatPrice = (price: number) =>
           </div>
         ) : (
           <div key={activeFilter} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {filtered.map((property) => (
+            {sorted.map((property) => (
               <PropertyCard
                 key={property.id}
                 property={property}

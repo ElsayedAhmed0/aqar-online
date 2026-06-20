@@ -28,8 +28,8 @@ export default function PropertyCard({
   const purpose = (property as any).purpose;
 
   return (
-    
-      <a href={`/${locale}/properties/${property.id}`}
+
+    <a href={`/${locale}/properties/${property.id}`}
       className={`bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block ${animate ? "card-animate" : ""}`}
     >
       {/* الصورة */}
@@ -42,20 +42,18 @@ export default function PropertyCard({
 
         {/* مميز */}
         {showFeatured && property.featured && (
-          <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-aura-accent text-white text-xs font-medium">
-            {isAr ? "مميز" : "Featured"}
+          <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full bg-aura-accent text-white text-xs font-medium animate-pulse shadow-lg">
+            ⭐ {isAr ? "مميز" : "Featured"}
           </div>
         )}
 
         {/* للبيع / للإيجار */}
         {purpose && (
-          <div className={`absolute top-3 px-3 py-1 rounded-full text-xs font-medium ${
-            showFeatured && property.featured ? "right-20" : "right-3"
-          } ${
-            purpose === "rent"
+          <div className={`absolute top-3 px-3 py-1 rounded-full text-xs font-medium ${showFeatured && property.featured ? "right-20" : "right-3"
+            } ${purpose === "rent"
               ? "bg-blue-500/90 text-white"
               : "bg-aura-accent/90 text-white"
-          }`}>
+            }`}>
             {purpose === "rent"
               ? (isAr ? "للإيجار" : "For Rent")
               : (isAr ? "للبيع" : "For Sale")}
