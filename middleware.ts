@@ -6,6 +6,7 @@ const intlMiddleware = createIntlMiddleware({
   locales: ["ar", "en"],
   defaultLocale: "ar",
   localePrefix: "as-needed",
+  localeDetection: false,
 });
 
 export async function middleware(request: NextRequest) {

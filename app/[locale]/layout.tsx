@@ -59,6 +59,17 @@ export default async function LocaleLayout({
       suppressHydrationWarning
       translate="no"
     >
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ELHZ6MJKM0" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ELHZ6MJKM0');
+          `
+        }} />
+      </head>
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
       >
