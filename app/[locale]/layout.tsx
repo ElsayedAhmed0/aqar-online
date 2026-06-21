@@ -8,6 +8,7 @@ import { FilterProvider } from "@/context/FilterContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ListingsProvider } from "@/context/ListingsContext";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import "./globals.css";
 
 const readex = Readex_Pro({
@@ -59,17 +60,6 @@ export default async function LocaleLayout({
       suppressHydrationWarning
       translate="no"
     >
-      <head>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ELHZ6MJKM0" />
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-ELHZ6MJKM0');
-          `
-        }} />
-      </head>
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
       >
@@ -93,6 +83,18 @@ export default async function LocaleLayout({
             </ListingsProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ELHZ6MJKM0"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ELHZ6MJKM0');
+          `}
+        </Script>
       </body>
     </html>
   );
