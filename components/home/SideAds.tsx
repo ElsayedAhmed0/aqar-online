@@ -95,9 +95,9 @@ export default function SideAds({ inPanel = false }: SideAdsProps) {
   const MobileCarousel = () => (
     <div className="lg:hidden">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
+        {/* <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
           {isAr ? "إعلانات مميزة" : "Featured Ads"}
-        </p>
+        </p> */}
         {ads.length > 1 && (
           <div className="flex items-center gap-2">
             <button onClick={isAr ? next : prev} className="w-7 h-7 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all">
@@ -143,9 +143,9 @@ export default function SideAds({ inPanel = false }: SideAdsProps) {
   // ✅ ديسكتوب — عمودي في الـ sidebar
   const DesktopList = () => (
     <div className="hidden lg:flex flex-col gap-4 w-full">
-      <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
+      {/* <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
         {isAr ? "إعلانات مميزة" : "Featured Ads"}
-      </p>
+      </p> */}
       {ads.map((ad) => (
         <AdCard key={ad.id} ad={ad} height={inPanel ? "h-36" : "h-48"} />
       ))}
@@ -157,9 +157,9 @@ export default function SideAds({ inPanel = false }: SideAdsProps) {
     return (
       <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 w-full min-w-0">
         <div className="flex flex-col gap-3 max-h-[calc(100vh-9rem)] overflow-y-auto overscroll-contain">
-          <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
+          {/* <p className="text-xs tracking-[0.2em] uppercase text-aura-muted">
             {isAr ? "إعلانات مميزة" : "Featured Ads"}
-          </p>
+          </p> */}
           {ads.map((ad) => (
             <AdCard key={ad.id} ad={ad} height="h-36" />
           ))}
