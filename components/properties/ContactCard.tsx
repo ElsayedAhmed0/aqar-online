@@ -10,7 +10,15 @@ export default function ContactCard({ property, isAr }: { property: any; isAr: b
   const phone = property.phone || "";
   const whatsapp = property.whatsapp || property.phone || "";
   const phoneClean = phone.replace(/\D/g, "");
-  const waClean = whatsapp.replace(/\D/g, "");
+
+  const formatWhatsapp = (num: string) => {
+    const clean = num.replace(/\D/g, "");
+    if (clean.startsWith("0")) return `20${clean.slice(1)}`;
+    if (clean.startsWith("20")) return clean;
+    return `20${clean}`;
+  };
+
+  const waClean = formatWhatsapp(whatsapp);
   const waMsg = encodeURIComponent(
     isAr
       ? `مرحباً، أنا مهتم بالعقار: ${property.title_ar}`
@@ -38,13 +46,11 @@ export default function ContactCard({ property, isAr }: { property: any; isAr: b
         ) : (
           <div className="flex flex-col gap-3">
 
-            {/* رقم الهاتف */}
             <div className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/10 border border-white/10">
               <HiOutlinePhone className="w-4 h-4 text-aura-accent" />
               <span className="text-white font-medium text-sm" dir="ltr">{phone}</span>
             </div>
 
-            {/* رقم الواتساب لو مختلف */}
             {property.whatsapp && property.whatsapp !== phone && (
               <div className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/10 border border-white/10">
                 <FaWhatsapp className="w-4 h-4 text-green-400" />
@@ -52,16 +58,14 @@ export default function ContactCard({ property, isAr }: { property: any; isAr: b
               </div>
             )}
 
-            {/* زرار اتصال */}
             
-              <a href={`tel:${phoneClean}`}
+             <a  href={`tel:${phoneClean}`}
               className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all duration-300 border border-white/10"
             >
               <HiOutlinePhone className="w-4 h-4" />
               {isAr ? "اتصال مباشر" : "Call Now"}
             </a>
 
-            {/* زرار واتساب */}
             
               <a href={`https://wa.me/${waClean}?text=${waMsg}`}
               target="_blank"
