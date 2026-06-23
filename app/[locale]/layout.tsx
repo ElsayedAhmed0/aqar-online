@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   other: {
     "google": "notranslate",
   },
+  verification: {
+    google: "TyKS8blYgP3M25I",
+  },
   icons: {
     icon: "/favicon.svg",
     apple: "/favicon.svg",
