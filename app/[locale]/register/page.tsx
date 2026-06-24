@@ -1,19 +1,27 @@
-"use client";
+import type { Metadata } from "next";
+import RegisterClient from "./RegisterClient";
 
-import { useLocale } from "next-intl";
-import RegisterForm from "@/components/auth/RegisterForm";
-import AuthImageSide from "@/components/auth/AuthImageSide";
-
-export default function RegisterPage() {
-  const locale = useLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
   const isAr = locale === "ar";
 
-  return (
-    <main className="min-h-screen flex">
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-aura-bg">
-        <RegisterForm />
-      </div>
-      <AuthImageSide screen="register" isAr={isAr} />
-    </main>
-  );
+  return {
+    title: isAr ? "إنشاء حساب" : "Create Account",
+    description: isAr
+      ? "أنشئ حسابك في عقار أونلاين وابدأ في البحث عن عقارك المثالي"
+      : "Create your Aqar Online account and start searching for your perfect property",
+    robots: { index: false, follow: false },
+    alternates: {
+      canonical: `/${locale}/register`,
+      languages: { ar: "/ar/register", en: "/en/register" },
+    },
+  };
+}
+
+export default function RegisterPage() {
+  return <RegisterClient />;
 }

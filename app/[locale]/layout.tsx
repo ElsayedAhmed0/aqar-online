@@ -31,10 +31,14 @@ const reemKufi = Reem_Kufi({
 });
 
 export const metadata: Metadata = {
-  title: "Aqar Online | عقار أونلاين",
-  description: "منصة العقارات الفاخرة — Find your perfect property",
+  metadataBase: new URL("https://www.aqqaronline.com"),
+  title: {
+    default: "عقار أونلاين | Aqar Online",
+    template: "%s | عقار أونلاين",
+  },
+  description: "منصة العقارات الأولى في مصر — اكتشف آلاف العقارات المميزة",
   other: {
-    "google": "notranslate",
+    google: "notranslate",
   },
   verification: {
     google: "TyKS8blYgP3M25I",

@@ -1,42 +1,34 @@
-"use client";
+import type { Metadata } from "next";
+import AddListingClient from "./AddListingClient";
 
-import { useLocale } from "next-intl";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import AddListingForm from "@/components/listings/AddListingForm";
-
-export default function AddListingPage() {
-  const locale = useLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
   const isAr = locale === "ar";
 
-  return (
-    <main className="min-h-screen bg-aura-bg">
-      <Navbar />
+  return {
+    title: isAr ? "أضف إعلانك مجاناً" : "Add Your Listing for Free",
+    description: isAr
+      ? "أعلن عن عقارك مجاناً على منصة عقار أونلاين — سريع وسهل وآمن، يظهر بعد مراجعة الفريق"
+      : "List your property for free on Aqar Online — fast, easy, and secure. Goes live after team review",
+    alternates: {
+      canonical: `/${locale}/add-listing`,
+      languages: { ar: "/ar/add-listing", en: "/en/add-listing" },
+    },
+    openGraph: {
+      title: isAr ? "أضف إعلانك | عقار أونلاين" : "Add Listing | Aqar Online",
+      description: isAr ? "أعلن عن عقارك مجاناً" : "List your property for free",
+      url: `https://www.aqqaronline.com/${locale}/add-listing`,
+      siteName: isAr ? "عقار أونلاين" : "Aqar Online",
+      locale: isAr ? "ar_EG" : "en_US",
+      type: "website",
+    },
+  };
+}
 
-      <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8 md:mb-10 lg:mb-12">
-            <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
-              {isAr ? "أضف عقارك" : "List Your Property"}
-            </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
-              {isAr ? "إضافة" : "Add"}
-              <span className="block font-serif italic text-aura-accent mt-1">
-                {isAr ? "إعلان جديد" : "New Listing"}
-              </span>
-            </h1>
-            <p className="text-aura-muted text-sm mt-4 max-w-xl">
-              {isAr
-                ? "أكمل الخطوات التالية لنشر إعلانك — سيظهر بعد مراجعة الأدمن"
-                : "Complete the steps below — your listing will appear after admin review"}
-            </p>
-          </div>
-
-          <AddListingForm />
-        </div>
-      </section>
-
-      <Footer />
-    </main>
-  );
+export default function AddListingPage() {
+  return <AddListingClient />;
 }

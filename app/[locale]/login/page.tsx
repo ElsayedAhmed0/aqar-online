@@ -1,22 +1,27 @@
-"use client";
+import type { Metadata } from "next";
+import LoginClient from "./LoginClient";
 
-import { useLocale } from "next-intl";
-import LoginForm from "@/components/auth/LoginForm";
-import AuthImageSide from "@/components/auth/AuthImageSide";
-
-export default function LoginPage() {
-  const locale = useLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
   const isAr = locale === "ar";
 
-  return (
-    <main className="min-h-screen flex">
-      {/* الفورم */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-aura-bg">
-        <LoginForm />
-      </div>
+  return {
+    title: isAr ? "تسجيل الدخول" : "Login",
+    description: isAr
+      ? "سجّل دخولك إلى حسابك في عقار أونلاين"
+      : "Sign in to your Aqar Online account",
+    robots: { index: false, follow: false },
+    alternates: {
+      canonical: `/${locale}/login`,
+      languages: { ar: "/ar/login", en: "/en/login" },
+    },
+  };
+}
 
-      {/* الصورة الجانبية */}
-      <AuthImageSide screen="login" isAr={isAr} />
-    </main>
-  );
+export default function LoginPage() {
+  return <LoginClient />;
 }
