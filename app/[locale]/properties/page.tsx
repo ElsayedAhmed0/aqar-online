@@ -57,9 +57,14 @@ export default function PropertiesPage() {
         query = query.or(`title_ar.ilike.%${searchQuery}%,title_en.ilike.%${searchQuery}%,location_ar.ilike.%${searchQuery}%,location_en.ilike.%${searchQuery}%`);
       }
 
-      if (sortBy === "newest") query = query.order("created_at", { ascending: false });
-      else if (sortBy === "price-asc") query = query.order("price", { ascending: true });
-      else if (sortBy === "price-desc") query = query.order("price", { ascending: false });
+      // ✅ المميزين فوق دايماً في كل الفلاتر
+      if (sortBy === "newest") {
+        query = query.order("featured", { ascending: false }).order("created_at", { ascending: false });
+      } else if (sortBy === "price-asc") {
+        query = query.order("featured", { ascending: false }).order("price", { ascending: true });
+      } else if (sortBy === "price-desc") {
+        query = query.order("featured", { ascending: false }).order("price", { ascending: false });
+      }
 
       const from = (page - 1) * ITEMS_PER_PAGE;
       query = query.range(from, from + ITEMS_PER_PAGE - 1);
@@ -89,7 +94,6 @@ export default function PropertiesPage() {
       <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
 
-          {/* العنوان */}
           <div className="mb-8 md:mb-10">
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
               {isAr ? "تصفح العقارات" : "Browse Properties"}
@@ -126,7 +130,6 @@ export default function PropertiesPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
 
-            {/* الفلاتر — ديسكتوب فقط */}
             <aside className="hidden lg:block lg:col-span-3">
               <PropertiesFilter
                 isAr={isAr}
@@ -147,7 +150,6 @@ export default function PropertiesPage() {
               />
             </aside>
 
-            {/* الكروت */}
             <div className="lg:col-span-6">
               <PropertiesGrid
                 properties={properties}
@@ -160,13 +162,11 @@ export default function PropertiesPage() {
                 onClearFilters={clearFilters}
               />
 
-              {/* ✅ الإعلانات carousel على الموبايل بعد الكروت */}
               <div className="lg:hidden mt-8">
                 <SideAds />
               </div>
             </div>
 
-            {/* الإعلانات — ديسكتوب فقط */}
             <aside className="hidden lg:block lg:col-span-3 sticky top-28">
               <SideAds inPanel />
             </aside>
@@ -175,7 +175,6 @@ export default function PropertiesPage() {
         </div>
       </section>
 
-      {/* Mobile Filter Drawer */}
       <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${filterOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setFilterOpen(false)} />
         <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card overflow-y-auto transition-transform duration-300 ${
