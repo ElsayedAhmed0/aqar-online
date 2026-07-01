@@ -282,7 +282,8 @@ export default function AddListingForm() {
 
           {activeSection === "type" && (
             <div className="space-y-6">
-              <div>
+               {/* الغرض اتنقل لتاب التفاصيل */}
+              {/* <div>
                 <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "الغرض من الإعلان" : "Listing Purpose"}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -299,7 +300,7 @@ export default function AddListingForm() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
               <div>
                 <p className="text-sm font-medium text-aura-dark mb-3">{isAr ? "نوع العقار" : "Property Type"}</p>
                 {typesLoading ? (
@@ -381,6 +382,25 @@ export default function AddListingForm() {
 
           {activeSection === "details" && (
             <div className="space-y-5">
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-aura-dark">{isAr ? "الغرض من الإعلان" : "Listing Purpose"}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: "sale", label_ar: "للبيع",   label_en: "For Sale", icon: "🏷️" },
+                    { value: "rent", label_ar: "للإيجار", label_en: "For Rent", icon: "🔑" },
+                  ].map((p) => (
+                    <button key={p.value} type="button" onClick={() => setPurpose(p.value as any)}
+                      className={`flex items-center justify-center gap-2 py-3 md:py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${
+                        purpose === p.value
+                          ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md"
+                          : "border-aura-border hover:border-aura-accent/40 text-aura-muted"
+                      }`}>
+                      <span>{p.icon}</span>
+                      {isAr ? p.label_ar : p.label_en}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-medium text-aura-dark">{isAr ? "السعر (جنيه مصري) *" : "Price (EGP) *"}</label>
