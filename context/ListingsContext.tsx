@@ -141,6 +141,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           features: (listing as any).features || [],
           delivery_status: (listing as any).delivery_status || "ready",
           whatsapp: (listing as any).whatsapp || null,
+          custom_fields: (listing as any).custom_fields || [],
         })
         .select()
         .single();

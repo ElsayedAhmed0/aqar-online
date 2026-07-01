@@ -13,10 +13,10 @@ const typeIcons: Record<string, any> = {
 export default function PropertyInfo({ property, isAr }: { property: any; isAr: boolean }) {
   const TypeIcon = typeIcons[property.type] || MdOutlineApartment;
 
-const formatPrice = (price: number) =>
-  isAr
-    ? `${price.toLocaleString("ar-EG")} جنيه`
-    : `EGP ${price.toLocaleString("en-US")}`;
+  const formatPrice = (price: number) =>
+    isAr
+      ? `${price.toLocaleString("ar-EG")} جنيه`
+      : `EGP ${price.toLocaleString("en-US")}`;
 
   const handleShare = () => {
     if (navigator.share) navigator.share({ title: isAr ? property.title_ar : property.title_en, url: window.location.href });
@@ -113,6 +113,22 @@ const formatPrice = (price: number) =>
           <p className="text-sm text-aura-muted font-light leading-relaxed">
             {isAr ? property.description_ar : property.description_en}
           </p>
+        </div>
+      )}
+      {/* التفاصيل الإضافية */}
+      {property.custom_fields && property.custom_fields.length > 0 && (
+        <div className="mt-5 md:mt-6">
+          <h3 className="text-sm font-medium text-aura-dark mb-3">
+            {isAr ? "تفاصيل إضافية" : "Additional Details"}
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            {property.custom_fields.map((field: { label: string; value: string }, i: number) => (
+              <div key={i} className="flex items-center justify-between px-4 py-3 rounded-2xl bg-aura-canvas border border-aura-border">
+                <span className="text-xs text-aura-muted">{field.label}</span>
+                <span className="text-xs font-medium text-aura-dark">{field.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
