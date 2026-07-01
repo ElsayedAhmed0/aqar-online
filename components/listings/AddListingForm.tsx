@@ -273,7 +273,24 @@ export default function AddListingForm() {
           {error && (
             <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-sm">{error}</div>
           )}
-
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-aura-dark">{isAr ? "الغرض من الإعلان" : "Listing Purpose"}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: "sale", label_ar: "للبيع", label_en: "For Sale", icon: "🏷️" },
+                { value: "rent", label_ar: "للإيجار", label_en: "For Rent", icon: "🔑" },
+              ].map((p) => (
+                <button key={p.value} type="button" onClick={() => setPurpose(p.value as any)}
+                  className={`flex items-center justify-center gap-2 py-3 md:py-4 rounded-2xl border-2 text-sm font-medium transition-all duration-300 ${purpose === p.value
+                      ? "border-aura-accent bg-aura-accent/5 text-aura-dark shadow-md"
+                      : "border-aura-border hover:border-aura-accent/40 text-aura-muted"
+                    }`}>
+                  <span>{p.icon}</span>
+                  {isAr ? p.label_ar : p.label_en}
+                </button>
+              ))}
+            </div>
+          </div>
           {/* ── نوع العقار ── */}
           {activeSection === "type" && (
             <div className="space-y-6">
