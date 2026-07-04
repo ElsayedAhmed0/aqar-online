@@ -90,10 +90,10 @@ export default function MyListingCard({
 
         {/* حالة الإعلان */}
         <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold shadow-lg ${listing.status === "pending"
-            ? "bg-amber-500 text-white animate-pulse"
-            : listing.status === "approved"
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+          ? "bg-amber-500 text-white animate-pulse"
+          : listing.status === "approved"
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white"
           }`}>
           <StatusIcon className="w-3.5 h-3.5" />
           {isAr ? status.ar : status.en}
@@ -107,7 +107,10 @@ export default function MyListingCard({
 
       {/* المحتوى */}
       <div className="p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="mb-2">
+          <span className="text-[10px] text-aura-muted bg-aura-canvas px-2 py-0.5 rounded-full border border-aura-border mb-1.5 inline-block">
+            # {(listing as any).listing_number || "-"}
+          </span>
           <h3 className="text-sm sm:text-base font-light text-aura-dark leading-snug line-clamp-2">
             {isAr ? listing.title_ar : listing.title_en}
           </h3>

@@ -25,7 +25,11 @@ export default function PropertyInfo({ property, isAr }: { property: any; isAr: 
 
   return (
     <div className="bento-card bg-aura-card rounded-3xl p-5 sm:p-6 md:p-8 border border-aura-border">
-
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[10px] text-aura-muted bg-aura-canvas px-3 py-1 rounded-full border border-aura-border">
+          # {property.listing_number || "-"}
+        </span>
+      </div>
       {/* النوع والمشاركة */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2 flex-wrap">

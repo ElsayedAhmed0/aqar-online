@@ -178,6 +178,7 @@ export default function AdminPage() {
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [totalViews, setTotalViews] = useState(0);
+  const [listingSearch, setListingSearch] = useState("");
   useEffect(() => {
     if (loading) return;
     if (!user) { router.push(`/${locale}/login`); return; }
@@ -220,7 +221,7 @@ export default function AdminPage() {
         const total = listingsRes.data.reduce((sum: number, l: any) => sum + (l.views || 0), 0);
         setTotalViews(total);
       }
-      
+
       setFetching(false);
     };
     checkAdmin();
@@ -459,7 +460,21 @@ export default function AdminPage() {
     );
   }
 
-  const filteredListings = listings.filter((l) => l.status === listingFilter);
+  const isNumericSearch = /^\d+$/.test(listingSearch.trim());
+
+  const filteredListings = listings.filter((l) => {
+    if (listingSearch === "") return l.status === listingFilter;
+
+    if (isNumericSearch) {
+      return String((l as any).listing_number) === listingSearch.trim();
+    }
+
+    return (
+      l.title_ar?.includes(listingSearch) ||
+      l.title_en?.toLowerCase().includes(listingSearch.toLowerCase()) ||
+      l.location_ar?.includes(listingSearch)
+    );
+  });
   const filteredUsers = getFilteredUsers();
   const unreadCount = messages.filter((m) => !m.read).length;
   const isFullAdmin = currentUserRole === "admin";
@@ -586,6 +601,16 @@ export default function AdminPage() {
           {/* ── الإعلانات ── */}
           {activeTab === "listings" && (
             <>
+              <div className="relative mb-4">
+                <HiOutlineMagnifyingGlass className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+                <input
+                  type="text"
+                  value={listingSearch}
+                  onChange={(e) => setListingSearch(e.target.value)}
+                  placeholder={isAr ? "بحث برقم الإعلان أو العنوان أو الموقع..." : "Search by ID, title or location..."}
+                  className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all"
+                />
+              </div>
               <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                 {(["pending", "approved", "rejected"] as const).map((s) => (
                   <button key={s} onClick={() => setListingFilter(s)}
@@ -610,6 +635,9 @@ export default function AdminPage() {
                         <span className={`absolute top-3 right-3 px-3 py-1 rounded-full border text-[10px] font-medium ${statusConfig[listing.status].cls}`}>{isAr ? statusConfig[listing.status].ar : statusConfig[listing.status].en}</span>
                       </div>
                       <div className="p-4 md:p-5">
+                        <span className="text-[10px] text-aura-muted bg-aura-canvas px-2 py-0.5 rounded-full border border-aura-border mb-1 inline-block">
+                          # {(listing as any).listing_number || "-"}
+                        </span>
                         <h3 className="text-sm font-medium text-aura-dark mb-1 line-clamp-1">{isAr ? listing.title_ar : listing.title_en}</h3>
                         <div className="flex items-center gap-1.5 text-aura-muted mb-3">
                           <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />

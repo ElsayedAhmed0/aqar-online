@@ -9,7 +9,8 @@ import SimilarProperties from "@/components/properties/SimilarProperties";
 import PropertyFeatures from "@/components/properties/PropertyFeatures";
 import PropertyInfo from "@/components/properties/PropertyInfo";
 import ContactCard from "@/components/properties/ContactCard";
-
+import FeaturedBanner from "../FeaturedBanner";
+// import FeaturedBanner from "@/components/properties/FeaturedBanner";
 export async function generateMetadata({
   params,
 }: {
@@ -98,8 +99,8 @@ export default async function PropertyDetailsPage({
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
         <div className="mb-8">
-          
-           <a href={`/${locale}`}
+
+          <a href={`/${locale}`}
             className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
           >
             ← {isAr ? "العودة للرئيسية" : "Back to Home"}
@@ -111,7 +112,7 @@ export default async function PropertyDetailsPage({
             {isAr ? property.location_ar : property.location_en}
           </p>
         </div>
-
+        <FeaturedBanner property={property} isAr={isAr} />
         <PropertyGallery images={property.images || []} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
