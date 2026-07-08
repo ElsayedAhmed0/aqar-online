@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -172,6 +173,7 @@ export default function AdminPage() {
   const [uploadingSettingImg, setUploadingSettingImg] = useState(false);
   const [userFilter, setUserFilter] = useState<"all" | "admin" | "subadmin" | "user">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
@@ -411,25 +413,63 @@ export default function AdminPage() {
     if (!error) setMessages((prev) => prev.filter((m) => m.id !== id));
   };
 
-  const exportUsersExcel = () => {
+  const buildUsersExportRows = () => {
     const filtered = getFilteredUsers();
-
-    const data = filtered.map((u) => ({
-      "الاسم": u.full_name || "-",
-      "البريد": u.email || "-",
-      "الهاتف": u.phone ? `\t${u.phone}` : "-",
-      "الدور": u.role === "admin" ? "أدمن" : u.role === "subadmin" ? "مساعد أدمن" : "مستخدم",
-      "عدد الإعلانات": u.listings_count || 0,
-      "تاريخ التسجيل": new Date(u.created_at).toLocaleDateString("ar-EG"),
+    return filtered.map((u) => ({
+      [isAr ? "الاسم" : "Name"]: u.full_name || "-",
+      [isAr ? "البريد" : "Email"]: u.email || "-",
+      [isAr ? "الهاتف" : "Phone"]: u.phone || "-",
+      [isAr ? "الدور" : "Role"]:
+        u.role === "admin" ? (isAr ? "أدمن" : "Admin")
+          : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin")
+            : (isAr ? "مستخدم" : "User"),
+      [isAr ? "عدد الإعلانات" : "Listings"]: u.listings_count || 0,
+      [isAr ? "تاريخ التسجيل" : "Joined"]: new Date(u.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US"),
     }));
+  };
 
-    const headers = Object.keys(data[0] || {});
-    const rows = data.map((row) => Object.values(row));
+  const exportUsersXLSX = () => {
+    const rows = buildUsersExportRows();
+    if (rows.length === 0) return;
 
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
+    const headers = Object.keys(rows[0]);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
 
+    const phoneCol = isAr ? "الهاتف" : "Phone";
+    const phoneIndex = headers.indexOf(phoneCol);
+    if (phoneIndex !== -1) {
+      rows.forEach((_, i) => {
+        const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: phoneIndex });
+        if (worksheet[cellRef]) worksheet[cellRef].t = "s";
+      });
+    }
+
+    worksheet["!cols"] = headers.map((h) => ({ wch: Math.max(h.length + 2, 15) }));
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, isAr ? "المستخدمين" : "Users");
+    XLSX.writeFile(workbook, "users.xlsx");
+    setExportMenuOpen(false);
+  };
+
+  const exportUsersCSV = () => {
+    const rows = buildUsersExportRows();
+    if (rows.length === 0) return;
+
+    const headers = Object.keys(rows[0]);
+    const phoneCol = isAr ? "الهاتف" : "Phone";
+
+    const csvRows = rows.map((row) =>
+      headers
+        .map((h) => {
+          const value = (row as any)[h];
+          const cell = h === phoneCol && value !== "-" ? `="${value}"` : value;
+          return `"${String(cell).replace(/"/g, '""')}"`;
+        })
+        .join(",")
+    );
+
+    const csvContent = [headers.join(","), ...csvRows].join("\n");
     const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -437,8 +477,31 @@ export default function AdminPage() {
     a.download = "users.csv";
     a.click();
     URL.revokeObjectURL(url);
+    setExportMenuOpen(false);
   };
+  const exportUsersXLS = () => {
+    const rows = buildUsersExportRows();
+    if (rows.length === 0) return;
 
+    const headers = Object.keys(rows[0]);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const phoneCol = isAr ? "الهاتف" : "Phone";
+    const phoneIndex = headers.indexOf(phoneCol);
+    if (phoneIndex !== -1) {
+      rows.forEach((_, i) => {
+        const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: phoneIndex });
+        if (worksheet[cellRef]) worksheet[cellRef].t = "s";
+      });
+    }
+
+    worksheet["!cols"] = headers.map((h) => ({ wch: Math.max(h.length + 2, 15) }));
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, isAr ? "المستخدمين" : "Users");
+    XLSX.writeFile(workbook, "users.xls", { bookType: "xls" });
+    setExportMenuOpen(false);
+  };
   const getFilteredUsers = () => users.filter((u) => {
     const matchRole = userFilter === "all" || u.role === userFilter;
     const matchSearch = searchQuery === "" || u.full_name?.includes(searchQuery) || u.email?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -737,9 +800,51 @@ export default function AdminPage() {
                     placeholder={isAr ? "بحث بالاسم أو البريد..." : "Search by name or email..."}
                     className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all" />
                 </div>
-                <button onClick={exportUsersExcel} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-aura-dark text-white text-xs font-medium hover:bg-aura-accent transition-all duration-300 shrink-0">
-                  <HiOutlineArrowDownTray className="w-4 h-4" />{isAr ? "تصدير" : "Export"}
-                </button>
+                <div className="relative shrink-0">
+                  <button
+                    onClick={() => setExportMenuOpen((v) => !v)}
+                    className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-aura-dark text-white text-xs font-medium hover:bg-aura-accent transition-all duration-300 w-full"
+                  >
+                    <HiOutlineArrowDownTray className="w-4 h-4" />
+                    {isAr ? "تصدير" : "Export"}
+                    <HiOutlineChevronDown className={`w-3.5 h-3.5 transition-transform ${exportMenuOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {exportMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setExportMenuOpen(false)} />
+                      <div className="absolute end-0 mt-2 w-60 bg-aura-card border border-aura-border rounded-2xl shadow-lg overflow-hidden z-20">
+                        <button
+                          onClick={exportUsersXLSX}
+                          className="w-full text-start px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors flex flex-col gap-0.5"
+                        >
+                          <span className="font-medium">{isAr ? "ملف إكسل (.xlsx)" : "Excel file (.xlsx)"}</span>
+                          {/* <span className="text-[10px] text-aura-muted">
+                            {isAr ? "الأفضل — يفتح صح في Excel مباشرة" : "Recommended — opens correctly in Excel"}
+                          </span> */}
+                        </button>
+                        <button
+                          onClick={exportUsersCSV}
+                          className="w-full text-start px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors flex flex-col gap-0.5 border-t border-aura-border"
+                        >
+                          <span className="font-medium">CSV (.csv)</span>
+                          {/* <span className="text-[10px] text-aura-muted">
+                            {isAr ? "ملف نصي بسيط، لأي برنامج جداول" : "Plain text file, for any spreadsheet app"}
+                          </span> */}
+                        </button>
+                        <button
+                          onClick={exportUsersXLS}
+                          className="w-full text-start px-4 py-3 text-xs text-aura-dark hover:bg-aura-canvas transition-colors flex flex-col gap-0.5 border-t border-aura-border"
+                        >
+                          <span className="font-medium">Excel 97-2003 (.xls)</span>
+                          {/* <span className="text-[10px] text-aura-muted">
+                            {isAr ? "الصيغة القديمة — للأنظمة القديمة بس" : "Legacy format — for older systems only"}
+                          </span> */}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* ✅ جدول scrollable على الموبايل */}
