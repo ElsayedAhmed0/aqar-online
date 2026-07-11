@@ -53,7 +53,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    const fetchDeveloperData = async () => {
+    const fetchAgentData = async () => {
       const supabase = createClient();
       const { data: profile } = await supabase
         .from("profiles")
@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
       if (profile) setRole(profile.role);
 
-      if (profile?.role === "developer") {
+      if (profile?.role === "agent") {
         const { data: partnerRow } = await supabase
           .from("partners")
           .select("*")
@@ -73,7 +73,7 @@ export default function DashboardPage() {
       }
       setRoleLoading(false);
     };
-    fetchDeveloperData();
+    fetchAgentData();
   }, [user]);
 
   const filtered = useMemo(() => {
@@ -203,8 +203,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ✅ تابات — تظهر بس للمطوّر */}
-          {!roleLoading && role === "developer" && (
+          {/* ✅ تابات — تظهر بس للوسيط العقاري */}
+          {!roleLoading && role === "agent" && (
             <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border w-fit mb-8 md:mb-10">
               <button
                 onClick={() => setActiveTab("listings")}
@@ -218,16 +218,16 @@ export default function DashboardPage() {
                 className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${activeTab === "profile" ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
-                {isAr ? "صفحتي العامة" : "My Public Page"}
+                {isAr ? "صفحة الوسيط" : "Agent Page"}
               </button>
             </div>
           )}
 
-          {!roleLoading && role === "developer" && activeTab === "profile" && partner && (
+          {!roleLoading && role === "agent" && activeTab === "profile" && partner && (
             <DeveloperProfileEditor partner={partner} isAr={isAr} onUpdated={setPartner} />
           )}
 
-          {(roleLoading || role !== "developer" || activeTab === "listings") && (
+          {(roleLoading || role !== "agent" || activeTab === "listings") && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
               {/* فلاتر — ديسكتوب فقط */}

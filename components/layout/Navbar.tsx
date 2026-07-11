@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { createClient } from "@/lib/supabase/client";
 import {
- HiOutlineBars3, HiOutlineXMark,
+  HiOutlineBars3, HiOutlineXMark,
   HiOutlinePhone, HiOutlineGlobeAlt, HiOutlineHeart,
 } from "react-icons/hi2";
 import {
@@ -20,8 +20,8 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-  const [isDeveloper, setIsDeveloper] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAgent, setIsAgent] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -49,13 +49,13 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- useEffect(() => {
-    if (!user) { setIsAdmin(false); setIsDeveloper(false); return; }
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); setIsAgent(false); return; }
     const checkRole = async () => {
       const supabase = createClient();
       const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
       setIsAdmin(data?.role === "admin");
-      setIsDeveloper(data?.role === "developer");
+      setIsAgent(data?.role === "agent");
     };
     checkRole();
   }, [user]);
@@ -102,10 +102,10 @@ export default function Navbar() {
   );
 
   const navLinks = [
-    { href: `/${locale}`,            label_ar: "الرئيسية", label_en: "Home"       },
-    { href: `/${locale}/about`,      label_ar: "عن عقار",  label_en: "About"      },
+    { href: `/${locale}`, label_ar: "الرئيسية", label_en: "Home" },
+    { href: `/${locale}/about`, label_ar: "عن عقار", label_en: "About" },
     { href: `/${locale}/properties`, label_ar: "العقارات", label_en: "Properties" },
-    { href: `/${locale}/contact`,    label_ar: "اتصل بنا", label_en: "Contact"    },
+    { href: `/${locale}/contact`, label_ar: "اتصل بنا", label_en: "Contact" },
   ];
 
   return (
@@ -186,16 +186,16 @@ export default function Navbar() {
                         <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0" />
                         {isAr ? "إعلاناتي" : "My Listings"}
                       </a>
-                     {isAdmin && (
+                      {isAdmin && (
                         <a href={`/${locale}/admin`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
                           <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
                           {isAr ? "لوحة الإدارة" : "Admin Panel"}
                         </a>
                       )}
-                      {isDeveloper && (
+                      {isAgent && (
                         <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
                           <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
-                          {isAr ? "أدمن المطوّر" : "Developer Admin"}
+                          {isAr ? "أدمن الوسيط" : "Agent Admin"}
                         </a>
                       )}
                       <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-aura-border">
@@ -223,16 +223,15 @@ export default function Navbar() {
       {/* ✅ Mobile Menu — بيطلع من اليمين للـ RTL ومن الشمال للـ LTR */}
       <div className={`fixed inset-0 z-50 transition-all duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setMobileOpen(false)} />
-        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card p-6 flex flex-col justify-between transition-transform duration-300 ${
-          mobileOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
-        }`}>
+        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card p-6 flex flex-col justify-between transition-transform duration-300 ${mobileOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
+          }`}>
 
           {/* الجزء العلوي */}
           <div className="space-y-8">
             <div className="flex items-center justify-between">
               <Logo size="sm" />
               <div className="flex items-center gap-2">
-              
+
                 <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-dark">
                   <HiOutlineXMark className="w-5 h-5" />
                 </button>
@@ -244,11 +243,10 @@ export default function Navbar() {
                 const isActive = pathname === link.href;
                 return (
                   <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
-                    className={`px-4 py-3 rounded-xl text-sm transition-colors ${
-                      isActive
+                    className={`px-4 py-3 rounded-xl text-sm transition-colors ${isActive
                         ? "font-medium text-aura-accent bg-aura-accent/5"
                         : "font-light text-aura-muted hover:text-aura-dark hover:bg-aura-canvas"
-                    }`}>
+                      }`}>
                     {isAr ? link.label_ar : link.label_en}
                   </a>
                 );
@@ -279,16 +277,16 @@ export default function Navbar() {
                   <MdOutlineListAlt className="w-4 h-4 text-aura-accent" />
                   {isAr ? "إعلاناتي" : "My Listings"}
                 </a>
-              {isAdmin && (
+                {isAdmin && (
                   <a href={`/${locale}/admin`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />
                     {isAr ? "لوحة الإدارة" : "Admin Panel"}
                   </a>
                 )}
-                {isDeveloper && (
+                {isAgent && (
                   <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />
-                    {isAr ? "أدمن المطوّر" : "Developer Admin"}
+                    {isAr ? "أدمن الوسيط" : "Agent Admin"}
                   </a>
                 )}
                 <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-red-500 border border-red-100 transition-all duration-300">

@@ -80,27 +80,31 @@ export default function PartnersSection() {
 
   return (
     <section className="py-14 md:py-20 bg-aura-canvas border-t border-aura-border overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8 md:mb-12">
-        <div className="text-center">
-          <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
-            {isAr ? "شركاؤنا" : "Our Partners"}
-          </p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-aura-dark">
-            {isAr ? "نتعاون مع أكبر" : "We Work With"}
-            <span className="font-serif italic text-aura-accent mx-2">
-              {isAr ? "المطورين العقاريين" : "Top Developers"}
-            </span>
-          </h2>
-          <p className="text-sm text-aura-muted font-light mt-3 max-w-xl mx-auto">
-            {isAr
-              ? "شراكات استراتيجية مع أبرز شركات التطوير العقاري في مصر"
-              : "Strategic partnerships with Egypt's top real estate developers"}
-          </p>
+   <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8 md:mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-start">
+          <div>
+            <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
+              {isAr ? "شركاؤنا" : "Our Partners"}
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-aura-dark">
+              {isAr ? "نتعاون مع أكبر" : "We Work With"}
+              <span className="font-serif italic text-aura-accent mx-2">
+                {isAr ? "الوسطاء العقاريين" : "Top Agents"}
+              </span>
+            </h2>
+            {/* <p className="text-sm text-aura-muted font-light mt-3 max-w-xl mx-auto md:mx-0">
+              {isAr
+                ? "شراكات استراتيجية مع أبرز الوسطاء العقاريين في مصر"
+                : "Strategic partnerships with Egypt's top real estate agents"}
+            </p> */}
+          </div>
+
           
-            <a href={`/${locale}/developers`}
-            className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-full border border-aura-border text-aura-dark text-xs font-medium hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+           <a href={`/${locale}/developers`}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-aura-dark text-white text-sm font-medium hover:bg-aura-accent transition-all duration-300 shrink-0 hover:-translate-y-0.5 hover:shadow-lg mx-auto md:mx-0"
           >
-            {isAr ? "كل المطورين" : "All Developers"}
+            {isAr ? "كل الوسطاء" : "All Agents"}
+            <span className="text-lg">{isAr ? "←" : "→"}</span>
           </a>
         </div>
       </div>

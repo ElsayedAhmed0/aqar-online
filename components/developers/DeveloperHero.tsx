@@ -48,8 +48,8 @@ export default function DeveloperHero({
             )}
           </div>
 
-          <p className="text-[11px] tracking-[0.3em] text-aura-accent uppercase mt-4 mb-1.5 font-medium">
-            {isAr ? "مطوّر عقاري" : "Real Estate Developer"}
+         <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mt-4 mb-1.5 font-medium">
+            {isAr ? "وسيط عقاري" : "Real Estate Agent"}
           </p>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-aura-dark">
             {displayName}

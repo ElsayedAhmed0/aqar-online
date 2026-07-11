@@ -263,10 +263,45 @@ export default function AdminPage() {
       prev.map((l) => l.id === id ? { ...l, show_views } : l)
     );
   };
-  const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user") => {
+  const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user" | "agent") => {
     const supabase = createClient();
     const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
-    if (!error) setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
+    if (error) return;
+
+    // ✅ لو الترقية لـ "وسيط"، وميكنش عنده سجل partner من قبل، نعمله واحد جديد (غير نشط لحد ما نفعّله)
+    if (role === "agent") {
+      const { data: existing } = await supabase
+        .from("partners")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!existing) {
+        const targetUser = users.find((u) => u.id === userId);
+        const agentName = targetUser?.full_name || (isAr ? "وسيط جديد" : "New Agent");
+        const slug =
+          agentName
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9-]+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/(^-|-$)/g, "") +
+          "-" +
+          userId.slice(0, 8);
+
+        await supabase.from("partners").insert({
+          user_id: userId,
+          name: agentName,
+          name_en: agentName,
+          slug,
+          active: false,
+          order_num: 0,
+          partner_type: "agent",
+        });
+      }
+    }
+
+    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
   };
 
   const saveSettings = async () => {
@@ -509,9 +544,13 @@ export default function AdminPage() {
     XLSX.writeFile(workbook, "users.xls", { bookType: "xls" });
     setExportMenuOpen(false);
   };
-  const getFilteredUsers = () => users.filter((u) => {
+ const getFilteredUsers = () => users.filter((u) => {
     const matchRole = userFilter === "all" || u.role === userFilter;
-    const matchSearch = searchQuery === "" || u.full_name?.includes(searchQuery) || u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch =
+      searchQuery === "" ||
+      u.full_name?.includes(searchQuery) ||
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.phone?.replace(/\D/g, "").includes(searchQuery.replace(/\D/g, ""));
     return matchRole && matchSearch;
   });
 
@@ -804,7 +843,7 @@ export default function AdminPage() {
                 <div className="relative flex-1">
                   <HiOutlineMagnifyingGlass className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={isAr ? "بحث بالاسم أو البريد..." : "Search by name or email..."}
+                    placeholder={isAr ? "بحث بالاسم أو البريد أو الهاتف..." : "Search by name, email or phone..."}
                     className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all" />
                 </div>
                 <div className="relative shrink-0">
@@ -880,8 +919,8 @@ export default function AdminPage() {
                           <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.email || "-"}</td>
                           <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.phone || "-"}</td>
                           <td className="px-4 md:px-6 py-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap ${u.role === "admin" ? "bg-aura-accent/10 text-aura-accent" : u.role === "subadmin" ? "bg-blue-50 text-blue-500 border border-blue-200" : "bg-aura-canvas text-aura-muted border border-aura-border"}`}>
-                              {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub Admin") : (isAr ? "مستخدم" : "User")}
+                            <span className="...">
+                              {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin") : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent") : (isAr ? "مستخدم" : "User")}
                             </span>
                           </td>
                           <td className="px-4 md:px-6 py-4 text-sm text-aura-dark">{u.listings_count || 0}</td>
@@ -892,11 +931,12 @@ export default function AdminPage() {
                                 <div className="flex items-center gap-2">
                                   {u.role === "user" && (
                                     <>
-                                      <button onClick={() => changeUserRole(u.id, "subadmin")} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-500 text-[10px] font-medium hover:bg-blue-100 transition-all border border-blue-200 whitespace-nowrap">{isAr ? "مساعد" : "Sub"}</button>
-                                      <button onClick={() => changeUserRole(u.id, "admin")} className="px-3 py-1.5 rounded-lg bg-aura-accent/10 text-aura-accent text-[10px] font-medium hover:bg-aura-accent/20 transition-all whitespace-nowrap">{isAr ? "أدمن" : "Admin"}</button>
+                                      <button onClick={() => changeUserRole(u.id, "subadmin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all">{isAr ? "مساعد" : "Sub"}</button>
+                                      <button onClick={() => changeUserRole(u.id, "admin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all">{isAr ? "أدمن" : "Admin"}</button>
+                                      <button onClick={() => changeUserRole(u.id, "agent")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all">{isAr ? "وسيط" : "Agent"}</button>
                                     </>
                                   )}
-                                  {(u.role === "admin" || u.role === "subadmin") && (
+                                  {(u.role === "admin" || u.role === "subadmin" || u.role === "agent") && (
                                     <button onClick={() => changeUserRole(u.id, "user")} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-[10px] font-medium hover:bg-red-100 transition-all border border-red-200 whitespace-nowrap">{isAr ? "إلغاء" : "Revoke"}</button>
                                   )}
                                 </div>
@@ -1093,7 +1133,7 @@ export default function AdminPage() {
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة بانر صفحة المطوّر" : "Developer Page Cover Image"}</label>
+                   <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة بانر صفحة الوسيط" : "Agent Page Cover Image"}</label>
                     <div className="flex gap-3">
                       <input type="text" value={partnerForm.cover_image_url} onChange={(e) => setPartnerForm((prev) => ({ ...prev, cover_image_url: e.target.value }))} placeholder="URL..." className={`${inputCls} flex-1`} />
                       <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-xs text-aura-dark hover:border-aura-accent cursor-pointer transition-all shrink-0">
@@ -1105,8 +1145,8 @@ export default function AdminPage() {
                     {partnerForm.cover_image_url && <div className="mt-2 h-24 w-full max-w-xs rounded-xl border border-aura-border overflow-hidden bg-aura-canvas"><img src={partnerForm.cover_image_url} alt="preview" className="w-full h-full object-cover" /></div>}
                   </div>
 
-                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (عربي)" : "Developer Description (Arabic)"}</label><textarea value={partnerForm.description_ar} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_ar: e.target.value }))} rows={3} className={inputCls} /></div>
-                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (إنجليزي)" : "Developer Description (English)"}</label><textarea value={partnerForm.description_en} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_en: e.target.value }))} rows={3} className={inputCls} dir="ltr" /></div>
+                 <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف الوسيط (عربي)" : "Agent Description (Arabic)"}</label><textarea value={partnerForm.description_ar} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_ar: e.target.value }))} rows={3} className={inputCls} /></div>
+<div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف الوسيط (إنجليزي)" : "Agent Description (English)"}</label><textarea value={partnerForm.description_en} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_en: e.target.value }))} rows={3} className={inputCls} dir="ltr" /></div>
                 </div>
                 <div className="flex gap-3 mt-5">
                   <button onClick={savePartner} disabled={savingPartner || !partnerForm.name} className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">{savingPartner ? (isAr ? "جاري الحفظ..." : "Saving...") : editingPartner ? (isAr ? "تحديث" : "Update") : (isAr ? "إضافة" : "Add")}</button>

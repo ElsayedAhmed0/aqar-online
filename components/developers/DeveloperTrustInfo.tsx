@@ -7,10 +7,10 @@ export default function DeveloperTrustInfo({ isAr }: { isAr: boolean }) {
         {
             icon: <HiOutlineShieldCheck className="w-5 h-5" />,
             color: "bg-emerald-50 text-emerald-600",
-            title: isAr ? "مطوّر موثّق" : "Verified Developer",
+            title: isAr ? "وسيط موثّق" : "Verified Agent",
             desc: isAr
-                ? "كل مطوّر بيظهر هنا بيتراجع من فريقنا قبل ما صفحته تنشر للعامة."
-                : "Every developer shown here is reviewed by our team before their page goes live.",
+                ? "كل وسيط بيظهر هنا بيتراجع من فريقنا قبل ما صفحته تنشر للعامة."
+                : "Every agent shown here is reviewed by our team before their page goes live.",
         },
         {
             icon: <HiOutlineDocumentCheck className="w-5 h-5" />,
@@ -25,8 +25,8 @@ export default function DeveloperTrustInfo({ isAr }: { isAr: boolean }) {
             color: "bg-violet-50 text-violet-600",
             title: isAr ? "تواصل مباشر" : "Direct Contact",
             desc: isAr
-                ? "تقدر تتواصل مع المطوّر مباشرة عبر واتساب أو اتصال من صفحته."
-                : "Reach the developer directly via WhatsApp or a phone call from their page.",
+                ? "تقدر تتواصل مع الوسيط مباشرة عبر واتساب أو اتصال من صفحته."
+                : "Reach the agent directly via WhatsApp or a phone call from their page.",
         },
     ];
 
@@ -37,12 +37,12 @@ export default function DeveloperTrustInfo({ isAr }: { isAr: boolean }) {
                     <HiOutlineShieldCheck className="w-7 h-7 text-aura-accent" />
                 </div>
                 <h3 className="text-base font-medium text-aura-dark mb-1">
-                    {isAr ? "ليه تثق في المطورين هنا؟" : "Why Trust Our Developers?"}
+                    {isAr ? "ليه تثق في وسطائنا؟" : "Why Trust Our Agents?"}
                 </h3>
                 <p className="text-xs text-aura-muted font-light">
                     {isAr
-                        ? "كل مطوّر وكل إعلان بيمر بمراجعة قبل النشر"
-                        : "Every developer and listing is reviewed before publishing"}
+                        ? "كل وسيط وكل إعلان بيمر بمراجعة قبل النشر"
+                        : "Every agent and listing is reviewed before publishing"}
                 </p>
             </div>
 

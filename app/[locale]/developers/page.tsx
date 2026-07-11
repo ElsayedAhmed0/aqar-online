@@ -13,10 +13,10 @@ export async function generateMetadata({
   const isAr = locale === "ar";
 
   return {
-    title: isAr ? "كل المطورين العقاريين | عقار أونلاين" : "All Developers | Aqar Online",
+   title: isAr ? "كل الوسطاء العقاريين | عقار أونلاين" : "All Agents | Aqar Online",
     description: isAr
-      ? "تصفح كل شركاء ومطوّري عقار أونلاين العقاريين في مكان واحد"
-      : "Browse all of Aqar Online's real estate developer partners",
+      ? "تصفح كل شركاء ووسطاء عقار أونلاين العقاريين في مكان واحد"
+      : "Browse all of Aqar Online's real estate agent partners",
     alternates: {
       canonical: `/${locale}/developers`,
       languages: { ar: `/ar/developers`, en: `/en/developers` },
@@ -60,10 +60,10 @@ export default async function DevelopersPage({
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">
               {isAr ? "شركاؤنا" : "Our Partners"}
             </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
+           <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
               {isAr ? "كل" : "All"}
               <span className="block font-serif italic text-aura-accent mt-1">
-                {isAr ? "المطورين العقاريين" : "Real Estate Developers"}
+                {isAr ? "الوسطاء العقاريين" : "Real Estate Agents"}
               </span>
             </h1>
           </div>

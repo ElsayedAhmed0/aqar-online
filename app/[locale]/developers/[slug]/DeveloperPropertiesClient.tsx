@@ -108,7 +108,7 @@ export default function DeveloperPropertiesClient({
         <div className="mb-8 md:mb-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <h2 className="text-2xl sm:text-3xl font-light text-aura-dark">
-              {isAr ? "عقارات هذا المطوّر" : "Properties by this Developer"}
+              {isAr ? "عقارات هذا الوسيط" : "Properties by this Agent"}
               <span className="text-aura-muted text-base font-light ms-2">({total})</span>
             </h2>
 
@@ -172,7 +172,7 @@ export default function DeveloperPropertiesClient({
           <aside className="lg:col-span-3">
             <div className="bento-card bg-aura-card rounded-3xl p-6 border border-aura-border sticky top-28">
               <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
-                {isAr ? "نبذة عن المطوّر" : "About the Developer"}
+                {isAr ? "نبذة عن الوسيط" : "About the Agent"}
               </p>
               {(isAr ? partner.description_ar : partner.description_en) ? (
                 <p className="text-sm text-aura-muted font-light leading-relaxed whitespace-pre-line">

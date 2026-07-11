@@ -29,7 +29,7 @@ export default function DevelopersGrid({
       <div className="flex flex-col items-center justify-center py-20 gap-3 bg-aura-card rounded-3xl border border-aura-border">
         <HiOutlineHome className="w-10 h-10 text-aura-muted" />
         <p className="text-aura-muted font-light text-sm">
-          {isAr ? "لا يوجد مطوّرين حاليًا" : "No developers yet"}
+          {isAr ? "لا يوجد وسطاء حاليًا" : "No agents yet"}
         </p>
       </div>
     );
@@ -72,8 +72,8 @@ export default function DevelopersGrid({
                   {description}
                 </p>
               ) : (
-                <p className="text-xs text-aura-muted/50 font-light italic mb-3">
-                  {isAr ? "مطوّر عقاري موثّق" : "Verified Developer"}
+               <p className="text-xs text-aura-muted/50 font-light italic mb-3">
+                  {isAr ? "وسيط عقاري موثّق" : "Verified Agent"}
                 </p>
               )}
 
