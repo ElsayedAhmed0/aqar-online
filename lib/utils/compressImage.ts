@@ -40,18 +40,26 @@ export function compressImage(
   });
 }
 
-// ✅ رفع الصورة على Cloudinary
-export async function uploadToCloudinary(file: File): Promise<string> {
+// ✅ رفع الصورة على Cloudinary (مع إعادة محاولة تلقائية لو حصل تايم آوت)
+export async function uploadToCloudinary(file: File, retries = 1): Promise<string> {
   const base64 = await compressImage(file, 1200, 0.82);
 
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: base64 }),
-  });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64 }),
+      });
 
-  const data = await res.json();
-  console.error("Upload response:", data); // ✅ هنشوف السبب
-  if (!data.url) throw new Error(data.details || "Upload failed");
-  return data.url;
+      const data = await res.json();
+      if (data.url) return data.url;
+
+      if (attempt === retries) throw new Error(data.details || "Upload failed");
+    } catch (err) {
+      if (attempt === retries) throw err;
+    }
+  }
+
+  throw new Error("Upload failed");
 }

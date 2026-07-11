@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useState, useEffect, useRef } from "react";
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
@@ -9,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { createClient } from "@/lib/supabase/client";
 import {
-  HiOutlineSun, HiOutlineMoon, HiOutlineBars3, HiOutlineXMark,
+ HiOutlineBars3, HiOutlineXMark,
   HiOutlinePhone, HiOutlineGlobeAlt, HiOutlineHeart,
 } from "react-icons/hi2";
 import {
@@ -21,9 +20,8 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+  const [isDeveloper, setIsDeveloper] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -33,7 +31,7 @@ export default function Navbar() {
   const { settings } = useSettings();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMounted(true), []);
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -51,12 +49,13 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
+ useEffect(() => {
+    if (!user) { setIsAdmin(false); setIsDeveloper(false); return; }
     const checkRole = async () => {
       const supabase = createClient();
       const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
       setIsAdmin(data?.role === "admin");
+      setIsDeveloper(data?.role === "developer");
     };
     checkRole();
   }, [user]);
@@ -152,16 +151,6 @@ export default function Navbar() {
               <HiOutlineGlobeAlt className="w-4 h-4" />
             </button>
 
-            {/* الثيم — Desktop فقط */}
-            {/* {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="hidden md:flex w-9 h-9 rounded-full border border-aura-border items-center justify-center text-aura-muted hover:text-aura-accent hover:border-aura-accent transition-all duration-300"
-                aria-label="Toggle theme">
-                {theme === "dark" ? <HiOutlineSun className="w-4 h-4" /> : <HiOutlineMoon className="w-4 h-4" />}
-              </button>
-            )} */}
-
             {/* لو logged in — Desktop */}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
@@ -197,10 +186,16 @@ export default function Navbar() {
                         <MdOutlineListAlt className="w-4 h-4 text-aura-accent shrink-0" />
                         {isAr ? "إعلاناتي" : "My Listings"}
                       </a>
-                      {isAdmin && (
+                     {isAdmin && (
                         <a href={`/${locale}/admin`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
                           <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
                           {isAr ? "لوحة الإدارة" : "Admin Panel"}
+                        </a>
+                      )}
+                      {isDeveloper && (
+                        <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
+                          <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
+                          {isAr ? "أدمن المطوّر" : "Developer Admin"}
                         </a>
                       )}
                       <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-aura-border">
@@ -237,15 +232,7 @@ export default function Navbar() {
             <div className="flex items-center justify-between">
               <Logo size="sm" />
               <div className="flex items-center gap-2">
-                {/* ✅ الثيم في الموبايل */}
-                {/* {mounted && (
-                  <button
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-muted"
-                    aria-label="Toggle theme">
-                    {theme === "dark" ? <HiOutlineSun className="w-4 h-4" /> : <HiOutlineMoon className="w-4 h-4" />}
-                  </button>
-                )} */}
+              
                 <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-full border border-aura-border flex items-center justify-center text-aura-dark">
                   <HiOutlineXMark className="w-5 h-5" />
                 </button>
@@ -292,10 +279,16 @@ export default function Navbar() {
                   <MdOutlineListAlt className="w-4 h-4 text-aura-accent" />
                   {isAr ? "إعلاناتي" : "My Listings"}
                 </a>
-                {isAdmin && (
+              {isAdmin && (
                   <a href={`/${locale}/admin`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />
                     {isAr ? "لوحة الإدارة" : "Admin Panel"}
+                  </a>
+                )}
+                {isDeveloper && (
+                  <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
+                    <MdOutlineAdminPanelSettings className="w-4 h-4" />
+                    {isAr ? "أدمن المطوّر" : "Developer Admin"}
                   </a>
                 )}
                 <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-red-500 border border-red-100 transition-all duration-300">

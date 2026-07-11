@@ -39,7 +39,11 @@ type Ad = {
   price: string; image_url: string; link: string; active: boolean; order_num: number;
 };
 type PropertyType = { id: string; name_ar: string; name_en: string; value: string; active: boolean; order_num: number; };
-type Partner = { id: string; name: string; logo_url: string; active: boolean; order_num: number; };
+type Partner = {
+  id: string; name: string; logo_url: string; active: boolean; order_num: number;
+  slug?: string | null; name_en?: string | null; cover_image_url?: string | null;
+  description_ar?: string | null; description_en?: string | null; phone?: string | null;
+};
 type BlogPost = {
   id: string; title_ar: string; title_en: string;
   excerpt_ar: string; excerpt_en: string;
@@ -134,7 +138,10 @@ const textareaKeys = [
 
 const emptyAd = { title_ar: "", title_en: "", subtitle_ar: "", subtitle_en: "", badge_ar: "", badge_en: "", price: "", image_url: "", link: "", order_num: "0" };
 const emptyType = { name_ar: "", name_en: "", value: "", order_num: "0" };
-const emptyPartner = { name: "", logo_url: "", order_num: "0" };
+const emptyPartner = {
+  name: "", name_en: "", logo_url: "", order_num: "0",
+  slug: "", cover_image_url: "", description_ar: "", description_en: "", phone: "",
+};
 const emptyPost = { title_ar: "", title_en: "", excerpt_ar: "", excerpt_en: "", content_ar: "", content_en: "", category: "", image_url: "" };
 const PROMO_TABLE = "promotions";
 const imageSettingKeys = ["hero_image"];
@@ -1051,8 +1058,27 @@ export default function AdminPage() {
                 <h3 className="text-base font-medium text-aura-dark mb-1">{editingPartner ? (isAr ? "تعديل شريك" : "Edit Partner") : (isAr ? "إضافة شريك جديد" : "Add New Partner")}</h3>
                 <div className="w-8 h-0.5 bg-aura-accent mb-5" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشريك" : "Partner Name"}</label><input type="text" value={partnerForm.name} onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))} className={inputCls} /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشريك (عربي)" : "Partner Name (Arabic)"}</label><input type="text" value={partnerForm.name} onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))} className={inputCls} /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشريك (إنجليزي)" : "Partner Name (English)"}</label><input type="text" value={partnerForm.name_en} onChange={(e) => setPartnerForm((prev) => ({ ...prev, name_en: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "رابط الصفحة (Slug)" : "Page Link (Slug)"}</label>
+                    <input
+                      type="text"
+                      value={partnerForm.slug}
+                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-") }))}
+                      placeholder="ex-developer-name"
+                      className={inputCls}
+                      dir="ltr"
+                    />
+                    <p className="text-[10px] text-aura-muted">
+                      {isAr ? "حروف إنجليزي وأرقام وشرطات بس، من غير مسافات" : "English letters, numbers, and hyphens only"}
+                    </p>
+                  </div>
                   <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الترتيب" : "Order"}</label><input type="number" value={partnerForm.order_num} onChange={(e) => setPartnerForm((prev) => ({ ...prev, order_num: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
+                  <div className="space-y-1.5 sm:col-span-2"><label className="text-xs font-medium text-aura-dark">{isAr ? "رقم تواصل (اختياري)" : "Contact Phone (optional)"}</label><input type="text" value={partnerForm.phone} onChange={(e) => setPartnerForm((prev) => ({ ...prev, phone: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
                   <div className="space-y-1.5 sm:col-span-2">
                     <label className="text-xs font-medium text-aura-dark">{isAr ? "لوجو الشريك" : "Partner Logo"}</label>
                     <div className="flex gap-3">
@@ -1065,6 +1091,22 @@ export default function AdminPage() {
                     </div>
                     {partnerForm.logo_url && <div className="mt-2 h-16 w-32 rounded-xl border border-aura-border overflow-hidden bg-aura-canvas flex items-center justify-center"><img src={partnerForm.logo_url} alt="preview" className="max-h-full max-w-full object-contain p-2" /></div>}
                   </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة بانر صفحة المطوّر" : "Developer Page Cover Image"}</label>
+                    <div className="flex gap-3">
+                      <input type="text" value={partnerForm.cover_image_url} onChange={(e) => setPartnerForm((prev) => ({ ...prev, cover_image_url: e.target.value }))} placeholder="URL..." className={`${inputCls} flex-1`} />
+                      <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-xs text-aura-dark hover:border-aura-accent cursor-pointer transition-all shrink-0">
+                        <HiOutlinePhoto className="w-4 h-4 text-aura-accent" />
+                        {isAr ? "رفع" : "Upload"}
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; const url = await uploadImage(file, "partner-cover"); if (url) setPartnerForm((prev) => ({ ...prev, cover_image_url: url })); }} />
+                      </label>
+                    </div>
+                    {partnerForm.cover_image_url && <div className="mt-2 h-24 w-full max-w-xs rounded-xl border border-aura-border overflow-hidden bg-aura-canvas"><img src={partnerForm.cover_image_url} alt="preview" className="w-full h-full object-cover" /></div>}
+                  </div>
+
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (عربي)" : "Developer Description (Arabic)"}</label><textarea value={partnerForm.description_ar} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_ar: e.target.value }))} rows={3} className={inputCls} /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (إنجليزي)" : "Developer Description (English)"}</label><textarea value={partnerForm.description_en} onChange={(e) => setPartnerForm((prev) => ({ ...prev, description_en: e.target.value }))} rows={3} className={inputCls} dir="ltr" /></div>
                 </div>
                 <div className="flex gap-3 mt-5">
                   <button onClick={savePartner} disabled={savingPartner || !partnerForm.name} className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">{savingPartner ? (isAr ? "جاري الحفظ..." : "Saving...") : editingPartner ? (isAr ? "تحديث" : "Update") : (isAr ? "إضافة" : "Add")}</button>
@@ -1079,7 +1121,7 @@ export default function AdminPage() {
                       <div><h4 className="text-sm font-medium text-aura-dark">{partner.name}</h4><span className={`text-[10px] px-2 py-0.5 rounded-full ${partner.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{partner.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span></div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setEditingPartner(partner.id); setPartnerForm({ name: partner.name, logo_url: partner.logo_url || "", order_num: String(partner.order_num) }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
+                      <button onClick={() => { setEditingPartner(partner.id); setPartnerForm({ name: partner.name, name_en: partner.name_en || "", logo_url: partner.logo_url || "", order_num: String(partner.order_num), slug: partner.slug || "", cover_image_url: partner.cover_image_url || "", description_ar: partner.description_ar || "", description_en: partner.description_en || "", phone: partner.phone || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                       <button onClick={() => togglePartnerActive(partner.id, !partner.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${partner.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{partner.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
                       <button onClick={() => deletePartner(partner.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                     </div>

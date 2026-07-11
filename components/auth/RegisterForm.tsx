@@ -16,8 +16,10 @@ export default function RegisterForm() {
   const locale = useLocale();
   const isAr = locale === "ar";
 
+  const [accountType, setAccountType] = useState<"user" | "developer">("user");
   const [form, setForm] = useState({
     name: "",
+    developerName: "",
     phone: "",
     email: "",
     password: "",
@@ -32,6 +34,10 @@ export default function RegisterForm() {
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
       setError(isAr ? "يرجى ملء جميع الحقول" : "Please fill all fields");
+      return;
+    }
+    if (accountType === "developer" && !form.developerName) {
+      setError(isAr ? "يرجى كتابة اسم الشركة/المطوّر" : "Please enter your company/developer name");
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -56,6 +62,8 @@ export default function RegisterForm() {
         data: {
           full_name: form.name,
           phone: form.phone,
+          account_type: accountType,
+          ...(accountType === "developer" ? { developer_name: form.developerName } : {}),
         },
       },
     });
@@ -91,8 +99,8 @@ export default function RegisterForm() {
               ? `أرسلنا رابط تأكيد إلى ${form.email} — اضغط عليه لتفعيل حسابك ثم سجل دخولك`
               : `We sent a confirmation link to ${form.email} — click it to activate your account then login`}
           </p>
-          
-           <a href={`/${locale}/login`}
+
+          <a href={`/${locale}/login`}
             className="mt-4 px-8 py-3 rounded-2xl bg-aura-accent text-white text-sm font-medium hover:bg-aura-dark transition-all duration-300"
           >
             {isAr ? "انتقل لتسجيل الدخول" : "Go to Login"}
@@ -127,114 +135,174 @@ export default function RegisterForm() {
           {error}
         </div>
       )}
-
       <div className="space-y-4">
 
-        {/* الاسم */}
+        {/* نوع الحساب */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم الكامل" : "Full Name"}</label>
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "نوع الحساب" : "Account Type"}</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setAccountType("user")}
+              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${accountType === "user"
+                ? "bg-aura-dark text-white border-aura-dark"
+                : "border-aura-border text-aura-muted hover:border-aura-accent"
+                }`}
+            >
+              {isAr ? "مستخدم عادي" : "Regular User"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("developer")}
+              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${accountType === "developer"
+                ? "bg-aura-dark text-white border-aura-dark"
+                : "border-aura-border text-aura-muted hover:border-aura-accent"
+                }`}
+            >
+              {isAr ? "مطوّر عقاري" : "Real Estate Developer"}
+            </button>
+          </div>
+          {accountType === "developer" && (
+            <p className="text-[10px] text-aura-muted pt-1">
+              {isAr
+                ? "هيكون عندك لوحة خاصة لإدارة صفحتك وإعلاناتك، بعد مراجعة الأدمن"
+                : "You'll get a dedicated dashboard to manage your page and listings, pending admin review"}
+            </p>
+          )}
+        </div>
+
+        {/* الاسم */}
+        <div className="space-y-4">
+
+          {/* الاسم */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-aura-dark">{isAr ? "الاسم الكامل" : "Full Name"}</label>
+            <div className="relative">
+              <HiOutlineUser className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder={isAr ? "أدخل اسمك بالكامل" : "Enter your full name"}
+                className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+              />
+            </div>
+          </div>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder={isAr ? "أدخل اسمك بالكامل" : "Enter your full name"}
+            className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+          />
+        </div>
+      </div>
+
+      {accountType === "developer" && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشركة/المطوّر" : "Company/Developer Name"}</label>
           <div className="relative">
             <HiOutlineUser className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
             <input
               type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder={isAr ? "أدخل اسمك بالكامل" : "Enter your full name"}
+              value={form.developerName}
+              onChange={(e) => setForm({ ...form, developerName: e.target.value })}
+              placeholder={isAr ? "مثال: شركة النور للتطوير العقاري" : "e.g. Al Nour Developments"}
               className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
             />
           </div>
         </div>
-
-        {/* رقم الهاتف */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم الهاتف" : "Phone Number"}</label>
-          <div className="relative">
-            <HiOutlinePhone className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="01xxxxxxxxx"
-              className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
-              dir="ltr"
-            />
-          </div>
+      )}
+      {/* رقم الهاتف */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-aura-dark">{isAr ? "رقم الهاتف" : "Phone Number"}</label>
+        <div className="relative">
+          <HiOutlinePhone className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+          <input
+            type="tel"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder="01xxxxxxxxx"
+            className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+            dir="ltr"
+          />
         </div>
-
-        {/* البريد */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">{isAr ? "البريد الإلكتروني" : "Email Address"}</label>
-          <div className="relative">
-            <HiOutlineEnvelope className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="name@example.com"
-              className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
-              dir="ltr"
-            />
-          </div>
-        </div>
-
-        {/* كلمة المرور */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">{isAr ? "كلمة المرور" : "Password"}</label>
-          <div className="relative">
-            <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
-            <input
-              type={showPass ? "text" : "password"}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
-              dir="ltr"
-            />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
-              {showPass ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* تأكيد كلمة المرور */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-aura-dark">{isAr ? "تأكيد كلمة المرور" : "Confirm Password"}</label>
-          <div className="relative">
-            <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
-            <input
-              type={showConfirm ? "text" : "password"}
-              value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
-              dir="ltr"
-            />
-            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
-              {showConfirm ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* زر إنشاء الحساب */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-        >
-          {loading
-            ? (isAr ? "جاري إنشاء الحساب..." : "Creating account...")
-            : (isAr ? "تأكيد التسجيل والانضمام" : "Create Account")}
-        </button>
-
-        {/* رابط تسجيل الدخول */}
-        <p className="text-center text-sm text-aura-muted pt-2">
-          {isAr ? "لديك حساب بالفعل؟" : "Already have an account?"}{" "}
-          <a href={`/${locale}/login`} className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors">
-            {isAr ? "تسجيل الدخول" : "Sign In"}
-          </a>
-        </p>
-
       </div>
+
+      {/* البريد */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-aura-dark">{isAr ? "البريد الإلكتروني" : "Email Address"}</label>
+        <div className="relative">
+          <HiOutlineEnvelope className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+          <input
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder="name@example.com"
+            className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+            dir="ltr"
+          />
+        </div>
+      </div>
+
+      {/* كلمة المرور */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-aura-dark">{isAr ? "كلمة المرور" : "Password"}</label>
+        <div className="relative">
+          <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+          <input
+            type={showPass ? "text" : "password"}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            placeholder="••••••••"
+            className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+            dir="ltr"
+          />
+          <button type="button" onClick={() => setShowPass(!showPass)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
+            {showPass ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* تأكيد كلمة المرور */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-aura-dark">{isAr ? "تأكيد كلمة المرور" : "Confirm Password"}</label>
+        <div className="relative">
+          <HiOutlineLockClosed className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
+          <input
+            type={showConfirm ? "text" : "password"}
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            placeholder="••••••••"
+            className="w-full pr-11 pl-11 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
+            dir="ltr"
+          />
+          <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute left-4 top-1/2 -translate-y-1/2 text-aura-muted hover:text-aura-accent transition-colors">
+            {showConfirm ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* زر إنشاء الحساب */}
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full py-4 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+      >
+        {loading
+          ? (isAr ? "جاري إنشاء الحساب..." : "Creating account...")
+          : (isAr ? "تأكيد التسجيل والانضمام" : "Create Account")}
+      </button>
+
+      {/* رابط تسجيل الدخول */}
+      <p className="text-center text-sm text-aura-muted pt-2">
+        {isAr ? "لديك حساب بالفعل؟" : "Already have an account?"}{" "}
+        <a href={`/${locale}/login`} className="text-aura-accent font-medium hover:text-aura-accent-dark transition-colors">
+          {isAr ? "تسجيل الدخول" : "Sign In"}
+        </a>
+      </p>
+
     </div>
+
   );
 }

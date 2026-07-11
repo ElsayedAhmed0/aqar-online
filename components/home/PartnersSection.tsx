@@ -10,14 +10,15 @@ type Partner = {
   logo_url: string;
   active: boolean;
   order_num: number;
+  slug?: string | null;
 };
 
-function PartnerCard({ partner }: { partner: Partner }) {
+function PartnerCard({ partner, locale }: { partner: Partner; locale: string }) {
   const initials = partner.name.split(" ").map((w) => w[0]).join("").slice(0, 2);
+  const clickable = Boolean(partner.slug);
 
-  return (
-    <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-aura-card border border-aura-border hover:border-aura-accent/50 hover:shadow-[0_8px_30px_rgba(196,181,165,0.15)] transition-all duration-300 shrink-0 group w-36 sm:w-40">
-      
+  const cardContent = (
+    <>
       {/* اللوجو فوق */}
       {partner.logo_url ? (
         <div className="w-16 h-16 rounded-2xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden group-hover:border-aura-accent/30 transition-all duration-300">
@@ -33,8 +34,20 @@ function PartnerCard({ partner }: { partner: Partner }) {
       <span className="text-xs font-medium text-aura-muted group-hover:text-aura-dark transition-colors duration-300 text-center leading-tight">
         {partner.name}
       </span>
-    </div>
+    </>
   );
+
+  const className = "flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-aura-card border border-aura-border hover:border-aura-accent/50 hover:shadow-[0_8px_30px_rgba(196,181,165,0.15)] transition-all duration-300 shrink-0 group w-36 sm:w-40";
+
+  if (clickable) {
+    return (
+      <a href={`/${locale}/developers/${partner.slug}`} className={className}>
+        {cardContent}
+      </a>
+    );
+  }
+
+  return <div className={className}>{cardContent}</div>;
 }
 
 export default function PartnersSection() {
@@ -60,7 +73,7 @@ export default function PartnersSection() {
   const MarqueeTrack = () => (
     <div className="flex shrink-0 items-center gap-4 sm:gap-5 pr-4 sm:pr-5">
       {partners.map((partner) => (
-        <PartnerCard key={partner.id} partner={partner} />
+        <PartnerCard key={partner.id} partner={partner} locale={locale} />
       ))}
     </div>
   );
@@ -83,6 +96,12 @@ export default function PartnersSection() {
               ? "شراكات استراتيجية مع أبرز شركات التطوير العقاري في مصر"
               : "Strategic partnerships with Egypt's top real estate developers"}
           </p>
+          
+            <a href={`/${locale}/developers`}
+            className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-full border border-aura-border text-aura-dark text-xs font-medium hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+          >
+            {isAr ? "كل المطورين" : "All Developers"}
+          </a>
         </div>
       </div>
 

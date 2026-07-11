@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Readex_Pro, Playfair_Display, Reem_Kufi } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -70,26 +70,18 @@ export default async function LocaleLayout({
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          forcedTheme="light"
-          disableTransitionOnChange={false}
-        >
-          <AuthProvider>
-            <ListingsProvider>
-              <WishlistProvider>
-                <FilterProvider>
-                  <NextIntlClientProvider messages={messages}>
-                    {children}
-                    <Analytics />
-                  </NextIntlClientProvider>
-                </FilterProvider>
-              </WishlistProvider>
-            </ListingsProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ListingsProvider>
+            <WishlistProvider>
+              <FilterProvider>
+                <NextIntlClientProvider messages={messages}>
+                  {children}
+                  <Analytics />
+                </NextIntlClientProvider>
+              </FilterProvider>
+            </WishlistProvider>
+          </ListingsProvider>
+        </AuthProvider>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ELHZ6MJKM0"
           strategy="afterInteractive"

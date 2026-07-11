@@ -106,6 +106,13 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       if (!user?.id) return null;
       const supabase = createClient();
 
+      // ✅ لو الحساب ده مطوّر، هات معرّف سجله في partners عشان نربط الإعلان بيه
+      const { data: developerRow } = await supabase
+        .from("partners")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       const uploadedUrls: string[] = [];
       for (let i = 0; i < rawImages.length; i++) {
         const img = rawImages[i];
@@ -121,6 +128,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .from("listings")
         .insert({
           user_id: user.id,
+          developer_id: developerRow?.id || null,
           type: listing.type,
           purpose: (listing as any).purpose || purpose,
           title_ar: listing.title_ar,

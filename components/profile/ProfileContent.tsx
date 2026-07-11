@@ -156,8 +156,8 @@ export default function ProfileContent() {
                   const supabase = createClient();
 
                   // ارفع الصورة
-                  const ext = file.name.split(".").pop();
-                  const fileName = `avatars/${user!.id}.${ext}`;
+                 const ext = file.name.split(".").pop();
+                  const fileName = `${user!.id}/avatar.${ext}`;
 
                   const { data, error } = await supabase.storage
                     .from("listings")
