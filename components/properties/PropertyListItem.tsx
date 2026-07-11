@@ -42,7 +42,7 @@ export default function PropertyListItem({
      className="bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer flex flex-col sm:flex-row"
     >
       {/* الصورة — على اليمين */}
-      <div className="relative w-full sm:w-64 md:w-72 h-48 sm:h-auto shrink-0 overflow-hidden">
+      <div className="relative w-full sm:w-64 md:w-72 h-48 shrink-0 overflow-hidden">
         <img
           src={property.images?.[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
           alt={isAr ? property.title_ar : property.title_en}
