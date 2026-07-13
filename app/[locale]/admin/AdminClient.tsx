@@ -44,6 +44,7 @@ type Partner = {
   id: string; name: string; logo_url: string; active: boolean; order_num: number;
   slug?: string | null; name_en?: string | null; cover_image_url?: string | null;
   description_ar?: string | null; description_en?: string | null; phone?: string | null;
+  featured?: boolean;
 };
 type BlogPost = {
   id: string; title_ar: string; title_en: string;
@@ -264,7 +265,7 @@ export default function AdminPage() {
       prev.map((l) => l.id === id ? { ...l, show_views } : l)
     );
   };
-  const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user" | "agent") => {
+  const changeUserRole = async (userId: string, role: "admin" | "subadmin" | "user" | "agent" | "developer") => {
     const supabase = createClient();
     const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
     if (error) return;
@@ -321,7 +322,37 @@ export default function AdminPage() {
           .is("developer_id", null);
       }
     }
+// ✅ لو الترقية لـ "مطوّر"، وميكنش عنده سجل developer من قبل، نعمله واحد جديد (غير نشط لحد ما نفعّله)
+    if (role === "developer") {
+      const { data: existing } = await supabase
+        .from("developers")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
+      if (!existing) {
+        const targetUser = users.find((u) => u.id === userId);
+        const devName = targetUser?.full_name || (isAr ? "مطوّر جديد" : "New Developer");
+        const slug =
+          devName
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9-]+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/(^-|-$)/g, "") +
+          "-" +
+          userId.slice(0, 8);
+
+        await supabase.from("developers").insert({
+          user_id: userId,
+          name: devName,
+          name_en: devName,
+          slug,
+          active: false,
+          order_num: 0,
+        });
+      }
+    }
     setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
   };
  const deleteUserAccount = async (userId: string, userName: string) => {
@@ -468,7 +499,11 @@ export default function AdminPage() {
     await supabase.from("partners").update({ active }).eq("id", id);
     setPartners((prev) => prev.map((p) => p.id === id ? { ...p, active } : p));
   };
-
+const togglePartnerFeatured = async (id: string, featured: boolean) => {
+    const supabase = createClient();
+    await supabase.from("partners").update({ featured }).eq("id", id);
+    setPartners((prev) => prev.map((p) => p.id === id ? { ...p, featured } : p));
+  };
   const deletePartner = async (id: string) => {
     const supabase = createClient();
     const { error } = await supabase.from("partners").delete().eq("id", id);
@@ -979,7 +1014,7 @@ export default function AdminPage() {
                           <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.phone || "-"}</td>
                           <td className="px-4 md:px-6 py-4">
                             <span className="...">
-                              {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin") : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent") : (isAr ? "مستخدم" : "User")}
+                              {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin") : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent") : u.role === "developer" ? (isAr ? "مطوّر عقاري" : "Developer") : (isAr ? "مستخدم" : "User")}
                             </span>
                           </td>
                           <td className="px-4 md:px-6 py-4 text-sm text-aura-dark">{u.listings_count || 0}</td>
@@ -993,9 +1028,10 @@ export default function AdminPage() {
                                       <button onClick={() => changeUserRole(u.id, "subadmin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "مساعد" : "Sub"}</button>
                                       <button onClick={() => changeUserRole(u.id, "admin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "أدمن" : "Admin"}</button>
                                       <button onClick={() => changeUserRole(u.id, "agent")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "وسيط" : "Agent"}</button>
+                                      <button onClick={() => changeUserRole(u.id, "developer")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "مطوّر" : "Developer"}</button>
                                     </>
                                   )}
-                                  {(u.role === "admin" || u.role === "subadmin" || u.role === "agent") && (
+                                  {(u.role === "admin" || u.role === "subadmin" || u.role === "agent" || u.role === "developer") && (
                                     <button onClick={() => changeUserRole(u.id, "user")} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-[10px] font-medium hover:bg-red-100 transition-all border border-red-200 whitespace-nowrap shrink-0">{isAr ? "إلغاء" : "Revoke"}</button>
                                   )}
                                   <button
@@ -1222,15 +1258,29 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {partners.map((partner) => (
                   <div key={partner.id} className="bento-card bg-aura-card rounded-2xl p-4 md:p-5 border border-aura-border">
-                    <div className="flex items-center gap-4 mb-4">
+                   <div className="flex items-center gap-4 mb-4">
                       {partner.logo_url ? <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden shrink-0"><img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-1" /></div> : <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-aura-accent/10 flex items-center justify-center shrink-0"><span className="text-sm font-bold text-aura-accent">{partner.name.slice(0, 2)}</span></div>}
-                      <div><h4 className="text-sm font-medium text-aura-dark">{partner.name}</h4><span className={`text-[10px] px-2 py-0.5 rounded-full ${partner.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{partner.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span></div>
+                      <div>
+                        <h4 className="text-sm font-medium text-aura-dark">{partner.name}</h4>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${partner.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{partner.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span>
+                          {(partner as any).featured && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">⭐ {isAr ? "مميز" : "Featured"}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                   <div className="flex gap-2 mb-2">
                       <button onClick={() => { setEditingPartner(partner.id); setPartnerForm({ name: partner.name, name_en: partner.name_en || "", logo_url: partner.logo_url || "", order_num: String(partner.order_num), slug: partner.slug || "", cover_image_url: partner.cover_image_url || "", description_ar: partner.description_ar || "", description_en: partner.description_en || "", phone: partner.phone || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                       <button onClick={() => togglePartnerActive(partner.id, !partner.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${partner.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{partner.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
                       <button onClick={() => deletePartner(partner.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
                     </div>
+                    <button
+                      onClick={() => togglePartnerFeatured(partner.id, !(partner as any).featured)}
+                      className={`w-full py-2 rounded-xl border text-xs transition-all ${(partner as any).featured ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100" : "border-aura-border text-aura-muted hover:border-amber-300 hover:text-amber-600"}`}
+                    >
+                      ⭐ {(partner as any).featured ? (isAr ? "إلغاء التمييز (شيله من الرئيسية)" : "Unfeature (remove from homepage)") : (isAr ? "تمييز (إظهار في الرئيسية)" : "Feature (show on homepage)")}
+                    </button>
                   </div>
                 ))}
               </div>

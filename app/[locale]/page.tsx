@@ -9,6 +9,7 @@ import PropertiesSection from "@/components/home/PropertiesSection";
 import BlogSection from "@/components/home/BlogSection";
 import PartnersSection from "@/components/home/PartnersSection";
 import SideAds from "@/components/home/SideAds";
+import DevelopersSection from "@/components/home/DevelopersSection";
 
 export async function generateMetadata({
   params,
@@ -67,6 +68,7 @@ export default function Home() {
             </div>
 
             <PartnersSection />
+            <DevelopersSection />
             <PropertiesSection />
             <StatsSection />
             <BlogSection />

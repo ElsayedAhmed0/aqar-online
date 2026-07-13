@@ -16,7 +16,7 @@ export default function RegisterForm() {
   const locale = useLocale();
   const isAr = locale === "ar";
 
-  const [accountType, setAccountType] = useState<"user" | "agent">("user");
+  const [accountType, setAccountType] = useState<"user" | "agent" | "developer">("user");
   const [form, setForm] = useState({
     name: "",
     developerName: "",
@@ -36,8 +36,8 @@ export default function RegisterForm() {
       setError(isAr ? "يرجى ملء جميع الحقول" : "Please fill all fields");
       return;
     }
-    if (accountType === "agent" && !form.developerName) {
-      setError(isAr ? "يرجى كتابة اسم الشركة/الوسيط" : "Please enter your company/agent name");
+   if ((accountType === "agent" || accountType === "developer") && !form.developerName) {
+      setError(isAr ? "يرجى كتابة اسم الشركة" : "Please enter your company name");
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -63,7 +63,7 @@ export default function RegisterForm() {
           full_name: form.name,
           phone: form.phone,
           account_type: accountType,
-          ...(accountType === "agent" ? { developer_name: form.developerName } : {}),
+          ...((accountType === "agent" || accountType === "developer") ? { developer_name: form.developerName } : {}),
         },
       },
     });
@@ -141,7 +141,7 @@ export default function RegisterForm() {
         {/* نوع الحساب */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-aura-dark">{isAr ? "نوع الحساب" : "Account Type"}</label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => setAccountType("user")}
@@ -164,8 +164,19 @@ export default function RegisterForm() {
             >
               {isAr ? "وسيط عقاري" : "Real Estate Agent"}
             </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("developer")}
+              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${
+                accountType === "developer"
+                  ? "bg-aura-dark text-white border-aura-dark"
+                  : "border-aura-border text-aura-muted hover:border-aura-accent"
+              }`}
+            >
+              {isAr ? "مطوّر عقاري" : "Real Estate Developer"}
+            </button>
           </div>
-          {accountType === "agent" && (
+         {(accountType === "agent" || accountType === "developer") && (
             <p className="text-[10px] text-aura-muted pt-1">
               {isAr
                 ? "هيكون عندك لوحة خاصة لإدارة صفحتك وإعلاناتك، بعد مراجعة الأدمن"
@@ -190,16 +201,24 @@ export default function RegisterForm() {
         </div>
 
         {/* اسم الشركة/الوسيط — يظهر بس لو وسيط */}
-        {accountType === "agent" && (
+      {(accountType === "agent" || accountType === "developer") && (
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشركة/الوسيط" : "Company/Agent Name"}</label>
+            <label className="text-xs font-medium text-aura-dark">
+              {accountType === "developer"
+                ? (isAr ? "اسم الشركة" : "Company Name")
+                : (isAr ? "اسم المكتب/الوسيط" : "Office/Agent Name")}
+            </label>
             <div className="relative">
               <HiOutlineUser className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-aura-accent" />
               <input
                 type="text"
                 value={form.developerName}
                 onChange={(e) => setForm({ ...form, developerName: e.target.value })}
-                placeholder={isAr ? "مثال: شركة النور للتطوير العقاري" : "e.g. Al Nour Developments"}
+               placeholder={
+                  accountType === "developer"
+                    ? (isAr ? "مثال: شركة النور للتطوير العقاري" : "e.g. Al Nour Developments")
+                    : (isAr ? "مثال: مكتب النور العقاري" : "e.g. Al Nour Real Estate Office")
+                }
                 className="w-full pr-11 pl-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50"
               />
             </div>

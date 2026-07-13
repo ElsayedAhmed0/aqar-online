@@ -58,11 +58,13 @@ export default function PartnersSection() {
   useEffect(() => {
     const fetchPartners = async () => {
       const supabase = createClient();
-      const { data } = await supabase
+     const { data } = await supabase
         .from("partners")
         .select("*")
         .eq("active", true)
-        .order("order_num", { ascending: true });
+        .eq("featured", true)
+        .order("order_num", { ascending: true })
+        .limit(6);
       if (data) setPartners(data);
     };
     fetchPartners();
@@ -80,7 +82,7 @@ export default function PartnersSection() {
 
   return (
     <section className="py-14 md:py-20 bg-aura-canvas border-t border-aura-border overflow-hidden">
-   <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8 md:mb-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8 md:mb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-start">
           <div>
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-3">
@@ -99,8 +101,8 @@ export default function PartnersSection() {
             </p> */}
           </div>
 
-          
-           <a href={`/${locale}/developers`}
+
+          <a href={`/${locale}/developers`}
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-aura-dark text-white text-sm font-medium hover:bg-aura-accent transition-all duration-300 shrink-0 hover:-translate-y-0.5 hover:shadow-lg mx-auto md:mx-0"
           >
             {isAr ? "كل الوسطاء" : "All Agents"}
