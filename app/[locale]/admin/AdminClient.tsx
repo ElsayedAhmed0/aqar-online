@@ -146,6 +146,7 @@ const emptyPartner = {
 };
 const emptyPost = { title_ar: "", title_en: "", excerpt_ar: "", excerpt_en: "", content_ar: "", content_en: "", category: "", image_url: "" };
 const PROMO_TABLE = "promotions";
+const USERS_PER_PAGE = 15;
 const imageSettingKeys = ["hero_image"];
 
 export default function AdminPage() {
@@ -182,6 +183,7 @@ export default function AdminPage() {
   const [uploadingSettingImg, setUploadingSettingImg] = useState(false);
   const [userFilter, setUserFilter] = useState<"all" | "admin" | "subadmin" | "user">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [usersPage, setUsersPage] = useState(1);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -190,6 +192,9 @@ export default function AdminPage() {
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [totalViews, setTotalViews] = useState(0);
   const [listingSearch, setListingSearch] = useState("");
+  useEffect(() => {
+    setUsersPage(1);
+  }, [userFilter, searchQuery]);
   useEffect(() => {
     if (loading) return;
     if (!user) { router.push(`/${locale}/login`); return; }
@@ -679,6 +684,11 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
     );
   });
   const filteredUsers = getFilteredUsers();
+  const totalUsersPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
+  const paginatedUsers = filteredUsers.slice(
+    (usersPage - 1) * USERS_PER_PAGE,
+    usersPage * USERS_PER_PAGE
+  );
   const unreadCount = messages.filter((m) => !m.read).length;
   const isFullAdmin = currentUserRole === "admin";
   const inputCls = "w-full px-4 py-3 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300";
@@ -1000,9 +1010,9 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUsers.length === 0 ? (
+                    {paginatedUsers.length === 0 ? (
                         <tr><td colSpan={7} className="text-center py-12 text-aura-muted text-sm">{isAr ? "لا توجد نتائج" : "No results"}</td></tr>
-                      ) : filteredUsers.map((u, i) => (
+                      ) : paginatedUsers.map((u, i) => (
                         <tr key={u.id} className={`border-b border-aura-border hover:bg-aura-canvas transition-colors ${i % 2 === 0 ? "" : "bg-aura-canvas/30"}`}>
                           <td className="px-4 md:px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -1047,10 +1057,51 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                           )}
                         </tr>
                       ))}
-                    </tbody>
+                  </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* ✅ Pagination */}
+              {totalUsersPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setUsersPage((p) => Math.max(1, p - 1))}
+                    disabled={usersPage === 1}
+                    className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isAr ? "السابق" : "Prev"}
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalUsersPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalUsersPages || Math.abs(p - usersPage) <= 1)
+                      .map((p, idx, arr) => (
+                        <div key={p} className="flex items-center gap-1">
+                          {idx > 0 && arr[idx - 1] !== p - 1 && (
+                            <span className="text-aura-muted px-1">...</span>
+                          )}
+                          <button
+                            onClick={() => setUsersPage(p)}
+                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${
+                              p === usersPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+
+                  <button
+                    onClick={() => setUsersPage((p) => Math.min(totalUsersPages, p + 1))}
+                    disabled={usersPage === totalUsersPages}
+                    className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isAr ? "التالي" : "Next"}
+                  </button>
+                </div>
+              )}
             </>
           )}
 
