@@ -13,18 +13,18 @@ export default function Footer() {
   const { types: propertyTypes } = usePropertyTypes();
 
   const socials = [
-    { icon: <FaTiktok className="w-3.5 h-3.5" />,    key: "social_tiktok"    },
-    { icon: <FaWhatsapp className="w-3.5 h-3.5" />,  key: "social_whatsapp"  },
+    { icon: <FaTiktok className="w-3.5 h-3.5" />, key: "social_tiktok" },
+    { icon: <FaWhatsapp className="w-3.5 h-3.5" />, key: "social_whatsapp" },
     { icon: <FaInstagram className="w-3.5 h-3.5" />, key: "social_instagram" },
-    { icon: <FaFacebookF className="w-3.5 h-3.5" />, key: "social_facebook"  },
+    { icon: <FaFacebookF className="w-3.5 h-3.5" />, key: "social_facebook" },
   ];
 
   const quickLinks = [
-    { label_ar: "الرئيسية",   label_en: "Home",        href: `/${locale}`             },
-    { label_ar: "العقارات",   label_en: "Properties",  href: `/${locale}/properties`  },
-    { label_ar: "عن عقار",    label_en: "About Us",    href: `/${locale}/about`       },
-    { label_ar: "المقالات",   label_en: "Blog",        href: `/${locale}/blog`        },
-    { label_ar: "اتصل بنا",   label_en: "Contact",     href: `/${locale}/contact`     },
+    { label_ar: "الرئيسية", label_en: "Home", href: `/${locale}` },
+    { label_ar: "العقارات", label_en: "Properties", href: `/${locale}/properties` },
+    { label_ar: "عن عقار", label_en: "About Us", href: `/${locale}/about` },
+    { label_ar: "المقالات", label_en: "Blog", href: `/${locale}/blog` },
+    { label_ar: "اتصل بنا", label_en: "Contact", href: `/${locale}/contact` },
     { label_ar: "أضف إعلانك", label_en: "Add Listing", href: `/${locale}/add-listing` },
   ];
 
@@ -85,7 +85,7 @@ export default function Footer() {
               {isAr ? "أنواع العقارات" : "Property Types"}
             </h4>
             <nav className="flex flex-col gap-2.5 md:gap-3">
-              {propertyTypes.length > 0 ? propertyTypes.map((type) => (
+              {propertyTypes.length > 0 ? propertyTypes.slice(0, 5).map((type) => (
                 <a key={type.value}
                   href={`/${locale}/properties?type=${type.value}`}
                   className="text-xs sm:text-sm text-white/50 hover:text-white transition-colors duration-200">
