@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Readex_Pro, Playfair_Display, Reem_Kufi } from "next/font/google";
-
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -49,6 +48,29 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: "عقار أونلاين | Aqar Online",
+  url: "https://www.aqqaronline.com",
+  logo: "https://www.aqqaronline.com/favicon.svg",
+  description: "منصة العقارات الأولى في مصر — شقق، فيلات، عقارات تجارية في 27 محافظة",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "القاهرة",
+    addressRegion: "التجمع الخامس",
+    addressCountry: "EG",
+  },
+  areaServed: {
+    "@type": "Country",
+    name: "Egypt",
+  },
+  sameAs: [
+    "https://www.aqqaronline.com/ar",
+    "https://www.aqqaronline.com/en",
+  ],
+};
+
 export default async function LocaleLayout({
   children,
   params,
@@ -70,6 +92,12 @@ export default async function LocaleLayout({
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
       >
+        {/* Organization Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+
         <AuthProvider>
           <ListingsProvider>
             <WishlistProvider>
@@ -82,6 +110,7 @@ export default async function LocaleLayout({
             </WishlistProvider>
           </ListingsProvider>
         </AuthProvider>
+
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ELHZ6MJKM0"
           strategy="afterInteractive"

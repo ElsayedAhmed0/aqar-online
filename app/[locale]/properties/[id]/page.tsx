@@ -4,13 +4,12 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PropertyGallery from "@/components/properties/PropertyGallery";
-import BookingForm from "@/components/properties/BookingForm";
 import SimilarProperties from "@/components/properties/SimilarProperties";
 import PropertyFeatures from "@/components/properties/PropertyFeatures";
 import PropertyInfo from "@/components/properties/PropertyInfo";
 import ContactCard from "@/components/properties/ContactCard";
 import FeaturedBanner from "../FeaturedBanner";
-// import FeaturedBanner from "@/components/properties/FeaturedBanner";
+
 export async function generateMetadata({
   params,
 }: {
@@ -79,10 +78,12 @@ export default async function PropertyDetailsPage({
     .single();
 
   if (!property) notFound();
+
   await supabase
     .from("listings")
     .update({ views: (property.views || 0) + 1 })
     .eq("id", id);
+
   const { data: similar } = await supabase
     .from("listings")
     .select("*")
@@ -92,26 +93,69 @@ export default async function PropertyDetailsPage({
     .limit(3);
 
   const isAr = locale === "ar";
+  const title = isAr ? property.title_ar : property.title_en;
+  const location = isAr ? property.location_ar : property.location_en;
+
+  // Structured Data JSON-LD
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: title,
+    description: isAr
+      ? `${title} في ${location}`
+      : `${title} in ${location}`,
+    url: `https://www.aqqaronline.com/${locale}/properties/${id}`,
+    image: property.images?.[0] || "",
+    offers: {
+      "@type": "Offer",
+      price: property.price,
+      priceCurrency: "EGP",
+      availability: "https://schema.org/InStock",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: location,
+      addressCountry: "EG",
+    },
+    floorSize: property.area
+      ? {
+          "@type": "QuantitativeValue",
+          value: property.area,
+          unitCode: "MTK",
+        }
+      : undefined,
+    numberOfRooms: property.beds || undefined,
+    provider: {
+      "@type": "Organization",
+      name: "عقار أونلاين | Aqar Online",
+      url: "https://www.aqqaronline.com",
+    },
+  };
 
   return (
     <main className="min-h-screen bg-aura-bg">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
         <div className="mb-8">
-
-          <a href={`/${locale}`}
+          
+            <a href={`/${locale}`}
             className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
           >
             ← {isAr ? "العودة للرئيسية" : "Back to Home"}
           </a>
           <h1 className="text-4xl md:text-5xl font-light text-aura-dark">
-            {isAr ? property.title_ar : property.title_en}
+            {title}
           </h1>
-          <p className="text-aura-muted text-sm mt-2">
-            {isAr ? property.location_ar : property.location_en}
-          </p>
+          <p className="text-aura-muted text-sm mt-2">{location}</p>
         </div>
+
         <FeaturedBanner property={property} isAr={isAr} />
         <PropertyGallery images={property.images || []} />
 
