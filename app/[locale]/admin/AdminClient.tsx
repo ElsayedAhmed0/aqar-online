@@ -46,6 +46,25 @@ type Partner = {
   description_ar?: string | null; description_en?: string | null; phone?: string | null;
   featured?: boolean;
 };
+type Developer = {
+  id: string; name: string; logo_url: string; active: boolean; order_num: number;
+  slug?: string | null; name_en?: string | null; cover_image_url?: string | null;
+  description_ar?: string | null; description_en?: string | null; phone?: string | null;
+  whatsapp?: string | null; facebook_url?: string | null; linkedin_url?: string | null;
+  featured?: boolean;
+};
+type Project = {
+  id: string; developer_id: string;
+  name_ar: string; name_en?: string | null; slug?: string | null;
+  description_ar?: string | null; description_en?: string | null;
+  cover_image_url?: string | null; master_plan_url?: string | null;
+  location_ar?: string | null; location_en?: string | null;
+  delivery_date?: string | null;
+  payment_plan_ar?: string | null; payment_plan_en?: string | null;
+  amenities?: string[] | null;
+  status: "pending" | "approved" | "rejected";
+  active: boolean; order_num: number;
+};
 type BlogPost = {
   id: string; title_ar: string; title_en: string;
   excerpt_ar: string; excerpt_en: string;
@@ -155,7 +174,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"listings" | "users" | "settings" | "ads" | "types" | "partners" | "blog" | "messages">("listings");
+  const [activeTab, setActiveTab] = useState<"listings" | "users" | "settings" | "ads" | "types" | "partners" | "developers" | "blog" | "messages">("listings");
   const [mobileTabOpen, setMobileTabOpen] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected">("pending");
@@ -164,19 +183,29 @@ export default function AdminPage() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [developers, setDevelopers] = useState<Developer[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [adForm, setAdForm] = useState(emptyAd);
   const [typeForm, setTypeForm] = useState(emptyType);
   const [partnerForm, setPartnerForm] = useState(emptyPartner);
+  const [developerForm, setDeveloperForm] = useState({
+    name: "", name_en: "", logo_url: "", order_num: "0",
+    slug: "", cover_image_url: "", description_ar: "", description_en: "",
+    phone: "", whatsapp: "", facebook_url: "", linkedin_url: "",
+  });
   const [postForm, setPostForm] = useState(emptyPost);
   const [editingAd, setEditingAd] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
   const [editingPartner, setEditingPartner] = useState<string | null>(null);
+  const [editingDeveloper, setEditingDeveloper] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [savingAd, setSavingAd] = useState(false);
   const [savingType, setSavingType] = useState(false);
   const [savingPartner, setSavingPartner] = useState(false);
+  const [savingDeveloper, setSavingDeveloper] = useState(false);
+  const [projectsFilter, setProjectsFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [savingPost, setSavingPost] = useState(false);
   const [uploadingAdImg, setUploadingAdImg] = useState(false);
   const [uploadingPostImg, setUploadingPostImg] = useState(false);
@@ -204,17 +233,18 @@ export default function AdminPage() {
       if (!data || (data.role !== "admin" && data.role !== "subadmin")) { router.push(`/${locale}`); return; }
       setCurrentUserRole(data.role);
 
-      const [listingsRes, usersRes, settingsRes, adsRes, typesRes, partnersRes, blogRes, messagesRes] = await Promise.all([
+      const [listingsRes, usersRes, settingsRes, adsRes, typesRes, partnersRes, developersRes, projectsRes, blogRes, messagesRes] = await Promise.all([
         supabase.from("listings").select("*, profiles(full_name, email, phone)").order("created_at", { ascending: false }),
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("site_settings").select("key, value"),
         supabase.from(PROMO_TABLE).select("*").order("order_num", { ascending: true }),
         supabase.from("property_types").select("*").order("order_num", { ascending: true }),
         supabase.from("partners").select("*").order("order_num", { ascending: true }),
+        supabase.from("developers").select("*").order("order_num", { ascending: true }),
+        supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
       ]);
-
       if (listingsRes.data) setListings(listingsRes.data as Listing[]);
       if (usersRes.data) {
         const withCounts = await Promise.all(usersRes.data.map(async (u) => {
@@ -231,6 +261,8 @@ export default function AdminPage() {
       if (adsRes.data) setAds(adsRes.data as Ad[]);
       if (typesRes.data) setPropertyTypes(typesRes.data as PropertyType[]);
       if (partnersRes.data) setPartners(partnersRes.data as Partner[]);
+      if (developersRes.data) setDevelopers(developersRes.data as Developer[]);
+      if (projectsRes.data) setProjects(projectsRes.data as Project[]);
       if (blogRes.data) setBlogPosts(blogRes.data as BlogPost[]);
       if (messagesRes.data) setMessages(messagesRes.data as Message[]);
       if (listingsRes.data) {
@@ -327,7 +359,7 @@ export default function AdminPage() {
           .is("developer_id", null);
       }
     }
-// ✅ لو الترقية لـ "مطوّر"، وميكنش عنده سجل developer من قبل، نعمله واحد جديد (غير نشط لحد ما نفعّله)
+    // ✅ لو الترقية لـ "مطوّر"، وميكنش عنده سجل developer من قبل، نعمله واحد جديد (غير نشط لحد ما نفعّله)
     if (role === "developer") {
       const { data: existing } = await supabase
         .from("developers")
@@ -360,7 +392,7 @@ export default function AdminPage() {
     }
     setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
   };
- const deleteUserAccount = async (userId: string, userName: string) => {
+  const deleteUserAccount = async (userId: string, userName: string) => {
     const confirmed = window.confirm(
       isAr
         ? `متأكد إنك عايز تمسح حساب "${userName}" نهائيًا؟ الإجراء ده مفيهوش تراجع، وإعلاناته القديمة (لو موجودة) هتفضل موجودة من غير مالك.`
@@ -504,7 +536,7 @@ export default function AdminPage() {
     await supabase.from("partners").update({ active }).eq("id", id);
     setPartners((prev) => prev.map((p) => p.id === id ? { ...p, active } : p));
   };
-const togglePartnerFeatured = async (id: string, featured: boolean) => {
+  const togglePartnerFeatured = async (id: string, featured: boolean) => {
     const supabase = createClient();
     await supabase.from("partners").update({ featured }).eq("id", id);
     setPartners((prev) => prev.map((p) => p.id === id ? { ...p, featured } : p));
@@ -514,7 +546,62 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
     const { error } = await supabase.from("partners").delete().eq("id", id);
     if (!error) setPartners((prev) => prev.filter((p) => p.id !== id));
   };
+  const saveDeveloper = async () => {
+    setSavingDeveloper(true);
+    const supabase = createClient();
+    const payload = { ...developerForm, order_num: Number(developerForm.order_num) };
+    if (editingDeveloper) {
+      const { data } = await supabase.from("developers").update(payload).eq("id", editingDeveloper).select().single();
+      if (data) setDevelopers((prev) => prev.map((d) => d.id === editingDeveloper ? data : d));
+      setEditingDeveloper(null);
+    } else {
+      const { data } = await supabase.from("developers").insert({ ...payload, active: true }).select().single();
+      if (data) setDevelopers((prev) => [...prev, data]);
+    }
+    setDeveloperForm({
+      name: "", name_en: "", logo_url: "", order_num: "0",
+      slug: "", cover_image_url: "", description_ar: "", description_en: "",
+      phone: "", whatsapp: "", facebook_url: "", linkedin_url: "",
+    });
+    setSavingDeveloper(false);
+  };
 
+  const toggleDeveloperActive = async (id: string, active: boolean) => {
+    const supabase = createClient();
+    await supabase.from("developers").update({ active }).eq("id", id);
+    setDevelopers((prev) => prev.map((d) => d.id === id ? { ...d, active } : d));
+  };
+
+  const toggleDeveloperFeatured = async (id: string, featured: boolean) => {
+    const supabase = createClient();
+    await supabase.from("developers").update({ featured }).eq("id", id);
+    setDevelopers((prev) => prev.map((d) => d.id === id ? { ...d, featured } : d));
+  };
+
+  const deleteDeveloper = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("developers").delete().eq("id", id);
+    if (!error) setDevelopers((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  // ✅ الموافقة/الرفض على المشاريع
+  const updateProjectStatus = async (id: string, status: "approved" | "rejected") => {
+    const supabase = createClient();
+    const { error } = await supabase.from("projects").update({ status }).eq("id", id);
+    if (!error) setProjects((prev) => prev.map((p) => p.id === id ? { ...p, status } : p));
+  };
+
+  const toggleProjectActive = async (id: string, active: boolean) => {
+    const supabase = createClient();
+    await supabase.from("projects").update({ active }).eq("id", id);
+    setProjects((prev) => prev.map((p) => p.id === id ? { ...p, active } : p));
+  };
+
+  const deleteProject = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (!error) setProjects((prev) => prev.filter((p) => p.id !== id));
+  };
   const savePost = async () => {
     setSavingPost(true);
     const supabase = createClient();
@@ -642,7 +729,7 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
     XLSX.writeFile(workbook, "users.xls", { bookType: "xls" });
     setExportMenuOpen(false);
   };
- const getFilteredUsers = () => users.filter((u) => {
+  const getFilteredUsers = () => users.filter((u) => {
     const matchRole = userFilter === "all" || u.role === userFilter;
     const digitsOnly = searchQuery.replace(/\D/g, "");
     const matchSearch =
@@ -706,13 +793,14 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
     { key: "order_num", label_ar: "الترتيب", label_en: "Order" },
   ];
 
-  const allTabs = [
+ const allTabs = [
     { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />, ar: "الإعلانات", en: "Listings", count: listings.length },
     { id: "users", icon: <HiOutlineUserGroup className="w-4 h-4" />, ar: "المستخدمون", en: "Users", count: users.length },
     { id: "messages", icon: <HiOutlineInbox className="w-4 h-4" />, ar: "الرسائل", en: "Messages", count: unreadCount },
     { id: "ads", icon: <HiOutlineMegaphone className="w-4 h-4" />, ar: "الإعلانات الجانبية", en: "Side Ads", count: ads.length },
     { id: "types", icon: <HiOutlineTag className="w-4 h-4" />, ar: "أنواع العقارات", en: "Property Types", count: propertyTypes.length },
     { id: "partners", icon: <HiOutlineBuildingOffice2 className="w-4 h-4" />, ar: "الشركاء", en: "Partners", count: partners.length },
+    { id: "developers", icon: <HiOutlineBuildingOffice2 className="w-4 h-4" />, ar: "المطورين", en: "Developers", count: developers.length },
     { id: "blog", icon: <HiOutlineNewspaper className="w-4 h-4" />, ar: "المقالات", en: "Blog Posts", count: blogPosts.length },
     { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />, ar: "إعدادات الموقع", en: "Site Settings", count: null },
   ];
@@ -1010,7 +1098,7 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                       </tr>
                     </thead>
                     <tbody>
-                    {paginatedUsers.length === 0 ? (
+                      {paginatedUsers.length === 0 ? (
                         <tr><td colSpan={7} className="text-center py-12 text-aura-muted text-sm">{isAr ? "لا توجد نتائج" : "No results"}</td></tr>
                       ) : paginatedUsers.map((u, i) => (
                         <tr key={u.id} className={`border-b border-aura-border hover:bg-aura-canvas transition-colors ${i % 2 === 0 ? "" : "bg-aura-canvas/30"}`}>
@@ -1057,7 +1145,7 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                           )}
                         </tr>
                       ))}
-                  </tbody>
+                    </tbody>
                   </table>
                 </div>
               </div>
@@ -1083,9 +1171,8 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                           )}
                           <button
                             onClick={() => setUsersPage(p)}
-                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${
-                              p === usersPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
-                            }`}
+                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${p === usersPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
+                              }`}
                           >
                             {p}
                           </button>
@@ -1309,7 +1396,7 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {partners.map((partner) => (
                   <div key={partner.id} className="bento-card bg-aura-card rounded-2xl p-4 md:p-5 border border-aura-border">
-                   <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-4 mb-4">
                       {partner.logo_url ? <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden shrink-0"><img src={partner.logo_url} alt={partner.name} className="max-h-full max-w-full object-contain p-1" /></div> : <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-aura-accent/10 flex items-center justify-center shrink-0"><span className="text-sm font-bold text-aura-accent">{partner.name.slice(0, 2)}</span></div>}
                       <div>
                         <h4 className="text-sm font-medium text-aura-dark">{partner.name}</h4>
@@ -1321,7 +1408,7 @@ const togglePartnerFeatured = async (id: string, featured: boolean) => {
                         </div>
                       </div>
                     </div>
-                   <div className="flex gap-2 mb-2">
+                    <div className="flex gap-2 mb-2">
                       <button onClick={() => { setEditingPartner(partner.id); setPartnerForm({ name: partner.name, name_en: partner.name_en || "", logo_url: partner.logo_url || "", order_num: String(partner.order_num), slug: partner.slug || "", cover_image_url: partner.cover_image_url || "", description_ar: partner.description_ar || "", description_en: partner.description_en || "", phone: partner.phone || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
                       <button onClick={() => togglePartnerActive(partner.id, !partner.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${partner.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{partner.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
                       <button onClick={() => deletePartner(partner.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
