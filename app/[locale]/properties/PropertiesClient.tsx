@@ -100,9 +100,9 @@ export default function PropertiesClient() {
             </p>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
-                {isAr ? "كل" : "All"}
+                {isAr ? "شقق و" : "Apartments &"}
                 <span className="block font-serif italic text-aura-accent mt-1">
-                  {isAr ? "العقارات" : "Properties"}
+                  {isAr ? "فيلات للبيع" : "Villas for Sale"}
                 </span>
               </h1>
 
@@ -177,9 +177,8 @@ export default function PropertiesClient() {
 
       <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${filterOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setFilterOpen(false)} />
-        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card overflow-y-auto transition-transform duration-300 ${
-          filterOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
-        }`}>
+        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card overflow-y-auto transition-transform duration-300 ${filterOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
+          }`}>
           <div className="flex items-center justify-between px-6 py-4 border-b border-aura-border sticky top-0 bg-aura-card z-10">
             <h3 className="text-sm font-medium text-aura-dark">
               {isAr ? "الفلاتر" : "Filters"}
