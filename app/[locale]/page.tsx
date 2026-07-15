@@ -20,7 +20,9 @@ export async function generateMetadata({
   const isAr = locale === "ar";
 
   return {
-    title: isAr ? "الرئيسية | عقار أونلاين" : "Home | Aqar Online",
+   title: isAr
+  ? "شقق وفيلات للبيع والإيجار في مصر | عقار أونلاين"
+  : "Apartments & Villas for Sale in Egypt | Aqar Online",
     description: isAr
       ? "اكتشف آلاف العقارات المميزة في مصر — شقق، فيلات، عقارات تجارية في 27 محافظة"
       : "Discover thousands of premium properties in Egypt — apartments, villas, commercial real estate across 27 governorates",
