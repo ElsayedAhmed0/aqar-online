@@ -36,7 +36,7 @@ export default function PropertyCard({
       <div className="relative h-48 sm:h-52 md:h-56 overflow-hidden">
         <img
           src={property.images?.[0] || property.img || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"}
-          alt={property.title_en}
+          alt={isAr ? property.title_ar : property.title_en}
           className="w-full h-full object-cover img-hover"
         />
 

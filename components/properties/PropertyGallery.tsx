@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlinePhoto } from "react-icons/hi2";
 
-export default function PropertyGallery({ images }: { images: string[] }) {
+export default function PropertyGallery({ images, title }: { images: string[]; title?: string }) {
   const [current, setCurrent] = useState(0);
 
   if (!images || images.length === 0) {
@@ -25,7 +25,7 @@ export default function PropertyGallery({ images }: { images: string[] }) {
         <img
           key={current}
           src={images[current]}
-          alt={`property-${current}`}
+          alt={title ? `${title} - صورة ${current + 1}` : `property-${current}`}
           className="w-full h-full object-cover transition-all duration-500"
         />
 
@@ -66,7 +66,7 @@ export default function PropertyGallery({ images }: { images: string[] }) {
                   : "border-transparent opacity-60 hover:opacity-100"
               }`}
             >
-              <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+              <img src={img} alt={title ? `${title} - صورة مصغرة ${i + 1}` : `thumb-${i}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
