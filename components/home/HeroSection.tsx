@@ -85,8 +85,8 @@ export default function HeroSection() {
         {/* العنوان */}
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-light text-white mb-4 md:mb-6 leading-tight">
           {isAr
-            ? (settings.hero_title_ar || "اكتشف عقارك المثالي")
-            : (settings.hero_title_en || "Find Your Perfect Property")}
+            ? (settings.hero_title_ar || "شقق وفيلات للبيع والإيجار في مصر")
+            : (settings.hero_title_en || "Apartments & Villas for Sale & Rent in Egypt")}
         </h1>
 
         {/* الوصف */}
@@ -159,8 +159,8 @@ export default function HeroSection() {
         <div className="flex items-center justify-center gap-6 sm:gap-8 mt-10 md:mt-12 flex-wrap">
           {[
             { num: `${settings.stats_properties || "2,500"}+`, label: isAr ? "عقار مميز" : "Properties" },
-            { num: `${settings.stats_clients || "1,200"}+`,    label: isAr ? "عميل سعيد" : "Happy Clients" },
-            { num: `${settings.stats_years || "15"}+`,         label: isAr ? "سنة خبرة" : "Years Experience" },
+            { num: `${settings.stats_clients || "1,200"}+`, label: isAr ? "عميل سعيد" : "Happy Clients" },
+            { num: `${settings.stats_years || "15"}+`, label: isAr ? "سنة خبرة" : "Years Experience" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-xl sm:text-2xl font-light text-white">{stat.num}</p>
