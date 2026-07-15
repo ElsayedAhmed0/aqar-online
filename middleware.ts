@@ -5,7 +5,7 @@ import createIntlMiddleware from "next-intl/middleware";
 const intlMiddleware = createIntlMiddleware({
   locales: ["ar", "en"],
   defaultLocale: "ar",
-  localePrefix: "as-needed",
+  localePrefix: "always",
   localeDetection: false,
 });
 
@@ -33,12 +33,11 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // يرفرش الـ token تلقائيًا في كل request
   await supabase.auth.getUser();
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)" ],
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };
