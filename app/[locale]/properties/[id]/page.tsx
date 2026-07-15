@@ -34,7 +34,7 @@ export async function generateMetadata({
     : `${title} in ${location} — EGP ${property.price?.toLocaleString()}`;
 
   return {
-    title: isAr ? `${title} | عقار أونلاين` : `${title} | Aqar Online`,
+    title: title,
     description,
     alternates: {
       canonical: `/${locale}/properties/${id}`,

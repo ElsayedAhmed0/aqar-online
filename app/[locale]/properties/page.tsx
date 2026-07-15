@@ -11,8 +11,8 @@ export async function generateMetadata({
 
   return {
     title: isAr
-      ? "شقق وفيلات للبيع والإيجار في مصر | تصفح كل العقارات | عقار أونلاين"
-      : "Apartments & Villas for Sale & Rent in Egypt | Browse All Properties | Aqar Online",
+  ? "شقق وفيلات للبيع والإيجار في مصر | تصفح كل العقارات"
+  : "Apartments & Villas for Sale & Rent in Egypt | Browse All Properties",
     description: isAr
       ? "تصفح آلاف الشقق والفيلات والعقارات التجارية للبيع والإيجار في القاهرة والجيزة والساحل الشمالي وكل محافظات مصر — فلترة حسب السعر والمساحة وعدد الغرف"
       : "Browse thousands of apartments, villas, and commercial properties for sale and rent across Cairo, Giza, the North Coast, and all of Egypt — filter by price, area, and rooms",
