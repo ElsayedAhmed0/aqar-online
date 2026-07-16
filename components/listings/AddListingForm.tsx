@@ -7,13 +7,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useListings } from "@/context/ListingsContext";
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
+import { useCustomAreas } from "@/lib/hooks/useCustomAreas";
+import { createClient } from "@/lib/supabase/client";
 import { emptyListingForm, type ListingFormData } from "@/lib/types/listing";
 import {
   HiOutlineHome, HiOutlineMapPin, HiOutlineCurrencyDollar,
   HiOutlinePhoto, HiOutlinePhone, HiOutlineDocumentText,
   HiOutlineCheck, HiOutlineChevronLeft, HiOutlineChevronRight,
   HiOutlineCloudArrowUp, HiOutlineXMark, HiOutlineSparkles,
-  HiOutlinePlus,
+  HiOutlinePlus, HiOutlineChevronDown,
 } from "react-icons/hi2";
 import { FaWhatsapp } from "react-icons/fa6";
 
@@ -63,7 +65,7 @@ export default function AddListingForm() {
   const { user, loading } = useAuth();
   const { addListing } = useListings();
   const { types: propertyTypes, loading: typesLoading } = usePropertyTypes();
-
+  const { areas: customAreas } = useCustomAreas();
   const [activeSection, setActiveSection] = useState<SectionId>("type");
   const [form, setForm] = useState<ListingFormData>(emptyListingForm());
   const [purpose, setPurpose] = useState<"sale" | "rent">("sale");
@@ -80,6 +82,75 @@ export default function AddListingForm() {
   const [showEnTitle, setShowEnTitle] = useState(false);
   const [showEnDesc, setShowEnDesc] = useState(false);
   const [showEnLocation, setShowEnLocation] = useState(false);
+  const [locationChoice, setLocationChoice] = useState(""); // "" = لسه ماختارش, "other" = منطقة تانية
+  const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
+  const areaDropdownRef = useRef<HTMLDivElement>(null);
+
+  const MAJOR_AREAS = [
+    // القاهرة الكبرى
+    { ar: "التجمع الخامس", en: "New Cairo" },
+    { ar: "مدينة نصر", en: "Nasr City" },
+    { ar: "المعادي", en: "Maadi" },
+    { ar: "مصر الجديدة", en: "Heliopolis" },
+    { ar: "المقطم", en: "Mokattam" },
+    { ar: "وسط البلد", en: "Downtown Cairo" },
+    { ar: "حلوان", en: "Helwan" },
+    { ar: "العبور", en: "El Obour" },
+    { ar: "بدر", en: "Badr City" },
+    { ar: "الشروق", en: "El Shorouk" },
+    { ar: "الرحاب", en: "Al Rehab" },
+    { ar: "مدينتي", en: "Madinaty" },
+    // العاصمة الإدارية
+    { ar: "العاصمة الإدارية الجديدة", en: "New Administrative Capital" },
+    // الجيزة
+    { ar: "الشيخ زايد", en: "Sheikh Zayed" },
+    { ar: "6 أكتوبر", en: "6th of October" },
+    { ar: "الدقي", en: "Dokki" },
+    { ar: "المهندسين", en: "Mohandessin" },
+    { ar: "فيصل", en: "Faisal" },
+    { ar: "الهرم", en: "Haram" },
+    // الساحل والسياحة
+    { ar: "الساحل الشمالي", en: "North Coast" },
+    { ar: "العلمين الجديدة", en: "New Alamein" },
+    { ar: "مرسى مطروح", en: "Marsa Matrouh" },
+    { ar: "الغردقة", en: "Hurghada" },
+    { ar: "شرم الشيخ", en: "Sharm El Sheikh" },
+    { ar: "رأس الحكمة", en: "Ras El Hekma" },
+    // باقي المحافظات
+    { ar: "الإسكندرية", en: "Alexandria" },
+    { ar: "المنصورة", en: "Mansoura" },
+    { ar: "طنطا", en: "Tanta" },
+    { ar: "الزقازيق", en: "Zagazig" },
+    { ar: "دمياط", en: "Damietta" },
+    { ar: "بورسعيد", en: "Port Said" },
+    { ar: "الإسماعيلية", en: "Ismailia" },
+    { ar: "السويس", en: "Suez" },
+    { ar: "أسوان", en: "Aswan" },
+    { ar: "الأقصر", en: "Luxor" },
+    { ar: "أسيوط", en: "Assiut" },
+    { ar: "المنيا", en: "Minya" },
+    { ar: "سوهاج", en: "Sohag" },
+    { ar: "الفيوم", en: "Fayoum" },
+  ];
+
+  const ALL_AREAS = [
+    ...MAJOR_AREAS,
+    ...customAreas
+      .filter((c) => !MAJOR_AREAS.some((a) => a.ar === c.name_ar))
+      .map((c) => ({ ar: c.name_ar, en: c.name_en || c.name_ar })),
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (areaDropdownRef.current && !areaDropdownRef.current.contains(e.target as Node)) {
+        setAreaDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
 
   const MAX_IMAGES = 6;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -154,6 +225,16 @@ export default function AddListingForm() {
     setSubmitting(true);
     setError("");
     try {
+      if (locationChoice === "other" && form.location_ar.trim()) {
+        const typedArea = form.location_ar.trim();
+        const alreadyExists = ALL_AREAS.some((a) => a.ar === typedArea);
+        if (!alreadyExists) {
+          const supabase = createClient();
+          await supabase
+            .from("custom_areas")
+            .upsert({ name_ar: typedArea, name_en: form.location_en.trim() || null }, { onConflict: "name_ar" });
+        }
+      }
       const created = await addListing({
         type: form.type as any,
         purpose,
@@ -335,8 +416,59 @@ export default function AddListingForm() {
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">{isAr ? "الموقع *" : "Location *"}</label>
-                <input type="text" value={form.location_ar} onChange={(e) => update({ location_ar: e.target.value })}
-                  placeholder={isAr ? "مثال: التجمع الخامس، القاهرة" : "e.g. New Cairo, Cairo"} className={inputCls} />
+                <div ref={areaDropdownRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setAreaDropdownOpen(!areaDropdownOpen)}
+                    className={`${inputCls} flex items-center justify-between`}
+                  >
+                    <span className={locationChoice ? "text-aura-dark" : "text-aura-muted/50"}>
+                      {locationChoice === "other"
+                        ? (isAr ? "منطقة تانية" : "Other area")
+                        : locationChoice
+                          ? (isAr ? locationChoice : (ALL_AREAS.find((a) => a.ar === locationChoice)?.en || locationChoice))
+                          : (isAr ? "اختر المنطقة" : "Select area")}
+                    </span>
+                    <HiOutlineChevronDown className={`w-4 h-4 text-aura-muted transition-transform duration-200 ${areaDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {areaDropdownOpen && (
+                    <div
+                      style={{ maxHeight: "300px", overflow: "scroll" }}
+                      className="absolute top-full mt-1.5 w-full bg-white border border-aura-border rounded-2xl overflow-y-scroll z-50 shadow-xl"
+                    >
+                      {ALL_AREAS.map((area) => (
+                        <button
+                          key={area.ar}
+                          type="button"
+                          onClick={() => {
+                            setLocationChoice(area.ar);
+                            setAreaDropdownOpen(false);
+                            update({ location_ar: area.ar, location_en: area.en });
+                          }}
+                          className={`w-full text-right px-4 py-2.5 text-sm transition-colors hover:bg-aura-canvas ${locationChoice === area.ar ? "bg-aura-accent/10 text-aura-accent" : "text-aura-dark"}`}
+                        >
+                          {isAr ? area.ar : area.en}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLocationChoice("other");
+                          setAreaDropdownOpen(false);
+                          update({ location_ar: "", location_en: "" });
+                        }}
+                        className={`w-full text-right px-4 py-2.5 text-sm border-t border-aura-border transition-colors hover:bg-aura-canvas ${locationChoice === "other" ? "bg-aura-accent/10 text-aura-accent" : "text-aura-dark"}`}
+                      >
+                        {isAr ? "منطقة تانية" : "Other area"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {locationChoice === "other" && (
+                  <input type="text" value={form.location_ar} onChange={(e) => update({ location_ar: e.target.value })}
+                    placeholder={isAr ? "اكتب اسم المنطقة" : "Type the area name"} className={`${inputCls} mt-2`} />
+                )}
                 <EnToggle show={showEnLocation} onShow={() => setShowEnLocation(true)} label={isAr ? "أضف الموقع بالإنجليزية" : "Add English location"} />
               </div>
               {showEnLocation && (
