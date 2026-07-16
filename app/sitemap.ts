@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { AREAS } from '@/lib/data/areas'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.aqqaronline.com'
@@ -26,6 +27,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ])
 
+  const areaUrls: MetadataRoute.Sitemap = AREAS.flatMap((area) => [
+    {
+      url: `${baseUrl}/ar/properties/area/${area.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/en/properties/area/${area.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
+    },
+  ])
+
   return [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
     { url: `${baseUrl}/ar`, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
@@ -38,6 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/en/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/ar/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/en/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    ...areaUrls,
     ...propertyUrls,
   ]
 }
