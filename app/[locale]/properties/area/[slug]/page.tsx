@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAreaBySlug, AREAS } from "@/lib/data/areas";
+import { getAreaBySlug } from "@/lib/data/areas";
 import AreaClient from "./AreaClient";
-
-export async function generateStaticParams() {
-  return AREAS.map((area) => ({ slug: area.slug }));
-}
 
 export async function generateMetadata({
   params,
