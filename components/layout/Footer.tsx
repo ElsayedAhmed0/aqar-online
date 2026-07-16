@@ -175,6 +175,15 @@ export default function Footer() {
             <a href={`/${locale}/terms`} className="text-white/30 hover:text-white/60 text-xs transition-colors">
               {isAr ? "الشروط والأحكام" : "Terms of Service"}
             </a>
+
+            <a href="https://wa.me/201551650666"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-white/30 hover:text-white/60 text-xs transition-colors"
+            >
+              <FaWhatsapp className="w-3.5 h-3.5" />
+              {isAr ? "تصميم وتطوير الموقع" : "Website by us"}
+            </a>
           </div>
         </div>
       </div>
