@@ -21,6 +21,22 @@ export async function generateMetadata({
       canonical: `/${locale}/companies`,
       languages: { ar: `/ar/companies`, en: `/en/companies` },
     },
+    openGraph: {
+      title: isAr ? "كل المطورين العقاريين | عقار أونلاين" : "All Developers | Aqar Online",
+      description: isAr
+        ? "تصفح كل شركات التطوير العقاري ومشاريعها"
+        : "Browse all real estate development companies and their projects",
+      url: `https://www.aqqaronline.com/${locale}/companies`,
+      siteName: isAr ? "عقار أونلاين" : "Aqar Online",
+      locale: isAr ? "ar_EG" : "en_US",
+      type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
+    },
   };
 }
 

@@ -384,16 +384,17 @@ export default function AddListingForm() {
           {/* ── المعلومات الأساسية ── */}
           {activeSection === "basic" && (
             <div className="space-y-4">
-              <div className="space-y-1.5">
+           <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان *" : "Title *"}</label>
-                <input type="text" value={form.title_ar} onChange={(e) => update({ title_ar: e.target.value })}
+                <input type="text" value={form.title_ar} maxLength={90} onChange={(e) => update({ title_ar: e.target.value })}
                   placeholder={isAr ? "مثال: شقة فاخرة بالتجمع الخامس" : "e.g. Luxury apartment in New Cairo"} className={inputCls} />
+                <p className="text-[11px] text-aura-muted text-left" dir="ltr">{form.title_ar.length} / 90</p>
                 <EnToggle show={showEnTitle} onShow={() => setShowEnTitle(true)} label={isAr ? "أضف العنوان بالإنجليزية" : "Add English title"} />
               </div>
               {showEnTitle && (
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-aura-dark">{isAr ? "العنوان (إنجليزي)" : "Title (English)"}</label>
-                  <input type="text" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })} placeholder="Luxury Apartment in New Cairo" className={inputCls} dir="ltr" />
+                  <input type="text" value={form.title_en} maxLength={90} onChange={(e) => update({ title_en: e.target.value })} placeholder="Luxury Apartment in New Cairo" className={inputCls} dir="ltr" />
                 </div>
               )}
               <div className="space-y-1.5">

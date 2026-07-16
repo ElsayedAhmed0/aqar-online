@@ -17,9 +17,25 @@ export async function generateMetadata({
     description: isAr
       ? "تصفح كل شركاء ووسطاء عقار أونلاين العقاريين في مكان واحد"
       : "Browse all of Aqar Online's real estate agent partners",
-    alternates: {
+  alternates: {
       canonical: `/${locale}/developers`,
       languages: { ar: `/ar/developers`, en: `/en/developers` },
+    },
+    openGraph: {
+      title: isAr ? "كل الوسطاء العقاريين | عقار أونلاين" : "All Agents | Aqar Online",
+      description: isAr
+        ? "تصفح كل شركاء ووسطاء عقار أونلاين العقاريين"
+        : "Browse all of Aqar Online's real estate agent partners",
+      url: `https://www.aqqaronline.com/${locale}/developers`,
+      siteName: isAr ? "عقار أونلاين" : "Aqar Online",
+      locale: isAr ? "ar_EG" : "en_US",
+      type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
     },
   };
 }
