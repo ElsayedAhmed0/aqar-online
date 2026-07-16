@@ -70,7 +70,20 @@ const organizationJsonLd = {
     "https://www.aqqaronline.com/en",
   ],
 };
-
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "عقار أونلاين | Aqar Online",
+  url: "https://www.aqqaronline.com",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://www.aqqaronline.com/ar/properties?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
 export default async function LocaleLayout({
   children,
   params,
@@ -92,10 +105,16 @@ export default async function LocaleLayout({
       <body
         className={`${readex.variable} ${playfair.variable} ${reemKufi.variable} font-sans bg-aura-bg text-aura-dark antialiased overflow-x-hidden`}
       >
-        {/* Organization Structured Data */}
+       {/* Organization Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+
+        {/* WebSite Structured Data (SearchAction) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
 
         <AuthProvider>
