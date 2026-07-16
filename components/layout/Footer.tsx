@@ -5,6 +5,10 @@ import { HiOutlinePhone, HiOutlineEnvelope, HiOutlineMapPin } from "react-icons/
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaTiktok } from "react-icons/fa6";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
+import { AREAS } from "@/lib/data/areas";
+
+const POPULAR_SLUGS = ["new-cairo", "sheikh-zayed", "new-capital", "north-coast", "maadi", "nasr-city", "6-october", "heliopolis"];
+const POPULAR_AREAS = AREAS.filter((a) => POPULAR_SLUGS.includes(a.slug));
 
 export default function Footer() {
   const locale = useLocale();
@@ -126,6 +130,21 @@ export default function Footer() {
             </div>
           </div>
 
+        </div>
+
+        {/* أشهر المناطق — روابط داخلية لصفحات المناطق */}
+        <div className="mt-10 md:mt-12 pt-8 border-t border-white/10">
+          <h4 className="text-xs tracking-[0.2em] uppercase text-white/40 mb-4 md:mb-5">
+            {isAr ? "أشهر المناطق" : "Popular Areas"}
+          </h4>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2.5">
+            {POPULAR_AREAS.map((area) => (
+              <a key={area.slug} href={`/${locale}/properties/area/${area.slug}`}
+                className="text-xs sm:text-sm text-white/50 hover:text-white transition-colors duration-200">
+                {isAr ? area.ar : area.en}
+              </a>
+            ))}
+          </nav>
         </div>
       </div>
 
