@@ -26,8 +26,8 @@ export async function generateMetadata({
     description: isAr
       ? "اكتشف آلاف العقارات المميزة في مصر — شقق، فيلات، عقارات تجارية في 27 محافظة"
       : "Discover thousands of premium properties in Egypt — apartments, villas, commercial real estate across 27 governorates",
-    keywords: isAr
-      ? ["عقارات مصر", "شقق للبيع", "فيلات", "عقار أونلاين", "عقارات القاهرة"]
+   keywords: isAr
+      ? ["عقارات مصر", "شقق للبيع", "شقق للإيجار", "فلل للبيع", "فلل للإيجار", "عقارات القاهرة", "عقارات الجيزة", "عقارات التجمع الخامس", "عقارات الشيخ زايد", "عقارات العاصمة الإدارية", "عقارات الساحل الشمالي", "كمبوندات", "مشروعات عقارية", "مطورين عقاريين", "شركات عقارية", "عقار أونلاين"]
       : ["Egypt real estate", "apartments for sale", "villas Egypt", "Aqar Online"],
     alternates: {
       canonical: `/${locale}`,
@@ -45,8 +45,14 @@ export async function generateMetadata({
         : "Discover thousands of premium properties in Egypt",
       url: `https://www.aqqaronline.com/${locale}`,
       siteName: isAr ? "عقار أونلاين" : "Aqar Online",
-      locale: isAr ? "ar_EG" : "en_US",
+     locale: isAr ? "ar_EG" : "en_US",
       type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
     },
   };
 }

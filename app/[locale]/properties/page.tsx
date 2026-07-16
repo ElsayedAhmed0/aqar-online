@@ -16,9 +16,9 @@ export async function generateMetadata({
     description: isAr
       ? "تصفح آلاف الشقق والفيلات والعقارات التجارية للبيع والإيجار في القاهرة والجيزة والساحل الشمالي وكل محافظات مصر — فلترة حسب السعر والمساحة وعدد الغرف"
       : "Browse thousands of apartments, villas, and commercial properties for sale and rent across Cairo, Giza, the North Coast, and all of Egypt — filter by price, area, and rooms",
-    keywords: isAr
-      ? ["شقق للبيع", "فيلات للبيع", "شقق للإيجار", "عقارات مصر", "شقق للبيع في القاهرة", "فيلات للبيع في مصر", "عقار أونلاين"]
-      : ["apartments for sale Egypt", "villas for sale Egypt", "apartments for rent Cairo", "Egypt real estate listings"],
+  keywords: isAr
+      ? ["عقارات مصر", "شقق للبيع", "شقق للإيجار", "فلل للبيع", "فلل للإيجار", "عقارات القاهرة", "عقارات الجيزة", "عقارات التجمع الخامس", "عقارات الشيخ زايد", "عقارات العاصمة الإدارية", "عقارات الساحل الشمالي", "كمبوندات", "مشروعات عقارية", "مطورين عقاريين", "شركات عقارية", "عقار أونلاين"]
+      : ["Egypt real estate", "apartments for sale", "villas Egypt", "Aqar Online"],
     alternates: {
       canonical: `/${locale}/properties`,
       languages: {
@@ -35,8 +35,14 @@ export async function generateMetadata({
         : "Browse thousands of properties for sale and rent across Egypt",
       url: `https://www.aqqaronline.com/${locale}/properties`,
       siteName: isAr ? "عقار أونلاين" : "Aqar Online",
-      locale: isAr ? "ar_EG" : "en_US",
+   locale: isAr ? "ar_EG" : "en_US",
       type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
     },
   };
 }
