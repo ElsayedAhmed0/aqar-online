@@ -113,3 +113,11 @@
 .marquee-track:hover {
   animation-play-state: paused;
 }
+/* ── إخفاء شريط التمرير (للسلايدرز) ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
