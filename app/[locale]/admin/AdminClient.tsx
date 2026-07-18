@@ -793,7 +793,7 @@ export default function AdminPage() {
     { key: "order_num", label_ar: "الترتيب", label_en: "Order" },
   ];
 
- const allTabs = [
+  const allTabs = [
     { id: "listings", icon: <HiOutlineHome className="w-4 h-4" />, ar: "الإعلانات", en: "Listings", count: listings.length },
     { id: "users", icon: <HiOutlineUserGroup className="w-4 h-4" />, ar: "المستخدمون", en: "Users", count: users.length },
     { id: "messages", icon: <HiOutlineInbox className="w-4 h-4" />, ar: "الرسائل", en: "Messages", count: unreadCount },
@@ -1421,6 +1421,145 @@ export default function AdminPage() {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+          {/* ── المطورين ── */}
+          {activeTab === "developers" && isFullAdmin && (
+            <div className="space-y-8">
+              <div className="bento-card bg-aura-card rounded-3xl p-5 md:p-6 border border-aura-border">
+                <h3 className="text-base font-medium text-aura-dark mb-1">{editingDeveloper ? (isAr ? "تعديل مطوّر" : "Edit Developer") : (isAr ? "إضافة مطوّر جديد" : "Add New Developer")}</h3>
+                <div className="w-8 h-0.5 bg-aura-accent mb-5" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم المطوّر (عربي)" : "Developer Name (Arabic)"}</label><input type="text" value={developerForm.name} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, name: e.target.value }))} className={inputCls} /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "اسم المطوّر (إنجليزي)" : "Developer Name (English)"}</label><input type="text" value={developerForm.name_en} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, name_en: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "رابط الصفحة (Slug)" : "Page Link (Slug)"}</label>
+                    <input
+                      type="text"
+                      value={developerForm.slug}
+                      onChange={(e) => setDeveloperForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-") }))}
+                      placeholder="ex-company-name"
+                      className={inputCls}
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الترتيب" : "Order"}</label><input type="number" value={developerForm.order_num} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, order_num: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "رقم تواصل" : "Phone"}</label><input type="text" value={developerForm.phone} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, phone: e.target.value }))} className={inputCls} dir="ltr" /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "واتساب" : "WhatsApp"}</label><input type="text" value={developerForm.whatsapp} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, whatsapp: e.target.value }))} className={inputCls} dir="ltr" /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "فيسبوك" : "Facebook"}</label><input type="text" value={developerForm.facebook_url} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, facebook_url: e.target.value }))} className={inputCls} dir="ltr" /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "لينكدإن" : "LinkedIn"}</label><input type="text" value={developerForm.linkedin_url} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, linkedin_url: e.target.value }))} className={inputCls} dir="ltr" /></div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "لوجو المطوّر" : "Developer Logo"}</label>
+                    <div className="flex gap-3">
+                      <input type="text" value={developerForm.logo_url} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, logo_url: e.target.value }))} placeholder="URL..." className={`${inputCls} flex-1`} />
+                      <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-xs text-aura-dark hover:border-aura-accent cursor-pointer transition-all shrink-0">
+                        <HiOutlinePhoto className="w-4 h-4 text-aura-accent" />
+                        {isAr ? "رفع" : "Upload"}
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; const url = await uploadImage(file, "developer"); if (url) setDeveloperForm((prev) => ({ ...prev, logo_url: url })); }} />
+                      </label>
+                    </div>
+                    {developerForm.logo_url && <div className="mt-2 h-16 w-32 rounded-xl border border-aura-border overflow-hidden bg-aura-canvas flex items-center justify-center"><img src={developerForm.logo_url} alt="preview" className="max-h-full max-w-full object-contain p-2" /></div>}
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-xs font-medium text-aura-dark">{isAr ? "صورة بانر صفحة المطوّر" : "Developer Page Cover Image"}</label>
+                    <div className="flex gap-3">
+                      <input type="text" value={developerForm.cover_image_url} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, cover_image_url: e.target.value }))} placeholder="URL..." className={`${inputCls} flex-1`} />
+                      <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-xs text-aura-dark hover:border-aura-accent cursor-pointer transition-all shrink-0">
+                        <HiOutlinePhoto className="w-4 h-4 text-aura-accent" />
+                        {isAr ? "رفع" : "Upload"}
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; const url = await uploadImage(file, "developer-cover"); if (url) setDeveloperForm((prev) => ({ ...prev, cover_image_url: url })); }} />
+                      </label>
+                    </div>
+                    {developerForm.cover_image_url && <div className="mt-2 h-24 w-full max-w-xs rounded-xl border border-aura-border overflow-hidden bg-aura-canvas"><img src={developerForm.cover_image_url} alt="preview" className="w-full h-full object-cover" /></div>}
+                  </div>
+
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (عربي)" : "Description (Arabic)"}</label><textarea value={developerForm.description_ar} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, description_ar: e.target.value }))} rows={3} className={inputCls} /></div>
+                  <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المطوّر (إنجليزي)" : "Description (English)"}</label><textarea value={developerForm.description_en} onChange={(e) => setDeveloperForm((prev) => ({ ...prev, description_en: e.target.value }))} rows={3} className={inputCls} dir="ltr" /></div>
+                </div>
+                <div className="flex gap-3 mt-5">
+                  <button onClick={saveDeveloper} disabled={savingDeveloper || !developerForm.name} className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">{savingDeveloper ? (isAr ? "جاري الحفظ..." : "Saving...") : editingDeveloper ? (isAr ? "تحديث" : "Update") : (isAr ? "إضافة" : "Add")}</button>
+                  {editingDeveloper && <button onClick={() => { setEditingDeveloper(null); setDeveloperForm({ name: "", name_en: "", logo_url: "", order_num: "0", slug: "", cover_image_url: "", description_ar: "", description_en: "", phone: "", whatsapp: "", facebook_url: "", linkedin_url: "" }); }} className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all">{isAr ? "إلغاء" : "Cancel"}</button>}
+                </div>
+              </div>
+
+              {/* كروت المطورين */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {developers.map((developer) => (
+                  <div key={developer.id} className="bento-card bg-aura-card rounded-2xl p-4 md:p-5 border border-aura-border">
+                    <div className="flex items-center gap-4 mb-4">
+                      {developer.logo_url ? <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border border-aura-border bg-aura-canvas flex items-center justify-center overflow-hidden shrink-0"><img src={developer.logo_url} alt={developer.name} className="max-h-full max-w-full object-contain p-1" /></div> : <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-aura-accent/10 flex items-center justify-center shrink-0"><span className="text-sm font-bold text-aura-accent">{developer.name.slice(0, 2)}</span></div>}
+                      <div>
+                        <h4 className="text-sm font-medium text-aura-dark">{developer.name}</h4>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${developer.active ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>{developer.active ? (isAr ? "نشط" : "Active") : (isAr ? "متوقف" : "Inactive")}</span>
+                          {developer.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">⭐ {isAr ? "مميز" : "Featured"}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      <button onClick={() => { setEditingDeveloper(developer.id); setDeveloperForm({ name: developer.name, name_en: developer.name_en || "", logo_url: developer.logo_url || "", order_num: String(developer.order_num), slug: developer.slug || "", cover_image_url: developer.cover_image_url || "", description_ar: developer.description_ar || "", description_en: developer.description_en || "", phone: developer.phone || "", whatsapp: developer.whatsapp || "", facebook_url: developer.facebook_url || "", linkedin_url: developer.linkedin_url || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">{isAr ? "تعديل" : "Edit"}</button>
+                      <button onClick={() => toggleDeveloperActive(developer.id, !developer.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${developer.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{developer.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
+                      <button onClick={() => deleteDeveloper(developer.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                    </div>
+                    <button
+                      onClick={() => toggleDeveloperFeatured(developer.id, !developer.featured)}
+                      className={`w-full py-2 rounded-xl border text-xs transition-all ${developer.featured ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100" : "border-aura-border text-aura-muted hover:border-amber-300 hover:text-amber-600"}`}
+                    >
+                      ⭐ {developer.featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز (إظهار في الرئيسية)" : "Feature (show on homepage)")}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* مراجعة المشاريع */}
+              <div>
+                <h3 className="text-base font-medium text-aura-dark mb-4">{isAr ? "مراجعة المشاريع" : "Project Review"}</h3>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {(["pending", "approved", "rejected"] as const).map((s) => (
+                    <button key={s} onClick={() => setProjectsFilter(s)}
+                      className={`p-3 rounded-2xl border text-center transition-all duration-300 ${projectsFilter === s ? "bg-aura-dark text-white border-aura-dark" : "bg-aura-card border-aura-border hover:border-aura-accent"}`}>
+                      <p className="text-xl font-light">{projects.filter((p) => p.status === s).length}</p>
+                      <p className="text-[10px] mt-1 opacity-70">{isAr ? statusConfig[s].ar : statusConfig[s].en}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {projects.filter((p) => p.status === projectsFilter).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3 bg-aura-card rounded-3xl border border-aura-border">
+                    <p className="text-aura-muted font-light text-sm">{isAr ? "لا توجد مشاريع" : "No projects"}</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {projects.filter((p) => p.status === projectsFilter).map((project) => {
+                      const dev = developers.find((d) => d.id === project.developer_id);
+                      return (
+                        <div key={project.id} className="bento-card bg-aura-card rounded-2xl overflow-hidden border border-aura-border">
+                          {project.cover_image_url && <div className="h-32 overflow-hidden"><img src={project.cover_image_url} alt={project.name_ar} className="w-full h-full object-cover" /></div>}
+                          <div className="p-4">
+                            <h4 className="text-sm font-medium text-aura-dark mb-1">{isAr ? project.name_ar : (project.name_en || project.name_ar)}</h4>
+                            <p className="text-[11px] text-aura-muted mb-3">{dev?.name || "-"}</p>
+                            {project.status === "pending" ? (
+                              <div className="flex gap-2">
+                                <button onClick={() => updateProjectStatus(project.id, "approved")} className="flex-1 py-2 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs hover:bg-green-100 transition-all">{isAr ? "موافقة" : "Approve"}</button>
+                                <button onClick={() => updateProjectStatus(project.id, "rejected")} className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs hover:bg-red-100 transition-all">{isAr ? "رفض" : "Reject"}</button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button onClick={() => toggleProjectActive(project.id, !project.active)} className={`flex-1 py-2 rounded-xl border text-xs transition-all ${project.active ? "border-amber-200 text-amber-600 hover:bg-amber-50" : "border-green-200 text-green-600 hover:bg-green-50"}`}>{project.active ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تفعيل" : "Activate")}</button>
+                                <button onClick={() => deleteProject(project.id)} className="py-2 px-3 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">{isAr ? "حذف" : "Del"}</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}

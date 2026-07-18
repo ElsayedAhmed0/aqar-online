@@ -13,15 +13,21 @@ import { HiOutlineAdjustmentsHorizontal, HiOutlineXMark } from "react-icons/hi2"
 
 const ITEMS_PER_PAGE = 9;
 
-export default function PropertiesClient() {
+export default function PropertiesClient({
+  initialProperties = [],
+  initialTotal = 0,
+}: {
+  initialProperties?: any[];
+  initialTotal?: number;
+}) {
   const locale = useLocale();
   const isAr = locale === "ar";
   const searchParams = useSearchParams();
 
-  const [properties, setProperties] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [properties, setProperties] = useState<any[]>(initialProperties);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(initialTotal);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");

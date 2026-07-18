@@ -21,7 +21,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAgent, setIsAgent] = useState(false);
+const [isAgent, setIsAgent] = useState(false);
+  const [isDeveloper, setIsDeveloper] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -50,12 +51,13 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setIsAdmin(false); setIsAgent(false); return; }
+    if (!user) { setIsAdmin(false); setIsAgent(false); setIsDeveloper(false); return; }
     const checkRole = async () => {
       const supabase = createClient();
       const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
       setIsAdmin(data?.role === "admin");
       setIsAgent(data?.role === "agent");
+      setIsDeveloper(data?.role === "developer");
     };
     checkRole();
   }, [user]);
@@ -198,6 +200,12 @@ export default function Navbar() {
                           {isAr ? "أدمن الوسيط" : "Agent Admin"}
                         </a>
                       )}
+                      {isDeveloper && (
+                        <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 text-xs text-aura-accent hover:bg-aura-accent/5 transition-colors">
+                          <MdOutlineAdminPanelSettings className="w-4 h-4 shrink-0" />
+                          {isAr ? "أدمن المطوّر" : "Developer Admin"}
+                        </a>
+                      )}
                       <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-aura-border">
                         <MdOutlineLogout className="w-4 h-4 shrink-0" />
                         {isAr ? "تسجيل الخروج" : "Sign Out"}
@@ -283,10 +291,16 @@ export default function Navbar() {
                     {isAr ? "لوحة الإدارة" : "Admin Panel"}
                   </a>
                 )}
-                {isAgent && (
+               {isAgent && (
                   <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />
                     {isAr ? "أدمن الوسيط" : "Agent Admin"}
+                  </a>
+                )}
+                {isDeveloper && (
+                  <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
+                    <MdOutlineAdminPanelSettings className="w-4 h-4" />
+                    {isAr ? "أدمن المطوّر" : "Developer Admin"}
                   </a>
                 )}
                 <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-red-500 border border-red-100 transition-all duration-300">

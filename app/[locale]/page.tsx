@@ -76,8 +76,8 @@ export default function Home() {
             </div>
 
             <PartnersSection />
-            <DevelopersSection />
             <PropertiesSection />
+            <DevelopersSection />
             <StatsSection />
             <BlogSection />
           </div>

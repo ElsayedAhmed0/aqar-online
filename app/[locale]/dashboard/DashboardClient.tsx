@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import MyListingCard from "@/components/listings/MyListingCard";
 import DeveloperProfileEditor from "@/components/dashboard/DeveloperProfileEditor";
+import CompanyProfileEditor from "@/components/dashboard/CompanyProfileEditor";
+import MyProjectsManager from "@/components/dashboard/MyProjectsManager";
 import {
   HiOutlineHome,
   HiOutlineMagnifyingGlass,
@@ -45,6 +47,7 @@ export default function DashboardPage() {
   );
   const [role, setRole] = useState<string | null>(null);
   const [partner, setPartner] = useState<any>(null);
+  const [developerRecord, setDeveloperRecord] = useState<any>(null);
   const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +56,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    const fetchAgentData = async () => {
+    const fetchRoleData = async () => {
       const supabase = createClient();
       const { data: profile } = await supabase
         .from("profiles")
@@ -71,9 +74,19 @@ export default function DashboardPage() {
           .single();
         if (partnerRow) setPartner(partnerRow);
       }
+
+      if (profile?.role === "developer") {
+        const { data: devRow } = await supabase
+          .from("developers")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        if (devRow) setDeveloperRecord(devRow);
+      }
+
       setRoleLoading(false);
     };
-    fetchAgentData();
+    fetchRoleData();
   }, [user]);
 
   const filtered = useMemo(() => {
@@ -175,9 +188,9 @@ export default function DashboardPage() {
                 {isAr ? "لوحة التحكم" : "Dashboard"}
               </p>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
-                {isAr ? "إعلاناتي" : "My"}
+                {role === "developer" ? (isAr ? "مشاريعي" : "My") : (isAr ? "إعلاناتي" : "My")}
                 <span className="block font-serif italic text-aura-accent mt-1">
-                  {isAr ? "العقارية" : "Listings"}
+                  {role === "developer" ? (isAr ? "العقارية" : "Projects") : (isAr ? "العقارية" : "Listings")}
                 </span>
               </h1>
             </div>
@@ -194,31 +207,34 @@ export default function DashboardPage() {
                 </button>
               )}
 
-              <a href={`/${locale}/add-listing`}
-                className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm font-medium text-white bg-aura-accent hover:bg-aura-accent-dark transition-all duration-300"
-              >
-                <MdOutlineAddHome className="w-5 h-5" />
-                {isAr ? "أضف إعلان" : "Add Listing"}
-              </a>
+              {!(role === "developer" && activeTab === "listings") && (
+                <a href={`/${locale}/add-listing`}
+                  className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm font-medium text-white bg-aura-accent hover:bg-aura-accent-dark transition-all duration-300"
+                >
+                  <MdOutlineAddHome className="w-5 h-5" />
+                  {isAr ? "أضف إعلان" : "Add Listing"}
+                </a>
+              )}
             </div>
           </div>
 
           {/* ✅ تابات — تظهر بس للوسيط العقاري */}
-          {!roleLoading && role === "agent" && (
+          {/* ✅ تابات — تظهر للوسيط أو المطوّر */}
+          {!roleLoading && (role === "agent" || role === "developer") && (
             <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border w-fit mb-8 md:mb-10">
               <button
                 onClick={() => setActiveTab("listings")}
                 className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${activeTab === "listings" ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
-                {isAr ? "إعلاناتي" : "My Listings"}
+                {role === "developer" ? (isAr ? "مشاريعي" : "My Projects") : (isAr ? "إعلاناتي" : "My Listings")}
               </button>
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${activeTab === "profile" ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
-                {isAr ? "صفحة الوسيط" : "Agent Page"}
+                {role === "developer" ? (isAr ? "صفحة الشركة" : "Company Page") : (isAr ? "صفحة الوسيط" : "Agent Page")}
               </button>
             </div>
           )}
@@ -227,7 +243,19 @@ export default function DashboardPage() {
             <DeveloperProfileEditor partner={partner} isAr={isAr} onUpdated={setPartner} />
           )}
 
-          {(roleLoading || role !== "agent" || activeTab === "listings") && (
+          {!roleLoading && role === "developer" && activeTab === "profile" && developerRecord && (
+            <CompanyProfileEditor developer={developerRecord} isAr={isAr} onUpdated={setDeveloperRecord} />
+          )}
+
+          {!roleLoading && role === "developer" && activeTab === "listings" && developerRecord && (
+            <MyProjectsManager developerId={developerRecord.id} isAr={isAr} />
+          )}
+
+          {!roleLoading && role === "agent" && activeTab === "profile" && partner && (
+            <DeveloperProfileEditor partner={partner} isAr={isAr} onUpdated={setPartner} />
+          )}
+
+          {(roleLoading || (role !== "agent" && role !== "developer") || (role === "agent" && activeTab === "listings")) && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
               {/* فلاتر — ديسكتوب فقط */}

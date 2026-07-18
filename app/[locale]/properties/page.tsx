@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import PropertiesClient from "./PropertiesClient";
 
 export async function generateMetadata({
@@ -47,6 +48,20 @@ export async function generateMetadata({
   };
 }
 
-export default function PropertiesPage() {
-  return <PropertiesClient />;
+export default async function PropertiesPage() {
+  const supabase = await createClient();
+  const { data: initialProperties, count: initialTotal } = await supabase
+    .from("listings")
+    .select("*", { count: "exact" })
+    .eq("status", "approved")
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(0, 8);
+
+  return (
+    <PropertiesClient
+      initialProperties={initialProperties || []}
+      initialTotal={initialTotal || 0}
+    />
+  );
 }
