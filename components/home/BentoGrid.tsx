@@ -35,7 +35,7 @@ export default function BentoGrid() {
 
           <div className="bento-card sm:col-span-2 lg:col-span-2 rounded-3xl p-8 md:p-10 flex flex-col justify-between min-h-56 md:min-h-64 relative overflow-hidden">
             <img
-              src={settings.hero_image || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80"}
+             src={settings.hero_image || "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg"}
               alt="background"
               className="absolute inset-0 w-full h-full object-cover"
             />

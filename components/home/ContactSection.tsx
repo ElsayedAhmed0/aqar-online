@@ -43,7 +43,7 @@ export default function ContactSection() {
 
   const contactItems = [
     { icon: <HiOutlinePhone className="w-5 h-5"/>, label: isAr ? "اتصل بنا" : "Call Us", value: settings.footer_phone || "920001234", href: `tel:${settings.footer_phone || "920001234"}` },
-    { icon: <HiOutlineEnvelope className="w-5 h-5"/>, label: isAr ? "راسلنا" : "Email Us", value: settings.footer_email || "info@aqar-online.com", href: `mailto:${settings.footer_email || "info@aqar-online.com"}` },
+   { icon: <HiOutlineEnvelope className="w-5 h-5"/>, label: isAr ? "راسلنا" : "Email Us", value: settings.footer_email || "info@aqqaronline.com", href: `mailto:${settings.footer_email || "info@aqqaronline.com"}` },
     { icon: <HiOutlineMapPin className="w-5 h-5"/>, label: isAr ? "عنواننا" : "Our Address", value: isAr ? (settings.footer_address_ar || "التجمع الخامس، القاهرة") : (settings.footer_address_en || "New Cairo, Egypt"), href: "#" },
   ];
 

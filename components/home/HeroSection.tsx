@@ -62,7 +62,7 @@ export default function HeroSection() {
       {/* الخلفية */}
       <div className="absolute inset-0 z-0">
         <img
-          src={settings.hero_image || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"}
+          src={settings.hero_image || "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg"}
           alt="hero"
           className="w-full h-full object-cover"
         />

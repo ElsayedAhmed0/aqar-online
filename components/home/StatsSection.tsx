@@ -9,10 +9,14 @@ import {
 } from "react-icons/hi2";
 
 function useCountUp(target: number, duration: number, started: boolean) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(target);
+  const hasAnimated = useRef(false);
+
   useEffect(() => {
-    if (!started || target === 0) return;
+    if (!started || target === 0 || hasAnimated.current) return;
+    hasAnimated.current = true;
     let start = 0;
+    setCount(0);
     const step = target / (duration / 16);
     const timer = setInterval(() => {
       start += step;
