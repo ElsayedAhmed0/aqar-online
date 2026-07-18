@@ -880,7 +880,7 @@ export default function AdminPage() {
             </div>
 
             {/* ديسكتوب — أفقية scrollable */}
-            <div className="hidden md:flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border overflow-x-auto scrollbar-hide">
+           <div className="hidden md:flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
