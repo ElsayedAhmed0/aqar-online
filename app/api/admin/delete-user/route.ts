@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    // ✅ 1. هات التوكن من الهيدر (مبعوت من المتصفح)
     const authHeader = req.headers.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
 
@@ -16,20 +15,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ 2. عميل بصلاحيات كاملة (Service Role) — هنستخدمه في كل حاجة
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // ✅ 3. تحقق من التوكن ده فعلاً بتاع مين
     const { data: { user: requester }, error: tokenError } = await supabaseAdmin.auth.getUser(token);
 
     if (tokenError || !requester) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ 4. تأكد إنه أدمن فعليًا
     const { data: requesterProfile } = await supabaseAdmin
       .from("profiles")
       .select("role")
@@ -40,26 +36,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden — admins only" }, { status: 403 });
     }
 
-    // ✅ 5. حماية من حذف النفس بالغلط
     if (requester.id === userId) {
       return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
     }
 
- // ✅ نفضّي عمود user_id في إعلاناته القديمة (تفضل موجودة بس من غير مالك)
+    // ✅ نفضّي عمود user_id في إعلاناته القديمة (تفضل موجودة بس من غير مالك)
     await supabaseAdmin.from("listings").update({ user_id: null }).eq("user_id", userId);
 
-    // نمسح أي سجل partner مرتبط بيه الأول (لو موجود)
+    // ✅ نمسح أي سجل partner مرتبط بيه (لو موجود)
     await supabaseAdmin.from("partners").delete().eq("user_id", userId);
 
-    // نمسح صف الـ profile
-    await supabaseAdmin.from("profiles").delete().eq("id", userId);
+    // ✅ نمسح أي سجل developer مرتبط بيه (لو موجود) — ده اللي كان ناقص
+    await supabaseAdmin.from("developers").delete().eq("user_id", userId);
 
-    // وأخيرًا نمسح الحساب نفسه من نظام تسجيل الدخول
+    // ✅ أهم تعديل: نمسح الحساب من auth.users الأول، وقبل ما نلمس profiles خالص
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
+      // ❌ لو فشل، منمسحش profiles خالص — الحساب يفضل ظاهر في اللوحة عشان نلاحظ المشكلة فورًا
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
+
+    // ✅ منمسح profiles إلا بعد التأكد إن الحساب فعلاً اتمسح من auth.users
+    await supabaseAdmin.from("profiles").delete().eq("id", userId);
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
