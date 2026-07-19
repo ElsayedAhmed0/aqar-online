@@ -29,7 +29,9 @@ export default function CompanyProfileEditor({
   isAr: boolean;
   onUpdated: (updated: Developer) => void;
 }) {
-  const [form, setForm] = useState({
+ const [form, setForm] = useState({
+    name: developer.name || "",
+    name_en: developer.name_en || "",
     logo_url: developer.logo_url || "",
     cover_image_url: developer.cover_image_url || "",
     description_ar: developer.description_ar || "",
@@ -97,6 +99,14 @@ export default function CompanyProfileEditor({
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+         <div className="space-y-1.5">
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشركة (عربي)" : "Company Name (Arabic)"}</label>
+          <input type="text" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-aura-dark text-sm outline-none focus:border-aura-accent transition-all" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-aura-dark">{isAr ? "اسم الشركة (إنجليزي)" : "Company Name (English)"}</label>
+          <input type="text" value={form.name_en} onChange={(e) => setForm((prev) => ({ ...prev, name_en: e.target.value }))} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-aura-dark text-sm outline-none focus:border-aura-accent transition-all" dir="ltr" />
+        </div>
         <div className="space-y-1.5 sm:col-span-2">
           <label className="text-xs font-medium text-aura-dark">{isAr ? "اللوجو" : "Logo"}</label>
           <div className="flex gap-3 items-center">

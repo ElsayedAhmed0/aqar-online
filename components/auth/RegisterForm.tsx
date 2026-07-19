@@ -36,7 +36,7 @@ export default function RegisterForm() {
       setError(isAr ? "يرجى ملء جميع الحقول" : "Please fill all fields");
       return;
     }
-   if ((accountType === "agent" || accountType === "developer") && !form.developerName) {
+    if ((accountType === "agent" || accountType === "developer") && !form.developerName) {
       setError(isAr ? "يرجى كتابة اسم الشركة" : "Please enter your company name");
       return;
     }
@@ -141,29 +141,28 @@ export default function RegisterForm() {
         {/* نوع الحساب */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-aura-dark">{isAr ? "نوع الحساب" : "Account Type"}</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setAccountType("user")}
-              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${
-                accountType === "user"
+              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${accountType === "user"
                   ? "bg-aura-dark text-white border-aura-dark"
                   : "border-aura-border text-aura-muted hover:border-aura-accent"
-              }`}
+                }`}
             >
               {isAr ? "مستخدم عادي" : "Regular User"}
             </button>
             <button
               type="button"
               onClick={() => setAccountType("agent")}
-              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${
-                accountType === "agent"
+              className={`py-3 rounded-2xl border text-sm font-medium transition-all duration-300 ${accountType === "agent"
                   ? "bg-aura-dark text-white border-aura-dark"
                   : "border-aura-border text-aura-muted hover:border-aura-accent"
-              }`}
+                }`}
             >
               {isAr ? "وسيط عقاري" : "Real Estate Agent"}
             </button>
+            {/* ⏸️ التسجيل الذاتي كـ"مطوّر" معطّل مؤقتًا — الترقية بقت من لوحة الأدمن بس
             <button
               type="button"
               onClick={() => setAccountType("developer")}
@@ -175,8 +174,9 @@ export default function RegisterForm() {
             >
               {isAr ? "مطوّر عقاري" : "Real Estate Developer"}
             </button>
+            */}
           </div>
-         {(accountType === "agent" || accountType === "developer") && (
+          {(accountType === "agent" || accountType === "developer") && (
             <p className="text-[10px] text-aura-muted pt-1">
               {isAr
                 ? "هيكون عندك لوحة خاصة لإدارة صفحتك وإعلاناتك، بعد مراجعة الأدمن"
@@ -201,7 +201,7 @@ export default function RegisterForm() {
         </div>
 
         {/* اسم الشركة/الوسيط — يظهر بس لو وسيط */}
-      {(accountType === "agent" || accountType === "developer") && (
+        {(accountType === "agent" || accountType === "developer") && (
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-aura-dark">
               {accountType === "developer"
@@ -214,7 +214,7 @@ export default function RegisterForm() {
                 type="text"
                 value={form.developerName}
                 onChange={(e) => setForm({ ...form, developerName: e.target.value })}
-               placeholder={
+                placeholder={
                   accountType === "developer"
                     ? (isAr ? "مثال: شركة النور للتطوير العقاري" : "e.g. Al Nour Developments")
                     : (isAr ? "مثال: مكتب النور العقاري" : "e.g. Al Nour Real Estate Office")
@@ -224,6 +224,7 @@ export default function RegisterForm() {
             </div>
           </div>
         )}
+
 
         {/* رقم الهاتف */}
         <div className="space-y-1.5">
