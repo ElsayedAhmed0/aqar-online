@@ -11,7 +11,11 @@ cloudinary.config({
   api_key: "737929629931548",
   api_secret: "9wDR7ZIZy5vNE4BzCGeXZvVnSzI",
 });
-
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
 export async function POST(req: NextRequest) {
   try {
     const { image } = await req.json();
