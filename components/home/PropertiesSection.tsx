@@ -98,10 +98,13 @@ export default function PropertiesSection() {
             </div>
 
 
-            <a href={`/${locale}/properties`}
-              className="px-5 py-3 rounded-2xl border border-aura-accent text-aura-accent text-xs font-medium hover:bg-aura-accent hover:text-white transition-all duration-300 whitespace-nowrap"
+          <a href={`/${locale}/properties`}
+              className="group px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-aura-accent text-white text-sm sm:text-base font-medium hover:bg-aura-dark hover:scale-[1.03] shadow-lg shadow-aura-accent/20 transition-all duration-300 whitespace-nowrap flex items-center gap-2"
             >
-              {isAr ? "عرض كل العقارات ←" : "View All Properties →"}
+              {isAr ? "عرض كل العقارات" : "View All Properties"}
+              <span className="transition-transform duration-300 group-hover:-translate-x-1">
+                {isAr ? "←" : "→"}
+              </span>
             </a>
           </div>
         </div>

@@ -166,7 +166,7 @@ const emptyPartner = {
 const emptyPost = { title_ar: "", title_en: "", excerpt_ar: "", excerpt_en: "", content_ar: "", content_en: "", category: "", image_url: "" };
 const PROMO_TABLE = "promotions";
 const USERS_PER_PAGE = 15;
-const LISTINGS_PER_PAGE = 20;
+const LISTINGS_PER_PAGE = 15;
 const imageSettingKeys = ["hero_image"];
 
 export default function AdminPage() {
@@ -1059,8 +1059,8 @@ export default function AdminPage() {
               {/* ✅ Pagination */}
               {totalListingsPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
-                  <button
-                    onClick={() => setListingsPage((p) => Math.max(1, p - 1))}
+                 <button
+                    onClick={() => { setListingsPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     disabled={listingsPage === 1}
                     className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
@@ -1075,19 +1075,19 @@ export default function AdminPage() {
                           {idx > 0 && arr[idx - 1] !== p - 1 && (
                             <span className="text-aura-muted px-1">...</span>
                           )}
-                          <button
-                            onClick={() => setListingsPage(p)}
-                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${p === listingsPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
-                              }`}
-                          >
-                            {p}
-                          </button>
+                        <button
+                    onClick={() => { setListingsPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${p === listingsPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
+                      }`}
+                  >
+                    {p}
+                  </button>
                         </div>
                       ))}
                   </div>
 
-                  <button
-                    onClick={() => setListingsPage((p) => Math.min(totalListingsPages, p + 1))}
+                 <button
+                    onClick={() => { setListingsPage((p) => Math.min(totalListingsPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     disabled={listingsPage === totalListingsPages}
                     className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
