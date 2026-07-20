@@ -218,7 +218,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ✅ تابات — تظهر بس للوسيط العقاري */}
           {/* ✅ تابات — تظهر للوسيط أو المطوّر */}
           {!roleLoading && (role === "agent" || role === "developer") && (
             <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border w-fit mb-8 md:mb-10">
@@ -249,10 +248,6 @@ export default function DashboardPage() {
 
           {!roleLoading && role === "developer" && activeTab === "listings" && developerRecord && (
             <MyProjectsManager developerId={developerRecord.id} isAr={isAr} />
-          )}
-
-          {!roleLoading && role === "agent" && activeTab === "profile" && partner && (
-            <DeveloperProfileEditor partner={partner} isAr={isAr} onUpdated={setPartner} />
           )}
 
           {(roleLoading || (role !== "agent" && role !== "developer") || (role === "agent" && activeTab === "listings")) && (
