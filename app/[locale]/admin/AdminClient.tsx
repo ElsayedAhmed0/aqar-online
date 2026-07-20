@@ -216,6 +216,8 @@ export default function AdminPage() {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [rejectModalId, setRejectModalId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -281,6 +283,32 @@ export default function AdminPage() {
     const { error } = await supabase.from("listings").update({ status }).eq("id", id);
     if (!error) setListings((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
     setUpdating(null);
+  };
+  const openRejectModal = (id: string) => {
+    setRejectModalId(id);
+    setRejectReason("");
+  };
+
+  const confirmReject = async () => {
+    if (!rejectModalId) return;
+    setUpdating(rejectModalId);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: "rejected", rejection_reason: rejectReason.trim() || null })
+      .eq("id", rejectModalId);
+    if (!error) {
+      setListings((prev) =>
+        prev.map((l) =>
+          l.id === rejectModalId
+            ? { ...l, status: "rejected", rejection_reason: rejectReason.trim() || null } as any
+            : l
+        )
+      );
+    }
+    setUpdating(null);
+    setRejectModalId(null);
+    setRejectReason("");
   };
   const toggleFeatured = async (id: string, featured: boolean) => {
     const supabase = createClient();
@@ -985,7 +1013,7 @@ export default function AdminPage() {
                                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs font-medium hover:bg-green-100 transition-all disabled:opacity-50">
                                 <HiOutlineCheckCircle className="w-4 h-4" />{isAr ? "موافقة" : "Approve"}
                               </button>
-                              <button onClick={() => updateStatus(listing.id, "rejected")} disabled={updating === listing.id}
+                              <button onClick={() => openRejectModal(listing.id)} disabled={updating === listing.id}
                                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs font-medium hover:bg-red-100 transition-all disabled:opacity-50">
                                 <HiOutlineXCircle className="w-4 h-4" />{isAr ? "رفض" : "Reject"}
                               </button>
@@ -1003,8 +1031,8 @@ export default function AdminPage() {
                             >
                               ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
                             </button>
-                            <button
-                              onClick={() => updateStatus(listing.id, listing.status === "approved" ? "rejected" : "approved")}
+                           <button
+                              onClick={() => listing.status === "approved" ? openRejectModal(listing.id) : updateStatus(listing.id, "approved")}
                               disabled={updating === listing.id}
                               className="w-full py-2.5 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all disabled:opacity-50"
                             >
@@ -1667,7 +1695,47 @@ export default function AdminPage() {
           )}
 
         </div>
-      </section>
+   </section>
+
+      {/* ✅ بوب أب سبب الرفض */}
+      {rejectModalId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-aura-dark/50 backdrop-blur-sm" onClick={() => setRejectModalId(null)} />
+          <div className="relative bg-aura-card rounded-3xl border border-aura-border p-6 w-full max-w-md">
+            <h3 className="text-base font-medium text-aura-dark mb-2">
+              {isAr ? "سبب رفض الإعلان" : "Rejection Reason"}
+            </h3>
+            <p className="text-xs text-aura-muted mb-4">
+              {isAr
+                ? "هتظهر الرسالة دي لصاحب الإعلان في لوحته — اكتبها بوضوح عشان يقدر يصلّح المشكلة."
+                : "This message will appear to the listing owner — write it clearly so they can fix the issue."}
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={4}
+              placeholder={isAr ? "مثال: الصور غير واضحة، أو السعر غير منطقي..." : "e.g. Photos are unclear, price seems unrealistic..."}
+              className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent transition-all resize-none"
+            />
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={confirmReject}
+                disabled={updating === rejectModalId}
+                className="flex-1 py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all disabled:opacity-50"
+              >
+                {updating === rejectModalId ? (isAr ? "جاري الرفض..." : "Rejecting...") : (isAr ? "تأكيد الرفض" : "Confirm Rejection")}
+              </button>
+              <button
+                onClick={() => setRejectModalId(null)}
+                className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all"
+              >
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </main >
   );

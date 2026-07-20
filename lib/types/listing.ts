@@ -22,11 +22,12 @@ export type UserListing = {
   whatsapp?: string;
   featured: boolean;
   status: ListingStatus;
-  negotiable?: boolean;
+negotiable?: boolean;
   features?: string[];
   delivery_status?: string;
     views?: number;       
   show_views?: boolean; 
+  rejection_reason?: string | null;
 };
 
 export type ListingFormData = {

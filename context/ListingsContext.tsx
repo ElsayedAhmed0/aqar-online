@@ -15,6 +15,11 @@ type ListingsContextType = {
     rawImages: string[],
     purpose?: string
   ) => Promise<UserListing | null>;
+  updateListing: (
+    id: string,
+    listing: Omit<UserListing, "id" | "userId" | "createdAt" | "status">,
+    rawImages: string[]
+  ) => Promise<boolean>;
   removeListing: (id: string) => Promise<void>;
 };
 
@@ -22,6 +27,7 @@ const ListingsContext = createContext<ListingsContextType>({
   listings: [],
   loading: true,
   addListing: async () => null,
+  updateListing: async () => false,
   removeListing: async () => { },
 });
 
@@ -67,9 +73,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           status: l.status,
           negotiable: l.negotiable || false,
           features: l.features || [],
-          delivery_status: l.delivery_status || "ready",
+         delivery_status: l.delivery_status || "ready",
           views: l.views || 0,
           show_views: l.show_views || false,
+          rejection_reason: l.rejection_reason || null,
         })));
       }
       setLoading(false);
@@ -191,6 +198,91 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     [user?.id]
   );
 
+  const updateListing = useCallback(
+    async (
+      id: string,
+      listing: Omit<UserListing, "id" | "userId" | "createdAt" | "status">,
+      rawImages: string[]
+    ): Promise<boolean> => {
+      if (!user?.id) return false;
+      const supabase = createClient();
+
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < rawImages.length; i++) {
+        const img = rawImages[i];
+        if (img.startsWith("data:")) {
+          const url = await uploadImage(supabase, img, user.id, i);
+          if (url) uploadedUrls.push(url);
+        } else {
+          uploadedUrls.push(img);
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("listings")
+        .update({
+          type: listing.type,
+          purpose: (listing as any).purpose,
+          title_ar: listing.title_ar,
+          title_en: listing.title_en,
+          description_ar: listing.description_ar,
+          description_en: listing.description_en,
+          location_ar: listing.location_ar,
+          location_en: listing.location_en,
+          price: listing.price,
+          beds: listing.beds,
+          baths: listing.baths,
+          area: listing.area,
+          images: uploadedUrls,
+          phone: listing.phone,
+          negotiable: (listing as any).negotiable || false,
+          features: (listing as any).features || [],
+          delivery_status: (listing as any).delivery_status || "ready",
+          whatsapp: (listing as any).whatsapp || null,
+          custom_fields: (listing as any).custom_fields || [],
+        })
+        .eq("id", id)
+        .eq("user_id", user.id) // ✅ حماية إضافية: مايعدلش إلا إعلانه هو بس
+        .select()
+        .single();
+
+      if (error || !data) { console.error("Update error:", error); return false; }
+
+      const updatedListing: UserListing = {
+        id: data.id,
+        userId: data.user_id,
+        createdAt: data.created_at,
+        type: data.type,
+        purpose: data.purpose || "sale",
+        title_ar: data.title_ar,
+        title_en: data.title_en,
+        description_ar: data.description_ar || "",
+        description_en: data.description_en || "",
+        location_ar: data.location_ar || "",
+        location_en: data.location_en || "",
+        price: data.price,
+        beds: data.beds || 0,
+        baths: data.baths || 0,
+        area: data.area || 0,
+        img: uploadedUrls[0] || "",
+        images: uploadedUrls,
+        phone: data.phone || "",
+        whatsapp: data.whatsapp || "",
+        featured: data.featured || false,
+        status: data.status,
+        negotiable: data.negotiable || false,
+        features: data.features || [],
+        delivery_status: data.delivery_status || "ready",
+        views: data.views || 0,
+        show_views: data.show_views || false,
+      };
+
+      setListings((prev) => prev.map((l) => (l.id === id ? updatedListing : l)));
+      return true;
+    },
+    [user?.id]
+  );
+
   const removeListing = useCallback(
     async (id: string) => {
       if (!user?.id) return;
@@ -211,7 +303,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ListingsContext.Provider value={{ listings, loading, addListing, removeListing }}>
+    <ListingsContext.Provider value={{ listings, loading, addListing, updateListing, removeListing }}>
       {children}
     </ListingsContext.Provider>
   );

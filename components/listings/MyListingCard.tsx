@@ -1,6 +1,7 @@
 "use client";
 
-import { HiOutlineMapPin, HiOutlineTrash, HiOutlineClock, HiOutlineCheckCircle, HiOutlineXCircle } from "react-icons/hi2";
+import { useLocale } from "next-intl";
+import { HiOutlineMapPin, HiOutlineTrash, HiOutlineClock, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlinePencilSquare } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineApartment, MdOutlineVilla, MdOutlineStorefront } from "react-icons/md";
 import type { UserListing } from "@/lib/types/listing";
@@ -45,6 +46,7 @@ export default function MyListingCard({
   formatPrice,
   onDelete,
 }: MyListingCardProps) {
+  const locale = useLocale();
   const typeInfo = typeLabels[listing.type as keyof typeof typeLabels] ?? typeLabels.apartment;
   const TypeIcon = typeInfo.icon;
   const status = statusConfig[listing.status] ?? statusConfig.pending;
@@ -140,24 +142,44 @@ export default function MyListingCard({
             <span className="text-xs">{listing.area} {isAr ? "م²" : "m²"}</span>
           </div>
         </div>
+        {listing.status === "rejected" && listing.rejection_reason && (
+          <div className="mt-3 p-3 rounded-2xl bg-red-50 border border-red-100">
+            <p className="text-[11px] font-medium text-red-600 mb-1">
+              {isAr ? "سبب الرفض:" : "Rejection reason:"}
+            </p>
+            <p className="text-xs text-red-500 leading-relaxed">
+              {listing.rejection_reason}
+            </p>
+          </div>
+        )}
         {(listing as any).show_views && (
           <div className="flex items-center gap-1.5 text-xs text-aura-muted mt-2">
             <HiOutlineEye className="w-3.5 h-3.5 text-aura-accent" />
             <span>{(listing as any).views || 0} {isAr ? "مشاهدة" : "views"}</span>
           </div>
         )}
-        {/* التاريخ والحذف */}
+        {/* التاريخ والأزرار */}
+      
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-aura-border">
           <span className="text-[10px] text-aura-muted">
             {isAr ? "أُرسل في" : "Submitted"} {formatDate(listing.createdAt)}
           </span>
-          <button
-            onClick={onDelete}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-red-500 hover:bg-red-50 transition-all duration-300"
-          >
-            <HiOutlineTrash className="w-3.5 h-3.5" />
-            {isAr ? "حذف" : "Delete"}
-          </button>
+          <div className="flex items-center gap-1">
+            
+             <a href={`/${locale}/edit-listing/${listing.id}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-aura-accent hover:bg-aura-accent/10 transition-all duration-300"
+            >
+              <HiOutlinePencilSquare className="w-3.5 h-3.5" />
+              {isAr ? "تعديل" : "Edit"}
+            </a>
+            <button
+              onClick={onDelete}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-red-500 hover:bg-red-50 transition-all duration-300"
+            >
+              <HiOutlineTrash className="w-3.5 h-3.5" />
+              {isAr ? "حذف" : "Delete"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

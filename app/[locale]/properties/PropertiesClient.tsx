@@ -11,7 +11,7 @@ import SideAds from "@/components/home/SideAds";
 import PropertiesFilter from "@/components/properties/PropertyFilter";
 import { HiOutlineAdjustmentsHorizontal, HiOutlineXMark } from "react-icons/hi2";
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10;
 
 export default function PropertiesClient({
   initialProperties = [],
@@ -164,7 +164,10 @@ export default function PropertiesClient({
                 locale={locale}
                 page={page}
                 totalPages={totalPages}
-                onPageChange={setPage}
+                  onPageChange={(newPage) => {
+                  setPage(newPage);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
                 onClearFilters={clearFilters}
               />
 
