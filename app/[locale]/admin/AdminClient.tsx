@@ -166,6 +166,7 @@ const emptyPartner = {
 const emptyPost = { title_ar: "", title_en: "", excerpt_ar: "", excerpt_en: "", content_ar: "", content_en: "", category: "", image_url: "" };
 const PROMO_TABLE = "promotions";
 const USERS_PER_PAGE = 15;
+const LISTINGS_PER_PAGE = 20;
 const imageSettingKeys = ["hero_image"];
 
 export default function AdminPage() {
@@ -213,6 +214,7 @@ export default function AdminPage() {
   const [userFilter, setUserFilter] = useState<"all" | "admin" | "subadmin" | "user">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [usersPage, setUsersPage] = useState(1);
+  const [listingsPage, setListingsPage] = useState(1);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -226,6 +228,9 @@ export default function AdminPage() {
   useEffect(() => {
     setUsersPage(1);
   }, [userFilter, searchQuery]);
+  useEffect(() => {
+    setListingsPage(1);
+  }, [listingFilter, listingSearch]);
   useEffect(() => {
     if (loading) return;
     if (!user) { router.push(`/${locale}/login`); return; }
@@ -798,6 +803,11 @@ export default function AdminPage() {
       l.location_ar?.includes(listingSearch)
     );
   });
+  const totalListingsPages = Math.max(1, Math.ceil(filteredListings.length / LISTINGS_PER_PAGE));
+  const paginatedListings = filteredListings.slice(
+    (listingsPage - 1) * LISTINGS_PER_PAGE,
+    listingsPage * LISTINGS_PER_PAGE
+  );
   const filteredUsers = getFilteredUsers();
   const totalUsersPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
   const paginatedUsers = filteredUsers.slice(
@@ -908,7 +918,7 @@ export default function AdminPage() {
             </div>
 
             {/* ديسكتوب — أفقية scrollable */}
-           <div className="hidden md:flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border overflow-x-auto">
+            <div className="hidden md:flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -956,7 +966,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {filteredListings.map((listing) => (
+                  {paginatedListings.map((listing) => (
                     <div key={listing.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
                       <div className="relative h-44 md:h-48 overflow-hidden">
                         <img src={listing.images?.[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"} alt={listing.title_en} className="w-full h-full object-cover img-hover" />
@@ -1031,7 +1041,7 @@ export default function AdminPage() {
                             >
                               ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
                             </button>
-                           <button
+                            <button
                               onClick={() => listing.status === "approved" ? openRejectModal(listing.id) : updateStatus(listing.id, "approved")}
                               disabled={updating === listing.id}
                               className="w-full py-2.5 rounded-xl border border-aura-border text-xs text-aura-muted hover:text-aura-dark transition-all disabled:opacity-50"
@@ -1043,6 +1053,46 @@ export default function AdminPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* ✅ Pagination */}
+              {totalListingsPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setListingsPage((p) => Math.max(1, p - 1))}
+                    disabled={listingsPage === 1}
+                    className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isAr ? "السابق" : "Prev"}
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalListingsPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalListingsPages || Math.abs(p - listingsPage) <= 1)
+                      .map((p, idx, arr) => (
+                        <div key={p} className="flex items-center gap-1">
+                          {idx > 0 && arr[idx - 1] !== p - 1 && (
+                            <span className="text-aura-muted px-1">...</span>
+                          )}
+                          <button
+                            onClick={() => setListingsPage(p)}
+                            className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${p === listingsPage ? "bg-aura-dark text-white" : "text-aura-muted hover:bg-aura-canvas"
+                              }`}
+                          >
+                            {p}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+
+                  <button
+                    onClick={() => setListingsPage((p) => Math.min(totalListingsPages, p + 1))}
+                    disabled={listingsPage === totalListingsPages}
+                    className="px-4 py-2 rounded-xl border border-aura-border text-sm text-aura-dark hover:border-aura-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isAr ? "التالي" : "Next"}
+                  </button>
                 </div>
               )}
             </>
@@ -1695,7 +1745,7 @@ export default function AdminPage() {
           )}
 
         </div>
-   </section>
+      </section>
 
       {/* ✅ بوب أب سبب الرفض */}
       {rejectModalId && (
