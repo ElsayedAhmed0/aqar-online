@@ -45,11 +45,11 @@ export default function BentoGrid() {
               <p className="text-aura-accent-light text-xs tracking-widest uppercase mb-3">
                 {isAr ? "خبرتنا" : "Our Experience"}
               </p>
-              <h3 className="text-5xl md:text-6xl font-light text-white">
+              {/* <h3 className="text-5xl md:text-6xl font-light text-white">
                 {settings.stats_years || "15"}+
-              </h3>
+              </h3> */}
               <p className="text-white/50 text-sm mt-2">
-                {isAr ? "سنة في سوق العقارات المصري" : "Years in Egyptian Real Estate"}
+                {isAr ? " في سوق العقارات المصري" : " in Egyptian Real Estate"}
               </p>
             </div>
             <div className="relative z-10 flex items-center gap-3 mt-6 md:mt-8 flex-wrap">
@@ -58,9 +58,9 @@ export default function BentoGrid() {
                   <HiOutlineStar className="w-3 h-3 text-aura-accent" />
                 </div>
               ))}
-              <span className="text-white/40 text-xs mr-2">
+              {/* <span className="text-white/40 text-xs mr-2">
                 {settings.stats_clients || "1,200"}+ {isAr ? "عميل راضي" : "Happy Clients"}
-              </span>
+              </span> */}
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export default function BentoGrid() {
             </div>
           </div>
 
-          <div className="bento-card bg-aura-accent rounded-3xl p-6 md:p-8 flex flex-col justify-between min-h-56 md:min-h-64">
+          {/* <div className="bento-card bg-aura-accent rounded-3xl p-6 md:p-8 flex flex-col justify-between min-h-56 md:min-h-64">
             <p className="text-white/70 text-xs tracking-widest uppercase">
               {isAr ? "إحصائياتنا" : "Our Numbers"}
             </p>
@@ -129,7 +129,7 @@ export default function BentoGrid() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
         </div>
       </div>

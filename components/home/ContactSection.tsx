@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useAuth } from "@/context/AuthContext";
 import {
-  HiOutlinePhone, HiOutlineMapPin, HiOutlineCheckCircle, HiOutlineLockClosed,
+  HiOutlinePhone, HiOutlineEnvelope, HiOutlineMapPin, HiOutlineCheckCircle, HiOutlineLockClosed,
 } from "react-icons/hi2";
 
 export default function ContactSection() {
@@ -65,11 +65,11 @@ export default function ContactSection() {
     setSent(true);
   };
 
-  const contactItems = [
+ const contactItems = [
     { icon: <HiOutlinePhone className="w-5 h-5"/>, label: isAr ? "اتصل بنا" : "Call Us", value: settings.footer_phone || "920001234", href: `tel:${settings.footer_phone || "920001234"}` },
-    // ✅ إيميل الشركة معلَّق مؤقتًا لحد ما يتعمل إيميل رسمي باسم الموقع
-    // { icon: <HiOutlineEnvelope className="w-5 h-5"/>, label: isAr ? "راسلنا" : "Email Us", value: settings.footer_email || "info@aqar-online.com", href: `mailto:${settings.footer_email || "info@aqar-online.com"}` },
-    { icon: <HiOutlineMapPin className="w-5 h-5"/>, label: isAr ? "عنواننا" : "Our Address", value: isAr ? (settings.footer_address_ar || "التجمع الخامس، القاهرة") : (settings.footer_address_en || "New Cairo, Egypt"), href: "#" },
+    { icon: <HiOutlineEnvelope className="w-5 h-5"/>, label: isAr ? "راسلنا" : "Email Us", value: "info@aqqaronline.com", href: "mailto:info@aqqaronline.com" },
+    // ✅ العنوان معلَّق مؤقتًا بناءً على طلب العميل
+    // { icon: <HiOutlineMapPin className="w-5 h-5"/>, label: isAr ? "عنواننا" : "Our Address", value: isAr ? (settings.footer_address_ar || "التجمع الخامس، القاهرة") : (settings.footer_address_en || "New Cairo, Egypt"), href: "#" },
   ];
 
   const inputCls = "w-full px-4 py-3 rounded-xl bg-aura-canvas border border-aura-border text-aura-dark text-sm outline-none focus:border-aura-accent transition-colors placeholder:text-aura-muted/50";

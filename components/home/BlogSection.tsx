@@ -100,10 +100,10 @@ export default function BlogSection() {
                       { year: "numeric", month: "long", day: "numeric" }
                     )}
                   </span>
-                  <div className="flex items-center gap-1 text-xs text-aura-muted">
+                  {/* <div className="flex items-center gap-1 text-xs text-aura-muted">
                     <HiOutlineClock className="w-3.5 h-3.5" />
                     {isAr ? "5 دقائق" : "5 min read"}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </a>

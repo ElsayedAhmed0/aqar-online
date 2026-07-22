@@ -33,7 +33,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+   await supabase.auth.getUser();
+
+  // ✅ زيادة عداد زيارات الموقع (كل صفحة تتفتح)
+  supabase.rpc("increment_site_visits").then(() => {});
 
   return response;
 }

@@ -9,7 +9,7 @@ import PropertyFeatures from "@/components/properties/PropertyFeatures";
 import PropertyInfo from "@/components/properties/PropertyInfo";
 import ContactCard from "@/components/properties/ContactCard";
 import FeaturedBanner from "../FeaturedBanner";
-
+export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {

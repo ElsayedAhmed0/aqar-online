@@ -156,7 +156,7 @@ export default function HeroSection() {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center justify-center gap-6 sm:gap-8 mt-10 md:mt-12 flex-wrap">
+        {/* <div className="flex items-center justify-center gap-6 sm:gap-8 mt-10 md:mt-12 flex-wrap">
           {[
             { num: `${settings.stats_properties || "2,500"}+`, label: isAr ? "عقار مميز" : "Properties" },
             { num: `${settings.stats_clients || "1,200"}+`, label: isAr ? "عميل سعيد" : "Happy Clients" },
@@ -167,7 +167,7 @@ export default function HeroSection() {
               <p className="text-xs text-white/50 mt-1">{stat.label}</p>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* السهم للأسفل */}
