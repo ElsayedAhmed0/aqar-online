@@ -68,7 +68,7 @@ export default function Home() {
 
           {/* المحتوى الرئيسي */}
           <div className="flex-1 min-w-0 overflow-hidden">
-            <BentoGrid />
+            {/* <BentoGrid /> */}
 
             {/* الإعلانات carousel على الموبايل — قبل شركاؤنا */}
             <div className="lg:hidden py-8">

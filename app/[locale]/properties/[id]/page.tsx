@@ -79,10 +79,7 @@ export default async function PropertyDetailsPage({
 
   if (!property) notFound();
 
-  await supabase
-    .from("listings")
-    .update({ views: (property.views || 0) + 1 })
-    .eq("id", id);
+   await supabase.rpc("increment_listing_views", { listing_id: id });
 
   const { data: similar } = await supabase
     .from("listings")

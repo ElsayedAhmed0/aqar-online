@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { createPortal } from "react-dom";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import {
   HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineClock,
@@ -16,7 +17,7 @@ import {
   HiOutlineCog6Tooth, HiOutlineCheckBadge, HiOutlineMegaphone,
   HiOutlinePhoto, HiOutlineTag, HiOutlineBuildingOffice2,
   HiOutlineNewspaper, HiOutlineInbox, HiOutlineChevronDown,
-  HiOutlineTrash,
+  HiOutlineTrash, HiOutlineEllipsisVertical,
 } from "react-icons/hi2";
 import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
@@ -214,11 +215,13 @@ export default function AdminPage() {
   const [uploadingAdImg, setUploadingAdImg] = useState(false);
   const [uploadingPostImg, setUploadingPostImg] = useState(false);
   const [uploadingSettingImg, setUploadingSettingImg] = useState(false);
-  const [userFilter, setUserFilter] = useState<"all" | "admin" | "subadmin" | "user">("all");
+  const [userFilter, setUserFilter] = useState<"all" | "admin" | "subadmin" | "user" | "agent" | "developer">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [usersPage, setUsersPage] = useState(1);
   const [listingsPage, setListingsPage] = useState(1);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [permissionsMenuOpen, setPermissionsMenuOpen] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [rejectModalId, setRejectModalId] = useState<string | null>(null);
@@ -231,6 +234,7 @@ export default function AdminPage() {
   useEffect(() => {
     setUsersPage(1);
   }, [userFilter, searchQuery]);
+
   useEffect(() => {
     setListingsPage(1);
   }, [listingFilter, listingSearch]);
@@ -284,7 +288,16 @@ export default function AdminPage() {
     };
     checkAdmin();
   }, [user, loading]);
-
+  useEffect(() => {
+    if (!permissionsMenuOpen) return;
+    const close = () => setPermissionsMenuOpen(null);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [permissionsMenuOpen]);
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
     setUpdating(id);
     const supabase = createClient();
@@ -1144,10 +1157,10 @@ export default function AdminPage() {
                 <>
                   <div className="flex flex-col sm:flex-row gap-3 mb-6">
                     <div className="flex gap-2 bg-aura-card p-1.5 rounded-2xl border border-aura-border flex-wrap">
-                      {(["all", "admin", "subadmin", "user"] as const).map((f) => (
+                      {(["all", "admin", "subadmin", "user", "agent", "developer"] as const).map((f) => (
                         <button key={f} onClick={() => setUserFilter(f)}
                           className={`px-3 md:px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${userFilter === f ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"}`}>
-                          {f === "all" ? (isAr ? "الكل" : "All") : f === "admin" ? (isAr ? "أدمن" : "Admin") : f === "subadmin" ? (isAr ? "مساعد" : "Sub") : (isAr ? "مستخدم" : "User")}
+                          {f === "all" ? (isAr ? "الكل" : "All") : f === "admin" ? (isAr ? "أدمن" : "Admin") : f === "subadmin" ? (isAr ? "مساعد" : "Sub") : f === "agent" ? (isAr ? "وسيط" : "Agent") : f === "developer" ? (isAr ? "مطوّر" : "Developer") : (isAr ? "مستخدم" : "User")}
                         </button>
                       ))}
                     </div>
@@ -1196,8 +1209,8 @@ export default function AdminPage() {
                   </div>
 
                   {/* ✅ جدول scrollable على الموبايل */}
-                  <div className="bg-aura-card rounded-3xl border border-aura-border overflow-hidden">
-                    <div className="overflow-x-auto">
+                  <div className="bg-aura-card rounded-3xl border border-aura-border">
+                    <div className="overflow-x-auto rounded-3xl">
                       <table className="w-full min-w-[700px]" dir={isAr ? "rtl" : "ltr"}>
                         <thead>
                           <tr className="border-b border-aura-border bg-aura-canvas">
@@ -1230,25 +1243,51 @@ export default function AdminPage() {
                               {isFullAdmin && (
                                 <td className="px-4 md:px-6 py-4">
                                   {u.id !== user?.id && (
-                                    <div className="flex items-center gap-2 overflow-x-auto max-w-[280px] pb-1">
-                                      {u.role === "user" && (
-                                        <>
-                                          <button onClick={() => changeUserRole(u.id, "subadmin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "مساعد" : "Sub"}</button>
-                                          <button onClick={() => changeUserRole(u.id, "admin")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "أدمن" : "Admin"}</button>
-                                          <button onClick={() => changeUserRole(u.id, "agent")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "وسيط" : "Agent"}</button>
-                                          <button onClick={() => changeUserRole(u.id, "developer")} className="px-3 py-1.5 rounded-lg border border-aura-border text-[11px] text-aura-dark hover:border-aura-accent transition-all shrink-0">{isAr ? "مطوّر" : "Developer"}</button>
-                                        </>
-                                      )}
-                                      {(u.role === "admin" || u.role === "subadmin" || u.role === "agent" || u.role === "developer") && (
-                                        <button onClick={() => changeUserRole(u.id, "user")} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-[10px] font-medium hover:bg-red-100 transition-all border border-red-200 whitespace-nowrap shrink-0">{isAr ? "إلغاء" : "Revoke"}</button>
-                                      )}
+                                    <div className="flex justify-end">
                                       <button
-                                        onClick={() => deleteUserAccount(u.id, u.full_name || u.email)}
-                                        className="w-7 h-7 shrink-0 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-all"
-                                        title={isAr ? "حذف الحساب نهائيًا" : "Delete account permanently"}
+                                        onClick={(e) => {
+                                          if (permissionsMenuOpen === u.id) {
+                                            setPermissionsMenuOpen(null);
+                                            return;
+                                          }
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          setMenuPosition({ top: rect.bottom + 4, left: rect.right - 224 });
+                                          setPermissionsMenuOpen(u.id);
+                                        }}
+                                        className="w-8 h-8 rounded-lg border border-aura-border text-aura-muted hover:text-aura-dark hover:border-aura-accent flex items-center justify-center transition-all shrink-0"
                                       >
-                                        <HiOutlineTrash className="w-3.5 h-3.5" />
+                                        <HiOutlineEllipsisVertical className="w-4 h-4" />
                                       </button>
+
+                                      {permissionsMenuOpen === u.id && menuPosition && typeof document !== "undefined" && createPortal(
+                                        <>
+                                          <div className="fixed inset-0 z-[100]" onClick={() => setPermissionsMenuOpen(null)} />
+                                          <div
+                                            style={{ top: menuPosition.top, left: menuPosition.left }}
+                                            className="fixed w-56 bg-aura-card border border-aura-border rounded-2xl shadow-lg overflow-hidden z-[110]"
+                                          >
+                                            {u.role === "user" && (
+                                              <>
+                                                <button onClick={() => { changeUserRole(u.id, "subadmin"); setPermissionsMenuOpen(null); }} className="w-full text-start px-4 py-2.5 text-xs whitespace-nowrap text-aura-dark hover:bg-aura-canvas transition-colors">{isAr ? "ترقية إلى مساعد أدمن" : "Promote to Sub-admin"}</button>
+                                                <button onClick={() => { changeUserRole(u.id, "admin"); setPermissionsMenuOpen(null); }} className="w-full text-start px-4 py-2.5 text-xs whitespace-nowrap text-aura-dark hover:bg-aura-canvas transition-colors border-t border-aura-border">{isAr ? "ترقية إلى أدمن" : "Promote to Admin"}</button>
+                                                <button onClick={() => { changeUserRole(u.id, "agent"); setPermissionsMenuOpen(null); }} className="w-full text-start px-4 py-2.5 text-xs whitespace-nowrap text-aura-dark hover:bg-aura-canvas transition-colors border-t border-aura-border">{isAr ? "ترقية إلى وسيط عقاري" : "Promote to Agent"}</button>
+                                                <button onClick={() => { changeUserRole(u.id, "developer"); setPermissionsMenuOpen(null); }} className="w-full text-start px-4 py-2.5 text-xs whitespace-nowrap text-aura-dark hover:bg-aura-canvas transition-colors border-t border-aura-border">{isAr ? "ترقية إلى مطوّر عقاري" : "Promote to Developer"}</button>
+                                              </>
+                                            )}
+                                            {(u.role === "admin" || u.role === "subadmin" || u.role === "agent" || u.role === "developer") && (
+                                              <button onClick={() => { changeUserRole(u.id, "user"); setPermissionsMenuOpen(null); }} className="w-full text-start px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors">{isAr ? "إلغاء الصلاحية الحالية" : "Revoke current role"}</button>
+                                            )}
+                                            <button
+                                              onClick={() => { setPermissionsMenuOpen(null); deleteUserAccount(u.id, u.full_name || u.email); }}
+                                              className="w-full text-start px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors border-t border-aura-border flex items-center gap-2"
+                                            >
+                                              <HiOutlineTrash className="w-3.5 h-3.5" />
+                                              {isAr ? "حذف الحساب نهائيًا" : "Delete account permanently"}
+                                            </button>
+                                          </div>
+                                        </>,
+                                        document.body
+                                      )}
                                     </div>
                                   )}
                                 </td>

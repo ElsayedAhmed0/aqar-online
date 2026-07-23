@@ -45,7 +45,7 @@ export default function AboutPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-12 px-6 lg:px-12 bg-aura-card border-y border-aura-border">
+      {/* <section className="py-12 px-6 lg:px-12 bg-aura-card border-y border-aura-border">
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center">
           <div>
             <p className="text-3xl font-light text-aura-accent">{settings.stats_properties || "500"}+</p>
@@ -60,7 +60,7 @@ export default function AboutPage() {
             <p className="text-xs text-aura-muted mt-1">{isAr ? "سنوات خبرة" : "Years Experience"}</p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Vision & Mission */}
       <section className="py-16 lg:py-24 px-6 lg:px-12">
