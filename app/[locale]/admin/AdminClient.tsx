@@ -695,10 +695,12 @@ export default function AdminPage() {
       [isAr ? "الاسم" : "Name"]: u.full_name || "-",
       [isAr ? "البريد" : "Email"]: u.email || "-",
       [isAr ? "الهاتف" : "Phone"]: u.phone || "-",
-      [isAr ? "الدور" : "Role"]:
+    [isAr ? "الدور" : "Role"]:
         u.role === "admin" ? (isAr ? "أدمن" : "Admin")
           : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin")
-            : (isAr ? "مستخدم" : "User"),
+            : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent")
+              : u.role === "developer" ? (isAr ? "مطوّر عقاري" : "Developer")
+                : (isAr ? "مستخدم" : "User"),
       [isAr ? "عدد الإعلانات" : "Listings"]: u.listings_count || 0,
       [isAr ? "تاريخ التسجيل" : "Joined"]: new Date(u.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US"),
     }));
