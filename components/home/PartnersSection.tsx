@@ -65,10 +65,11 @@ export default function PartnersSection() {
   useEffect(() => {
     const fetchPartners = async () => {
       const supabase = createClient();
-      const { data } = await supabase
+     const { data } = await supabase
         .from("partners")
         .select("*")
         .eq("active", true)
+        .eq("featured", true)
         .order("order_num", { ascending: true });
       if (data) setPartners(data);
     };

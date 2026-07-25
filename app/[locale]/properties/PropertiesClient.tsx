@@ -105,10 +105,10 @@ export default function PropertiesClient({
               {isAr ? "تصفح العقارات" : "Browse Properties"}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
-                {isAr ? "شقق و" : "Apartments &"}
+             <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
+                {isAr ? "عقارات" : "Properties"}
                 <span className="block font-serif italic text-aura-accent mt-1">
-                  {isAr ? "فيلات للبيع" : "Villas for Sale"}
+                  {isAr ? "للبيع والإيجار" : "for Sale & Rent"}
                 </span>
               </h1>
 
