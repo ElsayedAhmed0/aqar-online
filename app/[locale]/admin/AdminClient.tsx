@@ -182,7 +182,8 @@ export default function AdminPage() {
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState(0);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
-  const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected">("pending");
+const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected" | "featured">("pending");
+  
   const [listings, setListings] = useState<Listing[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [ads, setAds] = useState<Ad[]>([]);
@@ -331,7 +332,7 @@ export default function AdminPage() {
     setRejectModalId(null);
     setRejectReason("");
   };
- const toggleFeatured = async (id: string, featured: boolean, days?: number) => {
+  const toggleFeatured = async (id: string, featured: boolean, days?: number) => {
     const supabase = createClient();
     const featured_until = featured && days ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString() : null;
     const { error } = await supabase
@@ -696,7 +697,7 @@ export default function AdminPage() {
       [isAr ? "الاسم" : "Name"]: u.full_name || "-",
       [isAr ? "البريد" : "Email"]: u.email || "-",
       [isAr ? "الهاتف" : "Phone"]: u.phone || "-",
-    [isAr ? "الدور" : "Role"]:
+      [isAr ? "الدور" : "Role"]:
         u.role === "admin" ? (isAr ? "أدمن" : "Admin")
           : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin")
             : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent")
@@ -796,7 +797,8 @@ export default function AdminPage() {
     isAr
       ? `${price.toLocaleString("ar-EG")} جنيه`
       : `EGP ${price.toLocaleString("en-US")}`;
-
+  const isFeaturedActive = (l: any) =>
+    l.featured && (!l.featured_until || new Date(l.featured_until) > new Date());
   if (loading || fetching) {
     return (
       <main className="min-h-screen bg-aura-bg"><Navbar />
@@ -809,8 +811,10 @@ export default function AdminPage() {
 
   const isNumericSearch = /^\d+$/.test(listingSearch.trim());
 
-  const filteredListings = listings.filter((l) => {
-    if (listingSearch === "") return l.status === listingFilter;
+ const filteredListings = listings.filter((l) => {
+    if (listingSearch === "") {
+      return listingFilter === "featured" ? isFeaturedActive(l) : l.status === listingFilter;
+    }
 
     if (isNumericSearch) {
       return String((l as any).listing_number) === listingSearch.trim();
@@ -1007,12 +1011,16 @@ export default function AdminPage() {
                       className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-                    {(["pending", "approved", "rejected"] as const).map((s) => (
+                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                    {(["pending", "approved", "rejected", "featured"] as const).map((s) => (
                       <button key={s} onClick={() => setListingFilter(s)}
                         className={`p-3 md:p-4 rounded-2xl border text-center transition-all duration-300 ${listingFilter === s ? "bg-aura-dark text-white border-aura-dark" : "bg-aura-card border-aura-border hover:border-aura-accent"}`}>
-                        <p className="text-xl md:text-2xl font-light">{listings.filter((l) => l.status === s).length}</p>
-                        <p className="text-[10px] md:text-xs mt-1 opacity-70">{isAr ? statusConfig[s].ar : statusConfig[s].en}</p>
+                        <p className="text-xl md:text-2xl font-light">
+                          {s === "featured" ? listings.filter((l) => isFeaturedActive(l)).length : listings.filter((l) => l.status === s).length}
+                        </p>
+                        <p className="text-[10px] md:text-xs mt-1 opacity-70">
+                          {s === "featured" ? (isAr ? "مميز" : "Featured") : (isAr ? statusConfig[s].ar : statusConfig[s].en)}
+                        </p>
                       </button>
                     ))}
                   </div>
@@ -1091,7 +1099,7 @@ export default function AdminPage() {
                               <div className="flex flex-col gap-2">
                           <button
                                   onClick={() => {
-                                    if ((listing as any).featured) {
+                                    if (isFeaturedActive(listing)) {
                                       toggleFeatured(listing.id, false);
                                       return;
                                     }
@@ -1103,19 +1111,20 @@ export default function AdminPage() {
                                     const days = Number(input);
                                     toggleFeatured(listing.id, true, days > 0 ? days : undefined);
                                   }}
-                                  className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${(listing as any).featured
+                                  className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${isFeaturedActive(listing)
                                     ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30 hover:bg-aura-accent/20"
                                     : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent hover:text-aura-accent"
                                     }`}
                                 >
-                                  ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
+                                  ⭐ {isFeaturedActive(listing) ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
                                 </button>
-                                {(listing as any).featured && (listing as any).featured_until && (
+                                {isFeaturedActive(listing) && (listing as any).featured_until && (
                                   <p className="text-[10px] text-aura-muted text-center mt-1">
                                     {isAr ? "ينتهي في: " : "Ends: "}
                                     {new Date((listing as any).featured_until).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
                                   </p>
                                 )}
+                               
                                 <button
                                   onClick={() => listing.status === "approved" ? openRejectModal(listing.id) : updateStatus(listing.id, "approved")}
                                   disabled={updating === listing.id}
@@ -1745,7 +1754,7 @@ export default function AdminPage() {
                       <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "العنوان (إنجليزي)" : "Title (English)"}</label><input type="text" value={postForm.title_en} onChange={(e) => setPostForm((prev) => ({ ...prev, title_en: e.target.value }))} className={inputCls} /></div>
                       <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "ملخص (عربي)" : "Excerpt (Arabic)"}</label><textarea rows={2} value={postForm.excerpt_ar} onChange={(e) => setPostForm((prev) => ({ ...prev, excerpt_ar: e.target.value }))} className={textareaCls} /></div>
                       <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "ملخص (إنجليزي)" : "Excerpt (English)"}</label><textarea rows={2} value={postForm.excerpt_en} onChange={(e) => setPostForm((prev) => ({ ...prev, excerpt_en: e.target.value }))} className={textareaCls} /></div>
-                     <div className="space-y-1.5 md:col-span-2"><label className="text-xs font-medium text-aura-dark">{isAr ? "المحتوى (عربي)" : "Content (Arabic)"}</label><RichTextEditor value={postForm.content_ar} onChange={(html) => setPostForm((prev) => ({ ...prev, content_ar: html }))} dir="rtl" /></div>
+                      <div className="space-y-1.5 md:col-span-2"><label className="text-xs font-medium text-aura-dark">{isAr ? "المحتوى (عربي)" : "Content (Arabic)"}</label><RichTextEditor value={postForm.content_ar} onChange={(html) => setPostForm((prev) => ({ ...prev, content_ar: html }))} dir="rtl" /></div>
                       <div className="space-y-1.5 md:col-span-2"><label className="text-xs font-medium text-aura-dark">{isAr ? "المحتوى (إنجليزي)" : "Content (English)"}</label><RichTextEditor value={postForm.content_en} onChange={(html) => setPostForm((prev) => ({ ...prev, content_en: html }))} dir="ltr" /></div>
                       <div className="space-y-1.5"><label className="text-xs font-medium text-aura-dark">{isAr ? "الفئة" : "Category"}</label><input type="text" value={postForm.category} onChange={(e) => setPostForm((prev) => ({ ...prev, category: e.target.value }))} className={inputCls} /></div>
                       <div className="space-y-1.5">

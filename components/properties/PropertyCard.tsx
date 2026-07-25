@@ -25,7 +25,10 @@ export default function PropertyCard({
   animate = false,
   locale = "ar",
 }: PropertyCardProps) {
-  const purpose = (property as any).purpose;
+const purpose = (property as any).purpose;
+  const featuredUntil = (property as any).featured_until;
+  const isFeaturedActive = (p: any) =>
+    p.featured && (!featuredUntil || new Date(featuredUntil) > new Date());
 
   return (
 
@@ -41,15 +44,15 @@ export default function PropertyCard({
         />
 
         {/* مميز */}
-        {showFeatured && property.featured && (
+        {showFeatured && isFeaturedActive(property) && (
           <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full bg-red-500 text-white text-xs font-medium animate-pulse shadow-lg">
             ⭐ {isAr ? "مميز" : "Featured"}
           </div>
         )}
 
-        {/* للبيع / للإيجار */}
+         {/* للبيع / للإيجار */}
         {purpose && (
-          <div className={`absolute top-3 px-3 py-1 rounded-full text-xs font-medium ${showFeatured && property.featured ? "right-20" : "right-3"
+          <div className={`absolute top-3 px-3 py-1 rounded-full text-xs font-medium ${showFeatured && isFeaturedActive(property) ? "right-20" : "right-3"
             } ${purpose === "rent"
               ? "bg-blue-500/90 text-white"
               : "bg-aura-accent/90 text-white"

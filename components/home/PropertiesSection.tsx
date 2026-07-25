@@ -44,8 +44,11 @@ export default function PropertiesSection() {
       p.location_en?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchType && matchSearch;
   });
+ const isStillFeatured = (p: any) =>
+    p.featured && (!p.featured_until || new Date(p.featured_until) > new Date());
+
   const sorted = [...filtered].sort((a, b) =>
-    (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+    (isStillFeatured(b) ? 1 : 0) - (isStillFeatured(a) ? 1 : 0)
   );
 
   const formatPrice = (price: number) =>
