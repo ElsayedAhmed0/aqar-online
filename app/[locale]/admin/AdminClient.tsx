@@ -331,14 +331,15 @@ export default function AdminPage() {
     setRejectModalId(null);
     setRejectReason("");
   };
-  const toggleFeatured = async (id: string, featured: boolean) => {
+ const toggleFeatured = async (id: string, featured: boolean, days?: number) => {
     const supabase = createClient();
+    const featured_until = featured && days ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString() : null;
     const { error } = await supabase
       .from("listings")
-      .update({ featured })
+      .update({ featured, featured_until })
       .eq("id", id);
     if (!error) setListings((prev) =>
-      prev.map((l) => l.id === id ? { ...l, featured } : l)
+      prev.map((l) => l.id === id ? { ...l, featured, featured_until } as any : l)
     );
   };
   const toggleShowViews = async (id: string, show_views: boolean) => {
@@ -1088,8 +1089,20 @@ export default function AdminPage() {
                             )}
                             {listing.status !== "pending" && (
                               <div className="flex flex-col gap-2">
-                                <button
-                                  onClick={() => toggleFeatured(listing.id, !listing.featured)}
+                          <button
+                                  onClick={() => {
+                                    if ((listing as any).featured) {
+                                      toggleFeatured(listing.id, false);
+                                      return;
+                                    }
+                                    const input = window.prompt(
+                                      isAr ? "عدد أيام التمييز؟ (اتركه فاضي أو 0 للتمييز الدائم)" : "How many days to feature? (leave empty or 0 for permanent)",
+                                      "10"
+                                    );
+                                    if (input === null) return;
+                                    const days = Number(input);
+                                    toggleFeatured(listing.id, true, days > 0 ? days : undefined);
+                                  }}
                                   className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all border ${(listing as any).featured
                                     ? "bg-aura-accent/10 text-aura-accent border-aura-accent/30 hover:bg-aura-accent/20"
                                     : "bg-aura-canvas text-aura-muted border-aura-border hover:border-aura-accent hover:text-aura-accent"
@@ -1097,6 +1110,12 @@ export default function AdminPage() {
                                 >
                                   ⭐ {(listing as any).featured ? (isAr ? "إلغاء التمييز" : "Unfeature") : (isAr ? "تمييز الإعلان" : "Feature")}
                                 </button>
+                                {(listing as any).featured && (listing as any).featured_until && (
+                                  <p className="text-[10px] text-aura-muted text-center mt-1">
+                                    {isAr ? "ينتهي في: " : "Ends: "}
+                                    {new Date((listing as any).featured_until).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
+                                  </p>
+                                )}
                                 <button
                                   onClick={() => listing.status === "approved" ? openRejectModal(listing.id) : updateStatus(listing.id, "approved")}
                                   disabled={updating === listing.id}
