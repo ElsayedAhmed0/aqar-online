@@ -10,6 +10,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { createPortal } from "react-dom";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import { AREAS } from "@/lib/data/areas";
 import {
   HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineClock,
   HiOutlineMapPin, HiOutlineUserGroup, HiOutlineHome,
@@ -1714,14 +1715,21 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {projects.filter((p) => p.status === projectsFilter).map((project) => {
+                      {projects.filter((p) => p.status === projectsFilter).map((project) => {
                           const dev = developers.find((d) => d.id === project.developer_id);
+                          const projectArea = AREAS.find((a) => a.slug === (project as any).area_slug);
                           return (
                             <div key={project.id} className="bento-card bg-aura-card rounded-2xl overflow-hidden border border-aura-border">
                               {project.cover_image_url && <div className="h-32 overflow-hidden"><img src={project.cover_image_url} alt={project.name_ar} className="w-full h-full object-cover" /></div>}
                               <div className="p-4">
                                 <h4 className="text-sm font-medium text-aura-dark mb-1">{isAr ? project.name_ar : (project.name_en || project.name_ar)}</h4>
-                                <p className="text-[11px] text-aura-muted mb-3">{dev?.name || "-"}</p>
+                                <p className="text-[11px] text-aura-muted mb-1">{dev?.name || "-"}</p>
+                                {projectArea && <p className="text-[11px] text-aura-muted mb-1">📍 {isAr ? projectArea.ar : projectArea.en}</p>}
+                                {(project as any).starting_price && (
+                                  <p className="text-[11px] font-medium text-aura-accent mb-3">
+                                    {isAr ? "يبدأ من " : "From "}{Number((project as any).starting_price).toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "جنيه" : "EGP"}
+                                  </p>
+                                )}
                                 {project.status === "pending" ? (
                                   <div className="flex gap-2">
                                     <button onClick={() => updateProjectStatus(project.id, "approved")} className="flex-1 py-2 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs hover:bg-green-100 transition-all">{isAr ? "موافقة" : "Approve"}</button>

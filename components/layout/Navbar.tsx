@@ -103,10 +103,13 @@ const [isAgent, setIsAgent] = useState(false);
     </a>
   );
 
-  const navLinks = [
+ const navLinks = [
     { href: `/${locale}`, label_ar: "الرئيسية", label_en: "Home" },
     { href: `/${locale}/about`, label_ar: "عن عقار", label_en: "About" },
     { href: `/${locale}/properties`, label_ar: "العقارات", label_en: "Properties" },
+    { href: `/${locale}/compounds`, label_ar: "الكمبوندات", label_en: "Compounds" },
+    { href: `/${locale}/developers`, label_ar: "الوسطاء", label_en: "Agents" },
+    { href: `/${locale}/companies`, label_ar: "المطورين", label_en: "Developers" },
     { href: `/${locale}/contact`, label_ar: "اتصل بنا", label_en: "Contact" },
   ];
 

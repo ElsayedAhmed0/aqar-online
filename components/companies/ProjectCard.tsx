@@ -1,6 +1,12 @@
 "use client";
 
 import { HiOutlineMapPin, HiOutlineCalendarDays } from "react-icons/hi2";
+import { AREAS } from "@/lib/data/areas";
+
+const CONSTRUCTION_LABELS: Record<string, { ar: string; en: string }> = {
+  under_construction: { ar: "تحت الإنشاء", en: "Under Construction" },
+  delivered: { ar: "تم التسليم", en: "Delivered" },
+};
 
 export default function ProjectCard({
   project,
@@ -14,11 +20,12 @@ export default function ProjectCard({
   companySlug: string;
 }) {
   const name = (isAr ? project.name_ar : project.name_en) || project.name_ar;
-  const location = isAr ? project.location_ar : project.location_en;
+  const area = AREAS.find((a) => a.slug === project.area_slug);
+  const location = area ? (isAr ? area.ar : area.en) : (isAr ? project.location_ar : project.location_en);
+  const constructionLabel = project.construction_status ? CONSTRUCTION_LABELS[project.construction_status] : null;
 
   return (
-    
-      <a href={`/${locale}/companies/${companySlug}/${project.slug}`}
+    <a href={`/${locale}/companies/${companySlug}/${project.slug}`}
       className="block bg-aura-card rounded-3xl border border-aura-border overflow-hidden hover:border-aura-accent/50 hover:shadow-[0_8px_30px_rgba(196,181,165,0.15)] transition-all duration-300 group"
     >
       <div className="relative h-48 w-full overflow-hidden">
@@ -33,6 +40,11 @@ export default function ProjectCard({
             {project.delivery_date}
           </div>
         )}
+        {constructionLabel && (
+          <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-aura-accent/90 backdrop-blur-sm text-white text-[11px] font-medium">
+            {isAr ? constructionLabel.ar : constructionLabel.en}
+          </div>
+        )}
       </div>
 
       <div className="p-5">
@@ -40,10 +52,15 @@ export default function ProjectCard({
           {name}
         </h3>
         {location && (
-          <div className="flex items-center gap-1.5 text-aura-muted">
+          <div className="flex items-center gap-1.5 text-aura-muted mb-2">
             <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
             <span className="text-xs truncate">{location}</span>
           </div>
+        )}
+        {project.starting_price && (
+          <p className="text-sm font-medium text-aura-accent">
+            {isAr ? "يبدأ من " : "From "}{Number(project.starting_price).toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "جنيه" : "EGP"}
+          </p>
         )}
       </div>
     </a>
