@@ -63,8 +63,6 @@ export default async function ProjectDetailsPage({
     .from("projects")
     .select("*, developers(id, name, name_en, logo_url, slug, phone, whatsapp)")
     .eq("slug", projectSlug)
-    .eq("status", "approved")
-    .eq("active", true)
     .single();
 
   if (!project) notFound();

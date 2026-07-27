@@ -183,8 +183,8 @@ export default function AdminPage() {
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState(0);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
-const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected" | "featured">("pending");
-  
+  const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rejected" | "featured">("pending");
+
   const [listings, setListings] = useState<Listing[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [ads, setAds] = useState<Ad[]>([]);
@@ -228,6 +228,8 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
   const [updating, setUpdating] = useState<string | null>(null);
   const [rejectModalId, setRejectModalId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [projectRejectModalId, setProjectRejectModalId] = useState<string | null>(null);
+  const [projectRejectReason, setProjectRejectReason] = useState("");
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -643,6 +645,31 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
     if (!error) setProjects((prev) => prev.map((p) => p.id === id ? { ...p, status } : p));
   };
 
+  const openProjectRejectModal = (id: string) => {
+    setProjectRejectModalId(id);
+    setProjectRejectReason("");
+  };
+
+  const confirmProjectReject = async () => {
+    if (!projectRejectModalId) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("projects")
+      .update({ status: "rejected", rejection_reason: projectRejectReason.trim() || null })
+      .eq("id", projectRejectModalId);
+    if (!error) {
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectRejectModalId
+            ? { ...p, status: "rejected", rejection_reason: projectRejectReason.trim() || null } as any
+            : p
+        )
+      );
+    }
+    setProjectRejectModalId(null);
+    setProjectRejectReason("");
+  };
+
   const toggleProjectActive = async (id: string, active: boolean) => {
     const supabase = createClient();
     await supabase.from("projects").update({ active }).eq("id", id);
@@ -812,7 +839,7 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
 
   const isNumericSearch = /^\d+$/.test(listingSearch.trim());
 
- const filteredListings = listings.filter((l) => {
+  const filteredListings = listings.filter((l) => {
     if (listingSearch === "") {
       return listingFilter === "featured" ? isFeaturedActive(l) : l.status === listingFilter;
     }
@@ -1012,7 +1039,7 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                       className="w-full pr-11 pl-4 py-3 rounded-2xl border border-aura-border bg-aura-card text-aura-dark text-sm outline-none focus:border-aura-accent transition-all"
                     />
                   </div>
-                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
                     {(["pending", "approved", "rejected", "featured"] as const).map((s) => (
                       <button key={s} onClick={() => setListingFilter(s)}
                         className={`p-3 md:p-4 rounded-2xl border text-center transition-all duration-300 ${listingFilter === s ? "bg-aura-dark text-white border-aura-dark" : "bg-aura-card border-aura-border hover:border-aura-accent"}`}>
@@ -1098,7 +1125,7 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                             )}
                             {listing.status !== "pending" && (
                               <div className="flex flex-col gap-2">
-                          <button
+                                <button
                                   onClick={() => {
                                     if (isFeaturedActive(listing)) {
                                       toggleFeatured(listing.id, false);
@@ -1125,7 +1152,7 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                                     {new Date((listing as any).featured_until).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
                                   </p>
                                 )}
-                               
+
                                 <button
                                   onClick={() => listing.status === "approved" ? openRejectModal(listing.id) : updateStatus(listing.id, "approved")}
                                   disabled={updating === listing.id}
@@ -1715,7 +1742,7 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {projects.filter((p) => p.status === projectsFilter).map((project) => {
+                        {projects.filter((p) => p.status === projectsFilter).map((project) => {
                           const dev = developers.find((d) => d.id === project.developer_id);
                           const projectArea = AREAS.find((a) => a.slug === (project as any).area_slug);
                           return (
@@ -1730,10 +1757,20 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
                                     {isAr ? "يبدأ من " : "From "}{Number((project as any).starting_price).toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "جنيه" : "EGP"}
                                   </p>
                                 )}
+                                {dev?.slug && (
+
+                                  <a href={`/${locale}/companies/${dev.slug}/${project.slug}`}
+                                    target="_blank"
+                                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-aura-canvas text-aura-dark border border-aura-border text-xs font-medium hover:border-aura-accent transition-all mb-2"
+                                  >
+                                    <HiOutlineEye className="w-3.5 h-3.5" />
+                                    {isAr ? "معاينة" : "Preview"}
+                                  </a>
+                                )}
                                 {project.status === "pending" ? (
                                   <div className="flex gap-2">
                                     <button onClick={() => updateProjectStatus(project.id, "approved")} className="flex-1 py-2 rounded-xl bg-green-50 text-green-600 border border-green-200 text-xs hover:bg-green-100 transition-all">{isAr ? "موافقة" : "Approve"}</button>
-                                    <button onClick={() => updateProjectStatus(project.id, "rejected")} className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs hover:bg-red-100 transition-all">{isAr ? "رفض" : "Reject"}</button>
+                                    <button onClick={() => openProjectRejectModal(project.id)} className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 border border-red-200 text-xs hover:bg-red-100 transition-all">{isAr ? "رفض" : "Reject"}</button>
                                   </div>
                                 ) : (
                                   <div className="flex gap-2">
@@ -1904,7 +1941,43 @@ const [listingFilter, setListingFilter] = useState<"pending" | "approved" | "rej
           </div>
         </div>
       )}
-
+      {/* ✅ بوب أب سبب رفض المشروع */}
+      {projectRejectModalId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-aura-dark/50 backdrop-blur-sm" onClick={() => setProjectRejectModalId(null)} />
+          <div className="relative bg-aura-card rounded-3xl border border-aura-border p-6 w-full max-w-md">
+            <h3 className="text-base font-medium text-aura-dark mb-2">
+              {isAr ? "سبب رفض المشروع" : "Project Rejection Reason"}
+            </h3>
+            <p className="text-xs text-aura-muted mb-4">
+              {isAr
+                ? "هتظهر الرسالة دي للمطوّر في لوحته — اكتبها بوضوح عشان يقدر يصلّح المشكلة."
+                : "This message will appear to the developer — write it clearly so they can fix the issue."}
+            </p>
+            <textarea
+              value={projectRejectReason}
+              onChange={(e) => setProjectRejectReason(e.target.value)}
+              rows={4}
+              placeholder={isAr ? "مثال: الصور غير واضحة، أو البيانات ناقصة..." : "e.g. Photos are unclear, missing info..."}
+              className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent transition-all resize-none"
+            />
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={confirmProjectReject}
+                className="flex-1 py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all"
+              >
+                {isAr ? "تأكيد الرفض" : "Confirm Rejection"}
+              </button>
+              <button
+                onClick={() => setProjectRejectModalId(null)}
+                className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all"
+              >
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </main >
   );

@@ -31,6 +31,7 @@ type Project = {
   construction_status?: "under_construction" | "delivered" | null;
   finish_type?: string | null;
   area_slug?: string | null;
+  images?: string[] | null;
 };
 
 const statusLabels: Record<string, { ar: string; en: string; cls: string }> = {
@@ -44,7 +45,10 @@ const emptyForm = {
   cover_image_url: "", location_ar: "", location_en: "",
   delivery_date: "", payment_plan_ar: "",
   starting_price: "", construction_status: "", finish_type: "", area_slug: "",
+  images: [] as string[],
 };
+
+const MAX_IMAGES = 6;
 
 export default function MyProjectsManager({ developerId, isAr }: { developerId: string; isAr: boolean }) {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -52,8 +56,10 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [saving, setSaving] = useState(false);
-const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
   const fetchProjects = async () => {
     setLoading(true);
     const supabase = createClient();
@@ -90,29 +96,54 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
     }
   };
 
-  const handleAddProject = async () => {
+ const handleAddProject = async () => {
     if (!form.name_ar) return;
     setSaving(true);
     const supabase = createClient();
 
-    const slug =
-      form.name_ar
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-zA-Z0-9\u0600-\u06FF]+/g, "-")
-        .replace(/-+/g, "-") +
-      "-" +
-      Date.now().toString().slice(-6);
+    const payload = {
+      ...form,
+      starting_price: form.starting_price ? Number(form.starting_price) : null,
+      construction_status: form.construction_status || null,
+      finish_type: form.finish_type || null,
+      area_slug: form.area_slug || null,
+    };
 
-  const { data, error } = await supabase
+  if (editingProjectId) {
+      const currentProject = projects.find((p) => p.id === editingProjectId);
+      const shouldReturnToPending = currentProject?.status === "rejected";
+
+      const { data, error } = await supabase
+        .from("projects")
+        .update({
+          ...payload,
+          ...(shouldReturnToPending ? { status: "pending", rejection_reason: null } : {}),
+        })
+        .eq("id", editingProjectId)
+        .select()
+        .single();
+
+      setSaving(false);
+      if (!error && data) {
+        setProjects((prev) => prev.map((p) => (p.id === editingProjectId ? data : p)));
+        setForm(emptyForm);
+        setFormOpen(false);
+        setEditingProjectId(null);
+      }
+      return;
+    }
+
+    // ✅ إضافة مشروع جديد
+    const slug =
+      "project-" +
+      Date.now().toString(36) +
+      Math.random().toString(36).slice(2, 6);
+
+    const { data, error } = await supabase
       .from("projects")
       .insert({
         developer_id: developerId,
-        ...form,
-        starting_price: form.starting_price ? Number(form.starting_price) : null,
-        construction_status: form.construction_status || null,
-        finish_type: form.finish_type || null,
-        area_slug: form.area_slug || null,
+        ...payload,
         slug,
         status: "pending",
         active: false,
@@ -127,7 +158,27 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
       setFormOpen(false);
     }
   };
-
+const handleEditProject = (project: Project) => {
+    setForm({
+      name_ar: project.name_ar || "",
+      name_en: project.name_en || "",
+      description_ar: project.description_ar || "",
+      description_en: project.description_en || "",
+      cover_image_url: project.cover_image_url || "",
+      location_ar: project.location_ar || "",
+      location_en: project.location_en || "",
+      delivery_date: project.delivery_date || "",
+      payment_plan_ar: project.payment_plan_ar || "",
+      starting_price: project.starting_price ? String(project.starting_price) : "",
+      construction_status: project.construction_status || "",
+      finish_type: project.finish_type || "",
+      area_slug: project.area_slug || "",
+      images: project.images || [],
+    });
+    setEditingProjectId(project.id);
+    setFormOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const handleDeleteProject = async (id: string) => {
     const confirmed = window.confirm(
       isAr ? "متأكد إنك عايز تمسح المشروع ده؟" : "Are you sure you want to delete this project?"
@@ -162,12 +213,14 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
         </button>
       </div>
 
-      {formOpen && (
+     {formOpen && (
         <div className="bento-card bg-aura-card rounded-3xl border border-aura-border p-5 md:p-6">
           <p className="text-xs text-aura-muted mb-5">
-            {isAr
-              ? "المشروع الجديد هيروح تحت مراجعة الأدمن قبل ما يظهر للعامة"
-              : "The new project will be reviewed by the admin before going live"}
+            {editingProjectId
+              ? (isAr ? "بعد الحفظ، هيروح المشروع لمراجعة الأدمن من جديد" : "After saving, the project will go back for admin review")
+              : (isAr
+                ? "المشروع الجديد هيروح تحت مراجعة الأدمن قبل ما يظهر للعامة"
+                : "The new project will be reviewed by the admin before going live")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -179,7 +232,7 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
               <input type="text" value={form.name_en} onChange={(e) => setForm((p) => ({ ...p, name_en: e.target.value }))} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" dir="ltr" />
             </div>
 
-          <div className="space-y-1.5 relative">
+            <div className="space-y-1.5 relative">
               <label className="text-xs font-medium text-aura-dark">{isAr ? "المنطقة" : "Area"}</label>
               <button
                 type="button"
@@ -257,7 +310,50 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
               </div>
               {form.cover_image_url && <div className="mt-2 h-32 w-full rounded-xl overflow-hidden border border-aura-border"><img src={form.cover_image_url} alt="preview" className="w-full h-full object-cover" /></div>}
             </div>
-
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">
+                {isAr ? `معرض صور إضافي (${form.images.length}/${MAX_IMAGES})` : `Additional Gallery (${form.images.length}/${MAX_IMAGES})`}
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                {form.images.map((img, idx) => (
+                  <div key={idx} className="relative h-20 rounded-xl overflow-hidden border border-aura-border group">
+                    <img src={img} alt={`gallery-${idx}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <HiOutlineXMark className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {form.images.length < MAX_IMAGES && (
+                  <label className="h-20 rounded-xl border border-dashed border-aura-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-aura-accent transition-all text-aura-muted">
+                    {uploadingGallery ? (
+                      <div className="w-4 h-4 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <HiOutlinePlus className="w-4 h-4" />
+                        <span className="text-[10px]">{isAr ? "إضافة" : "Add"}</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingGallery(true);
+                        const url = await uploadImage(file);
+                        setUploadingGallery(false);
+                        if (url) setForm((p) => ({ ...p, images: [...p.images, url] }));
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
             <div className="space-y-1.5 sm:col-span-2">
               <label className="text-xs font-medium text-aura-dark">{isAr ? "وصف المشروع" : "Project Description"}</label>
               <textarea value={form.description_ar} onChange={(e) => setForm((p) => ({ ...p, description_ar: e.target.value }))} rows={3} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
@@ -269,9 +365,23 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
             </div>
           </div>
 
-          <button onClick={handleAddProject} disabled={saving || !form.name_ar} className="mt-5 px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">
-            {saving ? (isAr ? "جاري الإضافة..." : "Adding...") : (isAr ? "إضافة المشروع" : "Add Project")}
-          </button>
+         <div className="flex gap-3 mt-5">
+            <button onClick={handleAddProject} disabled={saving || !form.name_ar} className="px-6 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50">
+              {saving
+                ? (isAr ? "جاري الحفظ..." : "Saving...")
+                : editingProjectId
+                  ? (isAr ? "حفظ التعديلات" : "Save Changes")
+                  : (isAr ? "إضافة المشروع" : "Add Project")}
+            </button>
+            {editingProjectId && (
+              <button
+                onClick={() => { setEditingProjectId(null); setForm(emptyForm); setFormOpen(false); }}
+                className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all"
+              >
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -285,7 +395,7 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
           {projects.map((project) => (
             <div key={project.id} className="bento-card bg-aura-card rounded-3xl overflow-hidden border border-aura-border">
               {project.cover_image_url && <div className="h-36 overflow-hidden"><img src={project.cover_image_url} alt={project.name_ar} className="w-full h-full object-cover" /></div>}
-            <div className="p-4">
+              <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h4 className="text-sm font-medium text-aura-dark">{isAr ? project.name_ar : (project.name_en || project.name_ar)}</h4>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full border text-[10px] font-medium ${statusLabels[project.status].cls}`}>
@@ -308,14 +418,25 @@ const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
                     <span className="text-xs">{project.delivery_date}</span>
                   </div>
                 )}
-                {project.starting_price && (
+             {project.starting_price && (
                   <p className="text-xs font-medium text-aura-accent mb-3">
                     {isAr ? "يبدأ من " : "Starts at "}{project.starting_price.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "جنيه" : "EGP"}
                   </p>
                 )}
-                <button onClick={() => handleDeleteProject(project.id)} className="w-full py-2 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
-                  {isAr ? "حذف المشروع" : "Delete Project"}
-                </button>
+                {project.status === "rejected" && (project as any).rejection_reason && (
+                  <div className="px-3 py-2 rounded-xl bg-red-50 border border-red-100 mb-3">
+                    <p className="text-[11px] text-red-500 font-medium mb-0.5">{isAr ? "سبب الرفض:" : "Rejection reason:"}</p>
+                    <p className="text-[11px] text-red-500">{(project as any).rejection_reason}</p>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button onClick={() => handleEditProject(project)} className="flex-1 py-2 rounded-xl border border-aura-border text-xs text-aura-dark hover:border-aura-accent transition-all">
+                    {isAr ? "تعديل" : "Edit"}
+                  </button>
+                  <button onClick={() => handleDeleteProject(project.id)} className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs hover:bg-red-100 transition-all">
+                    {isAr ? "حذف" : "Delete"}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
