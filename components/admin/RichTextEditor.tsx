@@ -55,7 +55,7 @@ export default function RichTextEditor({ value, onChange, dir = "rtl", placehold
     editorProps: {
       attributes: {
         dir,
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] px-4 py-3 text-aura-dark",
+       class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] px-4 py-3 text-aura-dark [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:mt-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:list-decimal [&_ol]:ps-5 [&_blockquote]:border-s-4 [&_blockquote]:border-aura-accent [&_blockquote]:ps-3 [&_blockquote]:italic [&_a]:text-aura-accent [&_a]:underline",
       },
     },
   });

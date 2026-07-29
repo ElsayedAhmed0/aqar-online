@@ -7,6 +7,8 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { createClient } from "@/lib/supabase/client";
+import SupportChat from "@/components/support/SupportChat";
+import AdminSupportChat from "@/components/support/AdminSupportChat";
 import {
   HiOutlineBars3, HiOutlineXMark,
   HiOutlinePhone, HiOutlineGlobeAlt, HiOutlineHeart,
@@ -21,7 +23,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-const [isAgent, setIsAgent] = useState(false);
+  const [isAgent, setIsAgent] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
   const locale = useLocale();
   const router = useRouter();
@@ -103,7 +105,7 @@ const [isAgent, setIsAgent] = useState(false);
     </a>
   );
 
- const navLinks = [
+  const navLinks = [
     { href: `/${locale}`, label_ar: "الرئيسية", label_en: "Home" },
     { href: `/${locale}/about`, label_ar: "عن عقار", label_en: "About" },
     { href: `/${locale}/properties`, label_ar: "العقارات", label_en: "Properties" },
@@ -155,7 +157,11 @@ const [isAgent, setIsAgent] = useState(false);
               aria-label="Toggle language">
               <HiOutlineGlobeAlt className="w-4 h-4" />
             </button>
-
+          {!isAdmin && <SupportChat userId={user?.id || null} isAr={isAr} />}
+            {/* الدعم الفني — نسخة الأدمن */}
+            {user && isAdmin && (
+              <AdminSupportChat isAr={isAr} />
+            )}
             {/* لو logged in — Desktop */}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
@@ -255,8 +261,8 @@ const [isAgent, setIsAgent] = useState(false);
                 return (
                   <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
                     className={`px-4 py-3 rounded-xl text-sm transition-colors ${isActive
-                        ? "font-medium text-aura-accent bg-aura-accent/5"
-                        : "font-light text-aura-muted hover:text-aura-dark hover:bg-aura-canvas"
+                      ? "font-medium text-aura-accent bg-aura-accent/5"
+                      : "font-light text-aura-muted hover:text-aura-dark hover:bg-aura-canvas"
                       }`}>
                     {isAr ? link.label_ar : link.label_en}
                   </a>
@@ -294,7 +300,7 @@ const [isAgent, setIsAgent] = useState(false);
                     {isAr ? "لوحة الإدارة" : "Admin Panel"}
                   </a>
                 )}
-               {isAgent && (
+                {isAgent && (
                   <a href={`/${locale}/dashboard?tab=profile`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full px-6 py-3 rounded-full text-xs font-medium text-aura-accent border border-aura-accent transition-all duration-300">
                     <MdOutlineAdminPanelSettings className="w-4 h-4" />
                     {isAr ? "أدمن الوسيط" : "Agent Admin"}

@@ -65,7 +65,7 @@ export default function PartnersSection() {
   useEffect(() => {
     const fetchPartners = async () => {
       const supabase = createClient();
-     const { data } = await supabase
+      const { data } = await supabase
         .from("partners")
         .select("*")
         .eq("active", true)
@@ -135,8 +135,8 @@ export default function PartnersSection() {
             </p>
           </div>
 
-          
-           <a href={`/${locale}/developers`}
+
+          <a href={`/${locale}/developers`}
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-aura-dark text-white text-sm font-medium hover:bg-aura-accent transition-all duration-300 shrink-0 hover:-translate-y-0.5 hover:shadow-lg mx-auto md:mx-0"
           >
             {isAr ? "كل الوسطاء" : "All Agents"}
@@ -148,19 +148,18 @@ export default function PartnersSection() {
       {/* حاوية السلايدر — الأسهم على الحواف */}
       <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
         {/* سهم يمين */}
-        <button
+      <button
           onClick={() => scroll(isAr ? "next" : "prev")}
           aria-label={isAr ? "التالي" : "Previous"}
-          className="hidden sm:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+          className="slider-arrow hidden sm:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
         >
           <HiOutlineChevronRight className="w-5 h-5" />
         </button>
 
-        {/* سهم شمال */}
         <button
           onClick={() => scroll(isAr ? "prev" : "next")}
           aria-label={isAr ? "السابق" : "Next"}
-          className="hidden sm:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+          className="slider-arrow hidden sm:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
         >
           <HiOutlineChevronLeft className="w-5 h-5" />
         </button>

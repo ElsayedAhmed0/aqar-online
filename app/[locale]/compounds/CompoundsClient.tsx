@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AREAS } from "@/lib/data/areas";
 import ProjectCard from "@/components/companies/ProjectCard";
+import ComingSoon from "@/components/ui/ComingSoon";
 import { HiOutlineMagnifyingGlass, HiOutlineAdjustmentsHorizontal, HiOutlineXMark } from "react-icons/hi2";
 
 const CONSTRUCTION_OPTIONS = [
@@ -116,9 +117,11 @@ export default function CompoundsClient({
 
           <div className="lg:col-span-9">
             {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-4 bg-aura-card rounded-3xl border border-aura-border">
-                <p className="text-4xl">🏗️</p>
-                <p className="text-aura-muted font-light">{isAr ? "لا توجد مشاريع مطابقة" : "No matching projects"}</p>
+              <div className="bg-aura-card rounded-3xl border border-aura-border">
+                <ComingSoon
+                  title={isAr ? "قريبًا..." : "Coming Soon..."}
+                  subtitle={isAr ? "قسم الكمبوندات والمشاريع جاري تجهيزه، وهيظهر هنا أحدث المشاريع العقارية قريبًا" : "The compounds section is being prepared. The latest real estate projects will appear here soon"}
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">

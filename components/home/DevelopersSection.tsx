@@ -152,10 +152,10 @@ export default function DevelopersSection() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
-        <button
+       <button
           onClick={() => scroll(isAr ? "next" : "prev")}
           aria-label={isAr ? "التالي" : "Previous"}
-          className="hidden sm:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+          className="slider-arrow hidden sm:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
         >
           <HiOutlineChevronRight className="w-5 h-5" />
         </button>
@@ -163,7 +163,7 @@ export default function DevelopersSection() {
         <button
           onClick={() => scroll(isAr ? "prev" : "next")}
           aria-label={isAr ? "السابق" : "Next"}
-          className="hidden sm:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
+          className="slider-arrow hidden sm:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-aura-border bg-aura-card shadow-md items-center justify-center text-aura-dark hover:border-aura-accent hover:text-aura-accent transition-all duration-300"
         >
           <HiOutlineChevronLeft className="w-5 h-5" />
         </button>

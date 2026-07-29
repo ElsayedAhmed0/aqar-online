@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import * as XLSX from "xlsx";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -18,11 +18,12 @@ import {
   HiOutlineCog6Tooth, HiOutlineCheckBadge, HiOutlineMegaphone,
   HiOutlinePhoto, HiOutlineTag, HiOutlineBuildingOffice2,
   HiOutlineNewspaper, HiOutlineInbox, HiOutlineChevronDown,
-  HiOutlineTrash, HiOutlineEllipsisVertical,
+  HiOutlineTrash, HiOutlineEllipsisVertical, HiOutlineChatBubbleLeftRight
 } from "react-icons/hi2";
-import { LuBedDouble, LuBath, LuMaximize } from "react-icons/lu";
+import { LuBedDouble, LuBath, LuMaximize, LuCopy, LuCheck } from "react-icons/lu";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { HiOutlineEye } from "react-icons/hi2";
+
 type Listing = {
   id: string; title_ar: string; title_en: string;
   location_ar: string; location_en: string; price: number;
@@ -820,11 +821,21 @@ export default function AdminPage() {
       (digitsOnly !== "" && u.phone?.replace(/\D/g, "").includes(digitsOnly));
     return matchRole && matchSearch;
   });
-
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const isDraggingTable = useRef(false);
+  const dragStartX = useRef(0);
+  const dragScrollStart = useRef(0);
   const formatPrice = (price: number) =>
     isAr
       ? `${price.toLocaleString("ar-EG")} جنيه`
       : `EGP ${price.toLocaleString("en-US")}`;
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, fieldId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
   const isFeaturedActive = (l: any) =>
     l.featured && (!l.featured_until || new Date(l.featured_until) > new Date());
   if (loading || fetching) {
@@ -893,7 +904,22 @@ export default function AdminPage() {
     { id: "blog", icon: <HiOutlineNewspaper className="w-4 h-4" />, ar: "المقالات", en: "Blog Posts", count: blogPosts.length },
     { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />, ar: "إعدادات الموقع", en: "Site Settings", count: null },
   ];
+  const handleTableMouseDown = (e: React.MouseEvent) => {
+    if (!tableScrollRef.current) return;
+    isDraggingTable.current = true;
+    dragStartX.current = e.pageX;
+    dragScrollStart.current = tableScrollRef.current.scrollLeft;
+  };
 
+  const handleTableMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingTable.current || !tableScrollRef.current) return;
+    const delta = e.pageX - dragStartX.current;
+    tableScrollRef.current.scrollLeft = dragScrollStart.current - delta;
+  };
+
+  const stopTableDragging = () => {
+    isDraggingTable.current = false;
+  };
   const tabs = isFullAdmin
     ? allTabs
     : allTabs.filter((t) => ["listings", "users", "messages", "blog", "settings"].includes(t.id));
@@ -1268,7 +1294,14 @@ export default function AdminPage() {
 
                   {/* ✅ جدول scrollable على الموبايل */}
                   <div className="bg-aura-card rounded-3xl border border-aura-border">
-                    <div className="overflow-x-auto rounded-3xl">
+                    <div
+                      ref={tableScrollRef}
+                      onMouseDown={handleTableMouseDown}
+                      onMouseMove={handleTableMouseMove}
+                      onMouseUp={stopTableDragging}
+                      onMouseLeave={stopTableDragging}
+                      className="overflow-x-auto cursor-grab active:cursor-grabbing select-none"
+                    >
                       <table className="w-full min-w-[700px]" dir={isAr ? "rtl" : "ltr"}>
                         <thead>
                           <tr className="border-b border-aura-border bg-aura-canvas">
@@ -1289,8 +1322,34 @@ export default function AdminPage() {
                                   <span className="text-sm text-aura-dark whitespace-nowrap">{u.full_name || "-"}</span>
                                 </div>
                               </td>
-                              <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.email || "-"}</td>
-                              <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">{u.phone || "-"}</td>
+                              <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">
+                                {u.email ? (
+                                  <div className="flex items-center gap-1.5 group">
+                                    <span>{u.email}</span>
+                                   <button
+                                      onClick={() => copyToClipboard(u.email, `email-${u.id}`)}
+                                      className="shrink-0 text-aura-muted hover:text-aura-accent transition-colors"
+                                      title={isAr ? "نسخ" : "Copy"}
+                                    >
+                                      {copiedField === `email-${u.id}` ? <LuCheck className="w-3.5 h-3.5 text-green-500" /> : <LuCopy className="w-3.5 h-3.5" />}
+                                    </button>
+                                  </div>
+                                ) : "-"}
+                              </td>
+                              <td className="px-4 md:px-6 py-4 text-sm text-aura-muted whitespace-nowrap">
+                                {u.phone ? (
+                                  <div className="flex items-center gap-1.5 group">
+                                    <span>{u.phone}</span>
+                                   <button
+                                      onClick={() => copyToClipboard(u.phone, `phone-${u.id}`)}
+                                      className="shrink-0 text-aura-muted hover:text-aura-accent transition-colors"
+                                      title={isAr ? "نسخ" : "Copy"}
+                                    >
+                                      {copiedField === `phone-${u.id}` ? <LuCheck className="w-3.5 h-3.5 text-green-500" /> : <LuCopy className="w-3.5 h-3.5" />}
+                                    </button>
+                                  </div>
+                                ) : "-"}
+                              </td>
                               <td className="px-4 md:px-6 py-4">
                                 <span className="...">
                                   {u.role === "admin" ? (isAr ? "أدمن" : "Admin") : u.role === "subadmin" ? (isAr ? "مساعد أدمن" : "Sub-admin") : u.role === "agent" ? (isAr ? "وسيط عقاري" : "Agent") : u.role === "developer" ? (isAr ? "مطوّر عقاري" : "Developer") : (isAr ? "مستخدم" : "User")}
@@ -1301,7 +1360,20 @@ export default function AdminPage() {
                               {isFullAdmin && (
                                 <td className="px-4 md:px-6 py-4">
                                   {u.id !== user?.id && (
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-end gap-2">
+                                      <button
+                                        onClick={() => {
+                                          window.dispatchEvent(
+                                            new CustomEvent("admin-open-chat", {
+                                              detail: { userId: u.id, fullName: u.full_name || u.email },
+                                            })
+                                          );
+                                        }}
+                                        className="w-8 h-8 rounded-lg border border-aura-border text-aura-muted hover:text-aura-accent hover:border-aura-accent flex items-center justify-center transition-all shrink-0"
+                                        title={isAr ? "بعت رسالة" : "Send message"}
+                                      >
+                                        <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
+                                      </button>
                                       <button
                                         onClick={(e) => {
                                           if (permissionsMenuOpen === u.id) {
@@ -1321,7 +1393,7 @@ export default function AdminPage() {
                                         <>
                                           <div className="fixed inset-0 z-[100]" onClick={() => setPermissionsMenuOpen(null)} />
                                           <div
-                                            style={{ top: menuPosition.top, left: menuPosition.left }}
+                                            style={{ top: menuPosition.top, left: menuPosition.left + 80 }}
                                             className="fixed w-56 bg-aura-card border border-aura-border rounded-2xl shadow-lg overflow-hidden z-[110]"
                                           >
                                             {u.role === "user" && (
