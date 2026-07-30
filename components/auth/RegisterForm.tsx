@@ -48,11 +48,24 @@ export default function RegisterForm() {
       setError(isAr ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "Password must be at least 8 characters");
       return;
     }
-    setLoading(true);
+   setLoading(true);
     setError("");
 
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
+
+    // ✅ تحقق مسبق: هل الرقم مستخدم بالفعل؟
+    const { data: existingPhone } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("phone", form.phone)
+      .maybeSingle();
+
+    if (existingPhone) {
+      setError(isAr ? "رقم الهاتف ده مسجل بالفعل على حساب تاني" : "This phone number is already registered");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email: form.email,
