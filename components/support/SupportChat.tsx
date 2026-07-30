@@ -155,10 +155,13 @@ export default function SupportChat({ userId, isAr }: { userId: string | null; i
                     {isAr ? "تسجيل الدخول" : "Log In"}
                   </a>
                 </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
-                  <HiOutlineChatBubbleLeftRight className="w-10 h-10 text-aura-accent/30" />
-                  <p className="text-xs text-aura-muted">{isAr ? "ابعت رسالتك الأولى للأدمن" : "Send your first message to the admin"}</p>
+             ) : messages.length === 0 ? (
+                <div className="flex justify-start">
+                  <div className="max-w-[75%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed bg-aura-canvas text-aura-dark rounded-bl-md border border-aura-border">
+                    {isAr
+                      ? "مرحبًا بكم في الدعم الفني الخاص بموقع عقار أونلاين 👋\nممكن نساعدك إزاي؟"
+                      : "Welcome to Aqar Online support 👋\nHow can we help you?"}
+                  </div>
                 </div>
               ) : (
                 messages.map((m) => (
