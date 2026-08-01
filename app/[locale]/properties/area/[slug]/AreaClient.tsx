@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 import PropertiesGrid from "@/components/properties/PropertiesGrid";
 import type { Area } from "@/lib/data/areas";
 
@@ -43,12 +44,28 @@ export default function AreaClient({ area }: { area: Area }) {
     fetch();
   }, [page, area.ar]);
 
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+      label: isAr ? "العقارات" : "Properties",
+      href: `https://www.aqqaronline.com/${locale}/properties`,
+    },
+    {
+      label: isAr ? area.ar : area.en,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
 
       <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
+
+          <Breadcrumb items={breadcrumbItems} isAr={isAr} />
 
           <div className="mb-8 md:mb-10">
             <p className="text-xs tracking-[0.3em] text-aura-accent uppercase mb-4">

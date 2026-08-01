@@ -9,7 +9,10 @@ import PropertyFeatures from "@/components/properties/PropertyFeatures";
 import PropertyInfo from "@/components/properties/PropertyInfo";
 import ContactCard from "@/components/properties/ContactCard";
 import FeaturedBanner from "../FeaturedBanner";
+import Breadcrumb from "@/components/ui/Breadcrumb";
+
 export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
@@ -79,7 +82,7 @@ export default async function PropertyDetailsPage({
 
   if (!property) notFound();
 
-   await supabase.rpc("increment_listing_views", { listing_id: id });
+  await supabase.rpc("increment_listing_views", { listing_id: id });
 
   const { data: similar } = await supabase
     .from("listings")
@@ -92,6 +95,20 @@ export default async function PropertyDetailsPage({
   const isAr = locale === "ar";
   const title = isAr ? property.title_ar : property.title_en;
   const location = isAr ? property.location_ar : property.location_en;
+
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+      label: isAr ? "العقارات" : "Properties",
+      href: `https://www.aqqaronline.com/${locale}/properties`,
+    },
+    {
+      label: title,
+    },
+  ];
 
   // Structured Data JSON-LD
   const jsonLd = {
@@ -116,10 +133,10 @@ export default async function PropertyDetailsPage({
     },
     floorSize: property.area
       ? {
-          "@type": "QuantitativeValue",
-          value: property.area,
-          unitCode: "MTK",
-        }
+        "@type": "QuantitativeValue",
+        value: property.area,
+        unitCode: "MTK",
+      }
       : undefined,
     numberOfRooms: property.beds || undefined,
     provider: {
@@ -140,13 +157,9 @@ export default async function PropertyDetailsPage({
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
+        <Breadcrumb items={breadcrumbItems} isAr={isAr} />
+
         <div className="mb-8">
-          
-            <a href={`/${locale}`}
-            className="flex items-center gap-2 text-xs text-aura-muted hover:text-aura-accent transition-colors mb-6 w-fit"
-          >
-            ← {isAr ? "العودة للرئيسية" : "Back to Home"}
-          </a>
           <h1 className="text-4xl md:text-5xl font-light text-aura-dark">
             {title}
           </h1>

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DeveloperHero from "@/components/developers/DeveloperHero";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 import DeveloperPropertiesClient from "./DeveloperPropertiesClient";
 
 export async function generateMetadata({
@@ -66,9 +67,28 @@ export default async function DeveloperPage({
 
   if (!partner) notFound();
 
+  const name = isAr ? partner.name : partner.name_en || partner.name;
+
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+       label: isAr ? "وسيط عقاري" : "Broker",
+      href: `https://www.aqqaronline.com/${locale}/developers`,
+    },
+    {
+      label: name,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8">
+        <Breadcrumb items={breadcrumbItems} isAr={isAr} />
+      </div>
       <DeveloperHero partner={partner} isAr={isAr} />
       <DeveloperPropertiesClient partner={partner} isAr={isAr} locale={locale} />
       <Footer />

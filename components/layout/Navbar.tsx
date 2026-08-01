@@ -240,7 +240,7 @@ export default function Navbar() {
       {/* ✅ Mobile Menu — بيطلع من اليمين للـ RTL ومن الشمال للـ LTR */}
       <div className={`fixed inset-0 z-50 transition-all duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         <div className="absolute inset-0 bg-aura-dark/40 backdrop-blur-md" onClick={() => setMobileOpen(false)} />
-        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-full bg-aura-card p-6 flex flex-col justify-between transition-transform duration-300 ${mobileOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
+        <div className={`absolute top-0 ${isAr ? "right-0" : "left-0"} w-[85vw] max-w-sm h-[100dvh] bg-aura-card p-6 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ${mobileOpen ? "translate-x-0" : isAr ? "translate-x-full" : "-translate-x-full"
           }`}>
 
           {/* الجزء العلوي */}

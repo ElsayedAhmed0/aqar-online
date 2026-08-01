@@ -6,7 +6,9 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 import { HiOutlineClock, HiOutlineTag, HiOutlineArrowRight } from "react-icons/hi2";
+
 
 type BlogPost = {
   id: string;
@@ -74,12 +76,28 @@ export default function BlogPostPage() {
     );
   }
 
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+      label: isAr ? "المقالات" : "Blog",
+      href: `https://www.aqqaronline.com/${locale}/blog`,
+    },
+    {
+      label: isAr ? post.title_ar : post.title_en,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
 
       <article className="py-16 lg:py-24 px-6 lg:px-12">
         <div className="max-w-4xl mx-auto">
+
+          <Breadcrumb items={breadcrumbItems} isAr={isAr} />
 
           {/* رجوع */}
           <a href={`/${locale}/blog`} className="flex items-center gap-2 text-sm text-aura-muted hover:text-aura-dark transition-colors mb-8 w-fit">

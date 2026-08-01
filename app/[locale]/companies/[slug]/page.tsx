@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CompanyHero from "@/components/companies/CompanyHero";
 import ProjectCard from "@/components/companies/ProjectCard";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export async function generateMetadata({
   params,
@@ -70,9 +71,28 @@ export default async function CompanyPage({
     .eq("active", true)
     .order("created_at", { ascending: false });
 
+  const name = isAr ? developer.name : developer.name_en || developer.name;
+
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+      label: isAr ? "المطورين" : "Developers",
+      href: `https://www.aqqaronline.com/${locale}/developers`,
+    },
+    {
+      label: name,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-8">
+        <Breadcrumb items={breadcrumbItems} isAr={isAr} />
+      </div>
       <CompanyHero developer={developer} isAr={isAr} />
 
       <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-12">

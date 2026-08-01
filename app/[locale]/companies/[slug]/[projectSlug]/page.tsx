@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 import { AREAS } from "@/lib/data/areas";
 import { HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBanknotes, HiOutlineBuildingOffice2 } from "react-icons/hi2";
 
@@ -74,11 +75,36 @@ export default async function ProjectDetailsPage({
   const constructionLabel = (project as any).construction_status ? CONSTRUCTION_LABELS[(project as any).construction_status] : null;
   const finishLabel = (project as any).finish_type ? FINISH_LABELS[(project as any).finish_type] : null;
 
+  const developerName = developer ? (isAr ? developer.name : developer.name_en || developer.name) : "";
+
+  const breadcrumbItems = [
+    {
+      label: isAr ? "الرئيسية" : "Home",
+      href: `https://www.aqqaronline.com/${locale}`,
+    },
+    {
+      label: isAr ? "المطورين" : "Developers",
+      href: `https://www.aqqaronline.com/${locale}/developers`,
+    },
+    ...(developer
+      ? [
+          {
+            label: developerName,
+            href: `https://www.aqqaronline.com/${locale}/companies/${developer.slug}`,
+          },
+        ]
+      : []),
+    {
+      label: name,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-aura-bg">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12">
+        <Breadcrumb items={breadcrumbItems} isAr={isAr} />
 
         {/* صورة الغلاف */}
         <div className="relative h-64 md:h-96 w-full rounded-3xl overflow-hidden mb-8">
