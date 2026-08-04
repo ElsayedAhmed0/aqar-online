@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
-import { HiOutlineChatBubbleLeftRight, HiOutlineXMark, HiOutlinePaperAirplane, HiOutlineArrowLeft } from "react-icons/hi2";
+import { uploadToCloudinary } from "@/lib/utils/compressImage";
+import { HiOutlineChatBubbleLeftRight, HiOutlineXMark, HiOutlinePaperAirplane, HiOutlineArrowLeft, HiOutlinePhoto } from "react-icons/hi2";
 
 type Message = {
   id: string;
   user_id: string;
   sender: "user" | "admin";
   message: string;
+  image_url?: string | null;
   read_by_admin: boolean;
   read_by_user: boolean;
   created_at: string;
@@ -32,8 +34,10 @@ export default function AdminSupportChat({ isAr }: { isAr: boolean }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [totalUnread, setTotalUnread] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -179,6 +183,26 @@ const [directUserName, setDirectUserName] = useState<string | null>(null);
     }
   };
 
+  const handleImageSend = async (file: File | undefined) => {
+    if (!file || !activeUserId) return;
+    if (!file.type.startsWith("image/")) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      const supabase = createClient();
+      await supabase.from("support_messages").insert({
+        user_id: activeUserId,
+        sender: "admin",
+        message: isAr ? "📷 صورة" : "📷 Image",
+        image_url: url,
+      });
+      fetchMessages(activeUserId);
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const roleLabel = (role: string) => {
     if (role === "agent") return isAr ? "وسيط" : "Agent";
     if (role === "developer") return isAr ? "مطوّر" : "Developer";
@@ -263,6 +287,11 @@ const [directUserName, setDirectUserName] = useState<string | null>(null);
                   {messages.map((m) => (
                     <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${m.sender === "admin" ? "bg-aura-accent text-white rounded-br-md" : "bg-aura-canvas text-aura-dark rounded-bl-md border border-aura-border"}`}>
+                        {m.image_url && (
+                          <a href={m.image_url} target="_blank" rel="noopener noreferrer">
+                            <img src={m.image_url} alt="" className="rounded-lg mb-1.5 max-w-full max-h-40 object-cover" />
+                          </a>
+                        )}
                         {m.message}
                         <p className={`text-[9px] mt-1 ${m.sender === "admin" ? "text-white/70" : "text-aura-muted"}`}>
                           {new Date(m.created_at).toLocaleTimeString(isAr ? "ar-EG" : "en-US", { hour: "2-digit", minute: "2-digit" })}
@@ -272,6 +301,19 @@ const [directUserName, setDirectUserName] = useState<string | null>(null);
                   ))}
                 </div>
                 <div className="p-3 border-t border-aura-border flex items-center gap-2">
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageSend(e.target.files?.[0])} />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="w-10 h-10 rounded-full border border-aura-border text-aura-muted hover:text-aura-accent hover:border-aura-accent flex items-center justify-center disabled:opacity-50 shrink-0 transition-colors"
+                    aria-label={isAr ? "إرفاق صورة" : "Attach image"}
+                  >
+                    {uploadingImage ? (
+                      <div className="w-4 h-4 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <HiOutlinePhoto className="w-4 h-4" />
+                    )}
+                  </button>
                   <input
                     type="text"
                     value={input}
