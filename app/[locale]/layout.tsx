@@ -39,8 +39,8 @@ export const metadata: Metadata = {
   other: {
     google: "notranslate",
   },
-  verification: {
-    google: "TyKS8blYgP3M25I",
+ verification: {
+    google: ["TyKS8blYgP3M25I", "uWK4TDZvpniKKL2t4X9OO4hk8ckb9lzWyyYKMwcM7yc"],
   },
   icons: {
     icon: "/favicon.svg",
