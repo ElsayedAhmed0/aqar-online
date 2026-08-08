@@ -10,6 +10,7 @@ import PropertyInfo from "@/components/properties/PropertyInfo";
 import ContactCard from "@/components/properties/ContactCard";
 import FeaturedBanner from "../FeaturedBanner";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export default async function PropertyDetailsPage({
 }: {
   params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id, locale } = await params;
+const { id, locale } = await params;
   const supabase = await createClient();
 
   const { data: property } = await supabase
@@ -82,15 +83,26 @@ export default async function PropertyDetailsPage({
 
   if (!property) notFound();
 
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+  if (PACKAGES_SYSTEM_ENABLED) {
+    const isExpired = property.archived || new Date(property.cycle_start_at || property.created_at) < ninetyDaysAgo;
+    if (isExpired) notFound();
+  }
+
   await supabase.rpc("increment_listing_views", { listing_id: id });
 
-  const { data: similar } = await supabase
+  let similarQuery = supabase
     .from("listings")
     .select("*")
     .eq("status", "approved")
     .eq("type", property.type)
-    .neq("id", id)
-    .limit(3);
+    .neq("id", id);
+
+  if (PACKAGES_SYSTEM_ENABLED) {
+    similarQuery = similarQuery.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo.toISOString());
+  }
+
+  const { data: similar } = await similarQuery.limit(3);
 
   const isAr = locale === "ar";
   const title = isAr ? property.title_ar : property.title_en;

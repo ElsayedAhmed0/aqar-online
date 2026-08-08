@@ -9,6 +9,7 @@ import { useListings } from "@/context/ListingsContext";
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
 import { useCustomAreas } from "@/lib/hooks/useCustomAreas";
 import { createClient } from "@/lib/supabase/client";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 import { emptyListingForm, type ListingFormData } from "@/lib/types/listing";
 import {
   HiOutlineHome, HiOutlineMapPin, HiOutlineCurrencyDollar,
@@ -63,6 +64,15 @@ export default function AddListingForm() {
   const isAr = locale === "ar";
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [limitInfo, setLimitInfo] = useState<{
+    maxListings: number;
+    maxFeatured: number;
+    packageName: string;
+    listingCount: number;
+    featuredCount: number;
+  } | null>(null);
+  const [limitLoading, setLimitLoading] = useState(true);
+  const [requestFeatured, setRequestFeatured] = useState(false);
   const { addListing } = useListings();
   const { types: propertyTypes, loading: typesLoading } = usePropertyTypes();
   const { areas: customAreas } = useCustomAreas();
@@ -165,6 +175,76 @@ export default function AddListingForm() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    if (!PACKAGES_SYSTEM_ENABLED) {
+      setLimitInfo(null);
+      setLimitLoading(false);
+      return;
+    }
+    const loadLimit = async () => {
+      setLimitLoading(true);
+      const supabase = createClient();
+
+      // هل عنده اشتراك مدفوع مفعّل؟
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("*, packages(*)")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("activated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let maxListings = 5;
+      let maxFeatured = 0;
+      let packageName = isAr ? "مجانية" : "Free";
+      let cycleStart: Date;
+
+      const now = new Date();
+
+      if (sub && sub.packages && sub.activated_at) {
+        const activatedAt = new Date(sub.activated_at);
+        const durationDays = sub.duration_days || 30;
+        const expiresAt = new Date(activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+        if (now < expiresAt) {
+          maxListings = sub.packages.max_listings;
+          maxFeatured = sub.packages.max_featured;
+          packageName = isAr ? sub.packages.name_ar : (sub.packages.name_en || sub.packages.name_ar);
+          cycleStart = activatedAt;
+        } else {
+          cycleStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+      } else {
+        cycleStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      const { count: listingCount } = await supabase
+        .from("listings")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", cycleStart.toISOString());
+
+      const { count: featuredCount } = await supabase
+        .from("listings")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("featured", true)
+        .gte("created_at", cycleStart.toISOString());
+
+      setLimitInfo({
+        maxListings,
+        maxFeatured,
+        packageName,
+        listingCount: listingCount || 0,
+        featuredCount: featuredCount || 0,
+      });
+      setLimitLoading(false);
+    };
+    loadLimit();
+  }, [user, isAr]);
+
   const update = (fields: Partial<ListingFormData>) => {
     setForm((prev) => ({ ...prev, ...fields }));
     setError("");
@@ -251,7 +331,7 @@ export default function AddListingForm() {
         img: form.images[0],
         images: [],
         phone: form.phone.trim(),
-        featured: false,
+        featured: !!(requestFeatured && limitInfo && limitInfo.featuredCount < limitInfo.maxFeatured),
         status: "pending",
         negotiable,
         features: selectedFeatures,
@@ -296,7 +376,7 @@ export default function AddListingForm() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (loading || !user) {
+  if (loading || !user || limitLoading) {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
@@ -304,8 +384,34 @@ export default function AddListingForm() {
     );
   }
 
-  const inputCls = "w-full px-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50";
+  if (limitInfo && limitInfo.listingCount >= limitInfo.maxListings) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20 px-6">
+        <div className="w-16 h-16 rounded-2xl bg-aura-accent/10 flex items-center justify-center mx-auto mb-6">
+          <HiOutlineSparkles className="w-8 h-8 text-aura-accent" />
+        </div>
+        <h3 className="text-lg font-medium text-aura-dark mb-2">
+          {isAr ? "وصلت للحد الأقصى من إعلاناتك" : "You've reached your listing limit"}
+        </h3>
+        <p className="text-sm text-aura-muted mb-1">
+          {isAr
+            ? `باقتك الحالية (${limitInfo.packageName}) بتسمح بـ ${limitInfo.maxListings} إعلان في الدورة الحالية.`
+            : `Your current plan (${limitInfo.packageName}) allows ${limitInfo.maxListings} listings this cycle.`}
+        </p>
+        <p className="text-sm text-aura-muted mb-8">
+          {isAr ? "اشترك في باقة أعلى عشان تقدر تضيف إعلانات جديدة." : "Subscribe to a higher plan to add more listings."}
+        </p>
 
+        <a href={`/${locale}/packages`}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-aura-accent text-white text-sm font-medium hover:bg-aura-dark transition-all duration-300"
+        >
+          {isAr ? "شوف باقات الاشتراك" : "View Subscription Plans"}
+        </a>
+      </div>
+    );
+  }
+
+  const inputCls = "w-full px-4 py-3.5 rounded-2xl border border-aura-border bg-white text-aura-dark text-sm outline-none focus:border-aura-accent focus:ring-4 focus:ring-aura-accent/10 transition-all duration-300 placeholder:text-aura-muted/50";
   const EnToggle = ({ show, onShow, label }: { show: boolean; onShow: () => void; label: string }) =>
     !show ? (
       <button type="button" onClick={onShow}
@@ -384,7 +490,7 @@ export default function AddListingForm() {
           {/* ── المعلومات الأساسية ── */}
           {activeSection === "basic" && (
             <div className="space-y-4">
-           <div className="space-y-1.5">
+              <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان *" : "Title *"}</label>
                 <input type="text" value={form.title_ar} maxLength={90} onChange={(e) => update({ title_ar: e.target.value })}
                   placeholder={isAr ? "مثال: شقة فاخرة بالتجمع الخامس" : "e.g. Luxury apartment in New Cairo"} className={inputCls} />
@@ -527,6 +633,35 @@ export default function AddListingForm() {
                   <p className="text-xs text-aura-muted">{isAr ? "سيظهر بادج على إعلانك" : "A badge will appear on your listing"}</p>
                 </div>
               </button>
+
+              {PACKAGES_SYSTEM_ENABLED && limitInfo && limitInfo.maxFeatured > 0 && limitInfo.featuredCount < limitInfo.maxFeatured ? (
+                <button type="button" onClick={() => setRequestFeatured(!requestFeatured)}
+                  className={`flex items-center gap-3 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${requestFeatured ? "border-aura-accent bg-aura-accent/5" : "border-aura-border hover:border-aura-accent/40"}`}>
+                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${requestFeatured ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
+                    {requestFeatured && <HiOutlineCheck className="w-3 h-3 text-white" />}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-aura-dark">{isAr ? "اجعل الإعلان مميزًا" : "Make this listing featured"}</p>
+                    <p className="text-xs text-aura-muted">
+                      {isAr
+                        ? `متبقي لك ${limitInfo.maxFeatured - limitInfo.featuredCount} من ${limitInfo.maxFeatured} إعلان مميز في باقتك`
+                        : `${limitInfo.maxFeatured - limitInfo.featuredCount} of ${limitInfo.maxFeatured} featured slots remaining in your plan`}
+                    </p>
+                  </div>
+                </button>
+              ) : PACKAGES_SYSTEM_ENABLED && limitInfo && limitInfo.maxFeatured > 0 ? (
+                <p className="text-xs text-aura-muted px-1">
+                  {isAr ? "استخدمت كل الإعلانات المميزة المتاحة في باقتك لهذه الدورة." : "You've used all featured slots in your plan for this cycle."}
+                </p>
+              ) : PACKAGES_SYSTEM_ENABLED ? (
+                <a href={`/${locale}/packages`} className="flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-dashed border-aura-border hover:border-aura-accent/40 transition-all duration-300">
+                  <HiOutlineSparkles className="w-5 h-5 text-aura-accent shrink-0" />
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-aura-dark">{isAr ? "عايز إعلانك يكون مميز؟" : "Want your listing featured?"}</p>
+                    <p className="text-xs text-aura-muted">{isAr ? "اشترك في باقة تدعم الإعلانات المميزة" : "Subscribe to a plan that supports featured listings"}</p>
+                  </div>
+                </a>
+              ) : null}
 
               {/* ✅ Custom Fields */}
               <div className="space-y-3">

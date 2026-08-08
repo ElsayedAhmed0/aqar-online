@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import PropertiesClient from "./PropertiesClient";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 
 export async function generateMetadata({
   params,
@@ -50,10 +51,17 @@ export async function generateMetadata({
 
 export default async function PropertiesPage() {
   const supabase = await createClient();
-  const { data: initialProperties, count: initialTotal } = await supabase
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  let query = supabase
     .from("listings")
     .select("*", { count: "exact" })
-    .eq("status", "approved")
+    .eq("status", "approved");
+
+  if (PACKAGES_SYSTEM_ENABLED) {
+    query = query.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo);
+  }
+
+  const { data: initialProperties, count: initialTotal } = await query
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false })
     .range(0, 8);

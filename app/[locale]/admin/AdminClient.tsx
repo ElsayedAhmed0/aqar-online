@@ -1047,7 +1047,29 @@ export default function AdminPage() {
                   </button>
                 )
               ))}
+
+              {/* ── روابط صفحات منفصلة (باقات الاشتراك) ── */}
+              <div className="w-full border-t border-aura-border mt-2 pt-2 space-y-1">
+                <a href={`/${locale}/admin/packages`}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                  {isAr ? "إدارة الباقات" : "Manage Packages"}
+                </a>
+                <a href={`/${locale}/admin/subscriptions`}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                  {isAr ? "طلبات الاشتراك" : "Subscriptions"}
+                </a>
+                <a href={`/${locale}/admin/archive`}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                  {isAr ? "أرشيف الإعلانات" : "Listings Archive"}
+                </a>
+                {/* <a href={`/${locale}/admin/profile-views`}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                  {isAr ? "زوار البروفايلات" : "Profile Visitors"}
+                </a> */}
+              </div>
             </div>
+
+            {/* محتوى التاب النشط */}
 
             {/* محتوى التاب النشط */}
             <div className="flex-1 min-w-0">
@@ -1326,7 +1348,7 @@ export default function AdminPage() {
                                 {u.email ? (
                                   <div className="flex items-center gap-1.5 group">
                                     <span>{u.email}</span>
-                                   <button
+                                    <button
                                       onClick={() => copyToClipboard(u.email, `email-${u.id}`)}
                                       className="shrink-0 text-aura-muted hover:text-aura-accent transition-colors"
                                       title={isAr ? "نسخ" : "Copy"}
@@ -1340,7 +1362,7 @@ export default function AdminPage() {
                                 {u.phone ? (
                                   <div className="flex items-center gap-1.5 group">
                                     <span>{u.phone}</span>
-                                   <button
+                                    <button
                                       onClick={() => copyToClipboard(u.phone, `phone-${u.id}`)}
                                       className="shrink-0 text-aura-muted hover:text-aura-accent transition-colors"
                                       title={isAr ? "نسخ" : "Copy"}

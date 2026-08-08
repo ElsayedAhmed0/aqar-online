@@ -6,6 +6,7 @@ import { FaFacebookF, FaInstagram, FaWhatsapp, FaTiktok } from "react-icons/fa6"
 import { useSettings } from "@/lib/hooks/useSettings";
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
 import { AREAS } from "@/lib/data/areas";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 
 const POPULAR_SLUGS = ["new-cairo", "sheikh-zayed", "new-capital", "north-coast", "maadi", "nasr-city", "6-october", "heliopolis"];
 const POPULAR_AREAS = AREAS.filter((a) => POPULAR_SLUGS.includes(a.slug));
@@ -30,6 +31,7 @@ export default function Footer() {
     { label_ar: "المقالات", label_en: "Blog", href: `/${locale}/blog` },
     { label_ar: "اتصل بنا", label_en: "Contact", href: `/${locale}/contact` },
     { label_ar: "أضف إعلانك", label_en: "Add Listing", href: `/${locale}/add-listing` },
+    ...(PACKAGES_SYSTEM_ENABLED ? [{ label_ar: "باقات الاشتراك", label_en: "Subscription Plans", href: `/${locale}/packages` }] : []),
   ];
 
   return (

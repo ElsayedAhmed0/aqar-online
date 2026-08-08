@@ -99,6 +99,12 @@ export default function SupportChat({ userId, isAr }: { userId: string | null; i
     }
   };
 
+  useEffect(() => {
+    const handleOpenEvent = () => handleOpen();
+    window.addEventListener("open-support-chat", handleOpenEvent);
+    return () => window.removeEventListener("open-support-chat", handleOpenEvent);
+  }, [unreadCount, userId]);
+
   const handleSend = async () => {
     if (!input.trim() || !userId) return;
     setSending(true);

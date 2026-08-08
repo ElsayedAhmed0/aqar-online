@@ -9,6 +9,7 @@ import Footer from "@/components/layout/Footer";
 import PropertiesGrid from "@/components/properties/PropertiesGrid";
 import SideAds from "@/components/home/SideAds";
 import PropertiesFilter from "@/components/properties/PropertyFilter";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 import { HiOutlineAdjustmentsHorizontal, HiOutlineXMark } from "react-icons/hi2";
 
 const ITEMS_PER_PAGE = 10;
@@ -49,11 +50,17 @@ export default function PropertiesClient({
       setLoading(true);
       const supabase = createClient();
 
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
       let query = supabase
         .from("listings")
         .select("*", { count: "exact" })
         .eq("status", "approved")
         .lte("price", maxPrice);
+
+      if (PACKAGES_SYSTEM_ENABLED) {
+        query = query.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo);
+      }
 
       if (activeType !== "all") query = query.eq("type", activeType);
       if (purpose !== "all") query = query.eq("purpose", purpose);

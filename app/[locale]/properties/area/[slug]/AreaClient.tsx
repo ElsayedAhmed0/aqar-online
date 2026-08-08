@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import PropertiesGrid from "@/components/properties/PropertiesGrid";
 import type { Area } from "@/lib/data/areas";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -27,12 +28,19 @@ export default function AreaClient({ area }: { area: Area }) {
       setLoading(true);
       const supabase = createClient();
 
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
       const from = (page - 1) * ITEMS_PER_PAGE;
-      const { data, count } = await supabase
+      let listingsQuery = supabase
         .from("listings")
         .select("*", { count: "exact" })
         .eq("status", "approved")
-        .eq("location_ar", area.ar)
+        .eq("location_ar", area.ar);
+
+      if (PACKAGES_SYSTEM_ENABLED) {
+        listingsQuery = listingsQuery.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo);
+      }
+
+      const { data, count } = await listingsQuery
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
         .range(from, from + ITEMS_PER_PAGE - 1);
