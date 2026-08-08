@@ -14,6 +14,9 @@ export async function generateMetadata({
     description: isAr
       ? "أحدث المقالات والنصائح العقارية — اتجاهات السوق، نصائح الشراء، دليل الاستثمار العقاري في مصر"
       : "Latest real estate articles and tips — market trends, buying guides, and investment advice for Egypt's property market",
+    keywords: isAr
+      ? ["مدونة عقارية", "نصائح شراء عقار", "استثمار عقاري في مصر", "اتجاهات سوق العقارات", "دليل شراء شقة", "دليل شراء فيلا", "أخبار العقارات في مصر", "عقار أونلاين"]
+      : ["real estate blog", "property buying tips", "Egypt real estate investment", "property market trends", "Aqar Online"],
     alternates: {
       canonical: `/${locale}/blog`,
       languages: { ar: "/ar/blog", en: "/en/blog" },
@@ -25,6 +28,12 @@ export async function generateMetadata({
       siteName: isAr ? "عقار أونلاين" : "Aqar Online",
       locale: isAr ? "ar_EG" : "en_US",
       type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
     },
   };
 }

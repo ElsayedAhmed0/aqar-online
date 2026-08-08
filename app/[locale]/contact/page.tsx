@@ -15,6 +15,9 @@ export async function generateMetadata({
     description: isAr
       ? "تواصل مع فريق عقار أونلاين — نحن في التجمع الخامس، القاهرة. فريقنا جاهز لمساعدتك في إيجاد عقارك المثالي"
       : "Get in touch with the Aqar Online team — located in New Cairo. Our team is ready to help you find your perfect property",
+    keywords: isAr
+      ? ["اتصل بعقار أونلاين", "تواصل معنا", "خدمة عملاء عقارية", "عقار أونلاين"]
+      : ["contact Aqar Online", "get in touch", "real estate customer support", "Aqar Online"],
     alternates: {
       canonical: `/${locale}/contact`,
       languages: {
@@ -31,6 +34,12 @@ export async function generateMetadata({
       siteName: isAr ? "عقار أونلاين" : "Aqar Online",
       locale: isAr ? "ar_EG" : "en_US",
       type: "website",
+      images: [{
+        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        width: 1200,
+        height: 630,
+        alt: isAr ? "عقار أونلاين" : "Aqar Online",
+      }],
     },
   };
 }

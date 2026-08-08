@@ -13,10 +13,13 @@ export async function generateMetadata({
   const isAr = locale === "ar";
 
   return {
-    title: isAr ? "كل المطورين العقاريين" : "All Developers",
+   title: isAr ? "كل المطورين العقاريين" : "All Developers",
     description: isAr
       ? "تصفح كل شركات التطوير العقاري ومشاريعها على عقار أونلاين"
       : "Browse all real estate development companies and their projects on Aqar Online",
+    keywords: isAr
+      ? ["شركات تطوير عقاري في مصر", "مطورين عقاريين مصر", "شركات عقارية", "مشاريع عقارية جديدة", "عقار أونلاين"]
+      : ["real estate developers Egypt", "development companies", "new real estate projects", "Aqar Online"],
     alternates: {
       canonical: `/${locale}/companies`,
       languages: { ar: `/ar/companies`, en: `/en/companies` },
