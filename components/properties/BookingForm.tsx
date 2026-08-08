@@ -17,8 +17,8 @@ function ContactReveal({ property, isAr }: { property: any; isAr: boolean }) {
 
   const waMsg = encodeURIComponent(
     isAr
-      ? `مرحباً، أنا مهتم بالعقار: ${property.title_ar}`
-      : `Hello, I'm interested in the property: ${property.title_en}`
+      ? `مرحباً 👋 أنا مهتم بالعقار: ${property.title_ar}\nشاهدت الإعلان على موقع عقار أونلاين (Aqqar Online)\nرقم الإعلان: #${property.listing_number || ""}`
+      : `Hello 👋 I'm interested in the property: ${property.title_en}\nI saw this listing on Aqqar Online\nListing #: ${property.listing_number || ""}`
   );
 
   return (

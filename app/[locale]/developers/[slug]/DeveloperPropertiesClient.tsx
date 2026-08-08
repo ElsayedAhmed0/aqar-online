@@ -198,7 +198,11 @@ export default function DeveloperPropertiesClient({
                 <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-aura-border">
                   {partner.whatsapp && (
                     
-                      <a href={`https://wa.me/${partner.whatsapp.replace(/\D/g, "")}`}
+                      <a href={`https://wa.me/${partner.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+                        isAr
+                          ? `مرحباً 👋 أنا مهتم بالتواصل معك\nشاهدت صفحتك على موقع عقار أونلاين (Aqqar Online)`
+                          : `Hello 👋 I'd like to get in touch\nI saw your page on Aqqar Online`
+                      )}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-10 h-10 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-green-600 hover:border-green-600 transition-all duration-300"

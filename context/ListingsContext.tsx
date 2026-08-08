@@ -237,9 +237,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           phone: listing.phone,
           negotiable: (listing as any).negotiable || false,
           features: (listing as any).features || [],
-          delivery_status: (listing as any).delivery_status || "ready",
+        delivery_status: (listing as any).delivery_status || "ready",
           whatsapp: (listing as any).whatsapp || null,
           custom_fields: (listing as any).custom_fields || [],
+          status: "pending",
         })
         .eq("id", id)
         .eq("user_id", user.id) // ✅ حماية إضافية: مايعدلش إلا إعلانه هو بس

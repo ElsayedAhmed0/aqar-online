@@ -42,7 +42,7 @@ export default function DashboardPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"listings" | "profile">(
+  const [activeTab, setActiveTab] = useState<"listings" | "profile" | "myListings">(
     searchParams.get("tab") === "profile" ? "profile" : "listings"
   );
   const [role, setRole] = useState<string | null>(null);
@@ -228,6 +228,15 @@ export default function DashboardPage() {
               >
                 {role === "developer" ? (isAr ? "مشاريعي" : "My Projects") : (isAr ? "إعلاناتي" : "My Listings")}
               </button>
+              {role === "developer" && (
+                <button
+                  onClick={() => setActiveTab("myListings")}
+                  className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${activeTab === "myListings" ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"
+                    }`}
+                >
+                  {isAr ? "إعلاناتي" : "My Listings"}
+                </button>
+              )}
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${activeTab === "profile" ? "bg-aura-dark text-white" : "text-aura-muted hover:text-aura-dark"
@@ -250,7 +259,7 @@ export default function DashboardPage() {
             <MyProjectsManager developerId={developerRecord.id} isAr={isAr} />
           )}
 
-          {(roleLoading || (role !== "agent" && role !== "developer") || (role === "agent" && activeTab === "listings")) && (
+          {(roleLoading || (role !== "agent" && role !== "developer") || (role === "agent" && activeTab === "listings") || (role === "developer" && activeTab === "myListings")) && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
               {/* فلاتر — ديسكتوب فقط */}

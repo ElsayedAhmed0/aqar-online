@@ -201,7 +201,11 @@ export default async function ProjectDetailsPage({
                     </a>
                   )}
                   {developer.whatsapp && (
-                    <a href={`https://wa.me/${developer.whatsapp.replace(/\D/g, "")}`} target="_blank" className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-aura-border text-aura-dark text-sm font-medium hover:border-aura-accent transition-all duration-300">
+                    <a href={`https://wa.me/${developer.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+                      isAr
+                        ? `مرحباً 👋 أنا مهتم بمشروع: ${project.name_ar}\nشاهدت المشروع على موقع عقار أونلاين (Aqqar Online)`
+                        : `Hello 👋 I'm interested in the project: ${project.name_en || project.name_ar}\nI saw this project on Aqqar Online`
+                    )}`} target="_blank" className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-aura-border text-aura-dark text-sm font-medium hover:border-aura-accent transition-all duration-300">
                       {isAr ? "واتساب" : "WhatsApp"}
                     </a>
                   )}
