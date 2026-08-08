@@ -36,6 +36,7 @@ export default function PackagesClient() {
   const [packages, setPackages] = useState<Pkg[]>([]);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState<string | null>(null);
+  const [activeSub, setActiveSub] = useState<{ packageId: string; daysLeft: number } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -50,6 +51,33 @@ export default function PackagesClient() {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadActiveSub = async () => {
+      const supabase = createClient();
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("package_id, activated_at, duration_days")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("activated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (sub && sub.activated_at) {
+        const activatedAt = new Date(sub.activated_at);
+        const durationDays = sub.duration_days || 30;
+        const expiresAt = new Date(activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        if (now < expiresAt) {
+          const daysLeft = Math.max(1, Math.ceil((expiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)));
+          setActiveSub({ packageId: sub.package_id, daysLeft });
+        }
+      }
+    };
+    loadActiveSub();
+  }, [user]);
 
   const handleSubscribe = async (pkg: Pkg) => {
     if (!user) {
@@ -103,12 +131,18 @@ export default function PackagesClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {packages.map((pkg) => {
                 const features = isAr ? pkg.features_ar : pkg.features_en;
+                const isCurrent = activeSub?.packageId === pkg.id;
+                const isDefaultFree = pkg.is_free && !activeSub;
                 return (
                   <div
                     key={pkg.id}
-                    className={`relative rounded-3xl border-2 p-6 md:p-8 flex flex-col ${pkg.featured ? "border-aura-accent bg-aura-accent/5 shadow-lg" : "border-aura-border bg-aura-card"}`}
+                    className={`relative rounded-3xl border-2 p-6 md:p-8 flex flex-col ${isCurrent ? "border-green-500 bg-green-50/50 shadow-lg" : pkg.featured ? "border-aura-accent bg-aura-accent/5 shadow-lg" : "border-aura-border bg-aura-card"}`}
                   >
-                    {pkg.featured && (
+                    {isCurrent ? (
+                      <span className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-green-500 text-white text-[10px] font-medium">
+                        {isAr ? "باقتك الحالية" : "Your Current Plan"}
+                      </span>
+                    ) : pkg.featured && (
                       <span className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-aura-accent text-white text-[10px] font-medium">
                         {isAr ? "الأكثر طلبًا" : "Most Popular"}
                       </span>
@@ -125,17 +159,29 @@ export default function PackagesClient() {
                         </li>
                       ))}
                     </ul>
-                    <button
-                      onClick={() => handleSubscribe(pkg)}
-                      disabled={pkg.is_free || requesting === pkg.id}
-                      className={`w-full py-3 rounded-2xl text-sm font-medium transition-all duration-300 disabled:opacity-50 ${pkg.featured ? "bg-aura-accent text-white hover:bg-aura-dark" : "bg-aura-canvas text-aura-dark hover:bg-aura-accent hover:text-white"}`}
-                    >
-                      {pkg.is_free
-                        ? (isAr ? "باقتك الحالية" : "Your Current Plan")
-                        : requesting === pkg.id
-                        ? (isAr ? "جاري الطلب..." : "Requesting...")
-                        : (isAr ? "اشترك الآن" : "Subscribe Now")}
-                    </button>
+
+                    {isCurrent ? (
+                      <div className="w-full py-3 rounded-2xl bg-green-500/10 text-center">
+                        <p className="text-sm font-medium text-green-700 mb-0.5">
+                          {isAr ? "باقتك الحالية" : "Your Current Plan"}
+                        </p>
+                        <p className="text-xs text-green-600">
+                          {isAr ? `متبقي ${activeSub!.daysLeft} يوم` : `${activeSub!.daysLeft} days remaining`}
+                        </p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSubscribe(pkg)}
+                        disabled={isDefaultFree || requesting === pkg.id}
+                        className={`w-full py-3 rounded-2xl text-sm font-medium transition-all duration-300 disabled:opacity-50 ${pkg.featured ? "bg-aura-accent text-white hover:bg-aura-dark" : "bg-aura-canvas text-aura-dark hover:bg-aura-accent hover:text-white"}`}
+                      >
+                        {isDefaultFree
+                          ? (isAr ? "باقتك الحالية" : "Your Current Plan")
+                          : requesting === pkg.id
+                          ? (isAr ? "جاري الطلب..." : "Requesting...")
+                          : (isAr ? "اشترك الآن" : "Subscribe Now")}
+                      </button>
+                    )}
                   </div>
                 );
               })}

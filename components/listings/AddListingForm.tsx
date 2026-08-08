@@ -634,20 +634,16 @@ export default function AddListingForm() {
                 </div>
               </button>
 
-              {PACKAGES_SYSTEM_ENABLED && limitInfo && limitInfo.maxFeatured > 0 && limitInfo.featuredCount < limitInfo.maxFeatured ? (
+           {PACKAGES_SYSTEM_ENABLED && limitInfo && limitInfo.maxFeatured > 0 && limitInfo.featuredCount < limitInfo.maxFeatured ? (
                 <button type="button" onClick={() => setRequestFeatured(!requestFeatured)}
                   className={`flex items-center gap-3 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${requestFeatured ? "border-aura-accent bg-aura-accent/5" : "border-aura-border hover:border-aura-accent/40"}`}>
                   <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${requestFeatured ? "bg-aura-accent border-aura-accent" : "border-aura-border"}`}>
                     {requestFeatured && <HiOutlineCheck className="w-3 h-3 text-white" />}
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-aura-dark">{isAr ? "اجعل الإعلان مميزًا" : "Make this listing featured"}</p>
-                    <p className="text-xs text-aura-muted">
-                      {isAr
-                        ? `متبقي لك ${limitInfo.maxFeatured - limitInfo.featuredCount} من ${limitInfo.maxFeatured} إعلان مميز في باقتك`
-                        : `${limitInfo.maxFeatured - limitInfo.featuredCount} of ${limitInfo.maxFeatured} featured slots remaining in your plan`}
-                    </p>
-                  </div>
+                  <p className="text-sm font-medium text-aura-dark">
+                    {isAr ? "اجعله مميزًا" : "Make it featured"}
+                    <span className="text-aura-muted font-normal"> ({limitInfo.featuredCount + (requestFeatured ? 1 : 0)}/{limitInfo.maxFeatured})</span>
+                  </p>
                 </button>
               ) : PACKAGES_SYSTEM_ENABLED && limitInfo && limitInfo.maxFeatured > 0 ? (
                 <p className="text-xs text-aura-muted px-1">

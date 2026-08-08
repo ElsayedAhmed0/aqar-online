@@ -73,10 +73,11 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           status: l.status,
           negotiable: l.negotiable || false,
           features: l.features || [],
-         delivery_status: l.delivery_status || "ready",
+          delivery_status: l.delivery_status || "ready",
           views: l.views || 0,
           show_views: l.show_views || false,
           rejection_reason: l.rejection_reason || null,
+          listing_number: l.listing_number,
         })));
       }
       setLoading(false);
@@ -187,9 +188,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         status: data.status,
         negotiable: data.negotiable || false,
         features: data.features || [],
-        delivery_status: data.delivery_status || "ready",
+       delivery_status: data.delivery_status || "ready",
         views: data.views || 0,
         show_views: data.show_views || false,
+        listing_number: data.listing_number,
       };
 
       setListings((prev) => [newListing, ...prev]);
@@ -237,7 +239,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           phone: listing.phone,
           negotiable: (listing as any).negotiable || false,
           features: (listing as any).features || [],
-        delivery_status: (listing as any).delivery_status || "ready",
+          delivery_status: (listing as any).delivery_status || "ready",
           whatsapp: (listing as any).whatsapp || null,
           custom_fields: (listing as any).custom_fields || [],
           status: "pending",
@@ -276,6 +278,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         delivery_status: data.delivery_status || "ready",
         views: data.views || 0,
         show_views: data.show_views || false,
+        listing_number: data.listing_number,
       };
 
       setListings((prev) => prev.map((l) => (l.id === id ? updatedListing : l)));
