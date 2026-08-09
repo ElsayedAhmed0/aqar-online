@@ -1066,6 +1066,10 @@ export default function AdminPage() {
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
                   {isAr ? "زوار البروفايلات" : "Profile Visitors"}
                 </a> */}
+                <a href={`/${locale}/admin/blog`}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                  {isAr ? "إدارة المدونة (SEO)" : "Manage Blog (SEO)"}
+                </a>
               </div>
             </div>
 

@@ -17,6 +17,11 @@ type BlogPost = {
   content_ar: string; content_en: string;
   category: string; image_url: string;
   published: boolean; created_at: string;
+  slug: string | null;
+  image_alt: string | null;
+  author: string | null;
+  reading_time: number | null;
+  schema_type: string | null;
 };
 
 export default function BlogPostPage() {
@@ -34,7 +39,7 @@ export default function BlogPostPage() {
       const { data } = await supabase
         .from("blog_posts")
         .select("*")
-        .eq("id", params.id)
+        .or(`slug.eq.${params.id},id.eq.${params.id}`)
         .eq("published", true)
         .single();
       if (data) {
@@ -58,7 +63,7 @@ export default function BlogPostPage() {
       <main className="min-h-screen bg-aura-bg">
         <Navbar />
         <div className="flex items-center justify-center py-32">
-          <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
+          <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
         </div>
       </main>
     );
@@ -90,8 +95,33 @@ export default function BlogPostPage() {
     },
   ];
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": post.schema_type || "BlogPosting",
+    headline: isAr ? post.title_ar : post.title_en,
+    description: isAr ? post.excerpt_ar : post.excerpt_en,
+    image: post.image_url || undefined,
+    datePublished: post.created_at,
+    author: {
+      "@type": "Organization",
+      name: post.author || "فريق تحرير عقار أونلاين",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "عقار أونلاين | Aqar Online",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.aqqaronline.com/favicon.svg",
+      },
+    },
+  };
+
   return (
     <main className="min-h-screen bg-aura-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <Navbar />
 
       <article className="py-16 lg:py-24 px-6 lg:px-12">
@@ -101,7 +131,7 @@ export default function BlogPostPage() {
 
           {/* رجوع */}
           <a href={`/${locale}/blog`} className="flex items-center gap-2 text-sm text-aura-muted hover:text-aura-dark transition-colors mb-8 w-fit">
-            <HiOutlineArrowRight className="w-4 h-4"/>
+            <HiOutlineArrowRight className="w-4 h-4" />
             {isAr ? "كل المقالات" : "All Articles"}
           </a>
 
@@ -109,7 +139,7 @@ export default function BlogPostPage() {
           <div className="flex items-center gap-3 mb-6">
             {post.category && (
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-aura-accent/10 text-aura-accent text-xs font-medium">
-                <HiOutlineTag className="w-3 h-3"/>
+                <HiOutlineTag className="w-3 h-3" />
                 {post.category}
               </span>
             )}
@@ -117,9 +147,14 @@ export default function BlogPostPage() {
               {new Date(post.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US", { year: "numeric", month: "long", day: "numeric" })}
             </span>
             <span className="flex items-center gap-1 text-xs text-aura-muted">
-              <HiOutlineClock className="w-3.5 h-3.5"/>
-              {isAr ? "5 دقائق" : "5 min read"}
+              <HiOutlineClock className="w-3.5 h-3.5" />
+              {isAr ? `${post.reading_time || 5} دقائق` : `${post.reading_time || 5} min read`}
             </span>
+            {post.author && (
+              <span className="text-xs text-aura-muted">
+                {isAr ? "بقلم" : "By"} {post.author}
+              </span>
+            )}
           </div>
 
           {/* العنوان */}
@@ -130,7 +165,7 @@ export default function BlogPostPage() {
           {/* الصورة */}
           {post.image_url && (
             <div className="h-64 md:h-96 rounded-3xl overflow-hidden mb-10">
-              <img src={post.image_url} alt={post.title_en} className="w-full h-full object-cover"/>
+              <img src={post.image_url} alt={post.image_alt || (isAr ? post.title_ar : post.title_en)} className="w-full h-full object-cover" />
             </div>
           )}
 
@@ -156,10 +191,10 @@ export default function BlogPostPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((p) => (
-                <a key={p.id} href={`/${locale}/blog/${p.id}`}
+                <a key={p.id} href={`/${locale}/blog/${p.slug || p.id}`}
                   className="bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block">
                   <div className="h-40 overflow-hidden">
-                    <img src={p.image_url || "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80"} alt={p.title_en} className="w-full h-full object-cover img-hover"/>
+                    <img src={p.image_url || "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80"} alt={p.title_en} className="w-full h-full object-cover img-hover" />
                   </div>
                   <div className="p-5">
                     <h3 className="text-sm font-medium text-aura-dark group-hover:text-aura-accent transition-colors line-clamp-2">

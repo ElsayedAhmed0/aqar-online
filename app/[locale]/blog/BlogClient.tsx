@@ -13,6 +13,8 @@ type BlogPost = {
   excerpt_ar: string; excerpt_en: string;
   category: string; image_url: string;
   published: boolean; created_at: string;
+  slug: string | null;
+  reading_time: number | null;
 };
 
 const ITEMS_PER_PAGE = 9;
@@ -118,7 +120,7 @@ export default function BlogPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post, i) => (
-                <a key={post.id} href={`/${locale}/blog/${post.id}`}
+                <a key={post.id} href={`/${locale}/blog/${post.slug || post.id}`}
                   className="bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block"
                   style={{ animationDelay: `${i * 100}ms` }}>
                   <div className="relative h-48 overflow-hidden">
@@ -147,7 +149,7 @@ export default function BlogPage() {
                       </span>
                       <div className="flex items-center gap-1 text-xs text-aura-muted">
                         <HiOutlineClock className="w-3.5 h-3.5"/>
-                        {isAr ? "5 دقائق" : "5 min read"}
+                        {isAr ? `${post.reading_time || 5} دقائق` : `${post.reading_time || 5} min read`}
                       </div>
                     </div>
                   </div>

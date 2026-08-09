@@ -13,39 +13,47 @@ export async function generateMetadata({
 
   const { data: post } = await supabase
     .from("blog_posts")
-    .select("title_ar, title_en, excerpt_ar, excerpt_en, image_url")
-    .eq("id", id)
+    .select("*")
+    .or(`slug.eq.${id},id.eq.${id}`)
     .eq("published", true)
     .single();
 
   if (!post) return {};
 
   const title = isAr ? post.title_ar : post.title_en;
-  const description = isAr ? post.excerpt_ar : post.excerpt_en;
+  const fallbackDescription = isAr ? post.excerpt_ar : post.excerpt_en;
+  const description = (post.meta_description || fallbackDescription || "").slice(0, 160);
+  const keywords = post.meta_keywords ? post.meta_keywords.split(",").map((k: string) => k.trim()).filter(Boolean) : undefined;
+  const urlPath = post.slug || id;
+  const ogTitle = post.og_title || title;
+  const ogDescription = post.og_description || description;
+  const ogImage = post.og_image || post.image_url;
 
   return {
     title: isAr ? `${title} | عقار أونلاين` : `${title} | Aqar Online`,
     description,
+    keywords,
     alternates: {
-      canonical: `/${locale}/blog/${id}`,
-      languages: { ar: `/ar/blog/${id}`, en: `/en/blog/${id}` },
+      canonical: post.canonical_url || `/${locale}/blog/${urlPath}`,
+      languages: { ar: `/ar/blog/${urlPath}`, en: `/en/blog/${urlPath}` },
     },
+    authors: post.author ? [{ name: post.author }] : undefined,
     openGraph: {
-      title,
-      description,
-      url: `https://www.aqqaronline.com/${locale}/blog/${id}`,
+      title: ogTitle,
+      description: ogDescription,
+      url: `https://www.aqqaronline.com/${locale}/blog/${urlPath}`,
       siteName: isAr ? "عقار أونلاين" : "Aqar Online",
       locale: isAr ? "ar_EG" : "en_US",
       type: "article",
-      images: post.image_url
-        ? [{ url: post.image_url, width: 1200, height: 630, alt: title }]
+      images: ogImage
+        ? [{ url: ogImage, width: 1200, height: 630, alt: post.image_alt || title }]
         : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: post.image_url ? [post.image_url] : [],
+      title: ogTitle,
+      description: ogDescription,
+      images: ogImage ? [ogImage] : [],
     },
   };
 }

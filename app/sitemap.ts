@@ -42,6 +42,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ])
 
+  // جيب كل مقالات المدونة المنشورة
+  const { data: posts } = await supabase
+    .from('blog_posts')
+    .select('id, slug, updated_at, created_at')
+    .eq('published', true)
+
+  const blogUrls: MetadataRoute.Sitemap = (posts || []).flatMap((post) => {
+    const urlPath = post.slug || post.id
+    return [
+      {
+        url: `${baseUrl}/ar/blog/${urlPath}`,
+        lastModified: new Date(post.updated_at || post.created_at || new Date()),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      },
+      {
+        url: `${baseUrl}/en/blog/${urlPath}`,
+        lastModified: new Date(post.updated_at || post.created_at || new Date()),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      },
+    ]
+  })
+
   return [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
     { url: `${baseUrl}/ar`, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
@@ -55,6 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/ar/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/en/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     ...areaUrls,
+    ...blogUrls,
     ...propertyUrls,
   ]
 }
