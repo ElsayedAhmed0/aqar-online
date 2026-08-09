@@ -1,4 +1,4 @@
 // 🔴 زرار تشغيل/إيقاف نظام الباقات والاشتراكات والأرشفة بالكامل
 // خليه false عشان توقف كل التأثيرات على الموقع اللايف (من غير ما نمسح أي كود)
 // وخليه true لما تكون جاهز تشغّل النظام فعليًا للعملاء
-export const PACKAGES_SYSTEM_ENABLED = true;
+export const PACKAGES_SYSTEM_ENABLED = false;
