@@ -175,9 +175,10 @@ export default function BlogPostPage() {
           </p>
 
           {/* المحتوى */}
-          <div className="prose prose-lg max-w-none text-aura-dark font-light leading-relaxed whitespace-pre-wrap">
-            {isAr ? post.content_ar : post.content_en}
-          </div>
+       <div
+            className="prose prose-lg max-w-none text-aura-dark font-light leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: isAr ? post.content_ar : post.content_en }}
+          />
 
         </div>
       </article>
