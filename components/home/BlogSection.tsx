@@ -15,6 +15,7 @@ type BlogPost = {
   image_url: string;
   published: boolean;
   created_at: string;
+  slug: string | null;
 };
 
 export default function BlogSection() {
@@ -68,7 +69,7 @@ export default function BlogSection() {
           {posts.map((post, i) => (
             
              <a  key={post.id}
-              href={`/${locale}/blog/${post.id}`}
+              href={`/${locale}/blog/${post.slug || "article"}/${post.id}`}
               className="bento-card card-animate bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block"
               style={{ animationDelay: `${i * 100}ms` }}
             >

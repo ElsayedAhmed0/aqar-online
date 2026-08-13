@@ -120,7 +120,7 @@ export default function BlogPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post, i) => (
-                <a key={post.id} href={`/${locale}/blog/${post.slug || post.id}`}
+                <a key={post.id} href={`/${locale}/blog/${post.slug || "article"}/${post.id}`}
                   className="bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block"
                   style={{ animationDelay: `${i * 100}ms` }}>
                   <div className="relative h-48 overflow-hidden">

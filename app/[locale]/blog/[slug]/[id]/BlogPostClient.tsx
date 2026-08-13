@@ -39,7 +39,7 @@ export default function BlogPostPage() {
       const { data } = await supabase
         .from("blog_posts")
         .select("*")
-        .or(`slug.eq.${params.id},id.eq.${params.id}`)
+        .eq("id", params.id)
         .eq("published", true)
         .single();
       if (data) {
@@ -63,7 +63,7 @@ export default function BlogPostPage() {
       <main className="min-h-screen bg-aura-bg">
         <Navbar />
         <div className="flex items-center justify-center py-32">
-          <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-aura-accent border-t-transparent rounded-full animate-spin"/>
         </div>
       </main>
     );
@@ -131,7 +131,7 @@ export default function BlogPostPage() {
 
           {/* رجوع */}
           <a href={`/${locale}/blog`} className="flex items-center gap-2 text-sm text-aura-muted hover:text-aura-dark transition-colors mb-8 w-fit">
-            <HiOutlineArrowRight className="w-4 h-4" />
+            <HiOutlineArrowRight className="w-4 h-4"/>
             {isAr ? "كل المقالات" : "All Articles"}
           </a>
 
@@ -139,7 +139,7 @@ export default function BlogPostPage() {
           <div className="flex items-center gap-3 mb-6">
             {post.category && (
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-aura-accent/10 text-aura-accent text-xs font-medium">
-                <HiOutlineTag className="w-3 h-3" />
+                <HiOutlineTag className="w-3 h-3"/>
                 {post.category}
               </span>
             )}
@@ -147,7 +147,7 @@ export default function BlogPostPage() {
               {new Date(post.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US", { year: "numeric", month: "long", day: "numeric" })}
             </span>
             <span className="flex items-center gap-1 text-xs text-aura-muted">
-              <HiOutlineClock className="w-3.5 h-3.5" />
+              <HiOutlineClock className="w-3.5 h-3.5"/>
               {isAr ? `${post.reading_time || 5} دقائق` : `${post.reading_time || 5} min read`}
             </span>
             {post.author && (
@@ -165,7 +165,7 @@ export default function BlogPostPage() {
           {/* الصورة */}
           {post.image_url && (
             <div className="h-64 md:h-96 rounded-3xl overflow-hidden mb-10">
-              <img src={post.image_url} alt={post.image_alt || (isAr ? post.title_ar : post.title_en)} className="w-full h-full object-cover" />
+              <img src={post.image_url} alt={post.image_alt || (isAr ? post.title_ar : post.title_en)} className="w-full h-full object-cover"/>
             </div>
           )}
 
@@ -175,7 +175,7 @@ export default function BlogPostPage() {
           </p>
 
           {/* المحتوى */}
-       <div
+          <div
             className="prose prose-lg max-w-none text-aura-dark font-light leading-relaxed"
             dangerouslySetInnerHTML={{ __html: isAr ? post.content_ar : post.content_en }}
           />
@@ -192,10 +192,10 @@ export default function BlogPostPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {related.map((p) => (
-                <a key={p.id} href={`/${locale}/blog/${p.slug || p.id}`}
+                <a key={p.id} href={`/${locale}/blog/${p.slug || "article"}/${p.id}`}
                   className="bento-card bg-aura-card rounded-3xl overflow-hidden group cursor-pointer block">
                   <div className="h-40 overflow-hidden">
-                    <img src={p.image_url || "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80"} alt={p.title_en} className="w-full h-full object-cover img-hover" />
+                    <img src={p.image_url || "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80"} alt={p.title_en} className="w-full h-full object-cover img-hover"/>
                   </div>
                   <div className="p-5">
                     <h3 className="text-sm font-medium text-aura-dark group-hover:text-aura-accent transition-colors line-clamp-2">

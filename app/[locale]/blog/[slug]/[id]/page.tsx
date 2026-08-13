@@ -5,7 +5,7 @@ import BlogPostClient from "./BlogPostClient";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string; locale: string }>;
+  params: Promise<{ id: string; slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { id, locale } = await params;
   const isAr = locale === "ar";
@@ -14,7 +14,7 @@ export async function generateMetadata({
   const { data: post } = await supabase
     .from("blog_posts")
     .select("*")
-    .or(`slug.eq.${id},id.eq.${id}`)
+    .eq("id", id)
     .eq("published", true)
     .single();
 
@@ -24,7 +24,7 @@ export async function generateMetadata({
   const fallbackDescription = isAr ? post.excerpt_ar : post.excerpt_en;
   const description = (post.meta_description || fallbackDescription || "").slice(0, 160);
   const keywords = post.meta_keywords ? post.meta_keywords.split(",").map((k: string) => k.trim()).filter(Boolean) : undefined;
-  const urlPath = post.slug || id;
+  const urlPath = `${post.slug || "article"}/${post.id}`;
   const ogTitle = post.og_title || title;
   const ogDescription = post.og_description || description;
   const ogImage = post.og_image || post.image_url;

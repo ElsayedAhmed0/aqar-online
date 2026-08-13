@@ -24,7 +24,7 @@ export async function GET() {
 
     const items = (posts || [])
         .map((post) => {
-            const urlPath = post.slug || post.id;
+            const urlPath = `${post.slug || "article"}/${post.id}`;
             const link = `${baseUrl}/ar/blog/${urlPath}`;
             return `
     <item>

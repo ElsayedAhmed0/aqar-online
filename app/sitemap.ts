@@ -49,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .eq('published', true)
 
   const blogUrls: MetadataRoute.Sitemap = (posts || []).flatMap((post) => {
-    const urlPath = post.slug || post.id
+    const urlPath = `${post.slug || 'article'}/${post.id}`
     return [
       {
         url: `${baseUrl}/ar/blog/${urlPath}`,

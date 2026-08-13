@@ -901,7 +901,6 @@ export default function AdminPage() {
     { id: "types", icon: <HiOutlineTag className="w-4 h-4" />, ar: "أنواع العقارات", en: "Property Types", count: propertyTypes.length },
     { id: "partners", icon: <HiOutlineBuildingOffice2 className="w-4 h-4" />, ar: "الشركاء", en: "Partners", count: partners.length },
     { id: "developers", icon: <HiOutlineBuildingOffice2 className="w-4 h-4" />, ar: "المطورين", en: "Developers", count: developers.length },
-    { id: "blog", icon: <HiOutlineNewspaper className="w-4 h-4" />, ar: "المقالات", en: "Blog Posts", count: blogPosts.length },
     { id: "settings", icon: <HiOutlineCog6Tooth className="w-4 h-4" />, ar: "إعدادات الموقع", en: "Site Settings", count: null },
   ];
   const handleTableMouseDown = (e: React.MouseEvent) => {
@@ -922,7 +921,7 @@ export default function AdminPage() {
   };
   const tabs = isFullAdmin
     ? allTabs
-    : allTabs.filter((t) => ["listings", "users", "messages", "blog", "settings"].includes(t.id));
+    : allTabs.filter((t) => ["listings", "users", "messages", "settings"].includes(t.id));
   const activeTabData = tabs.find((t) => t.id === activeTab);
 
   return (
