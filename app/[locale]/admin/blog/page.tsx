@@ -171,17 +171,30 @@ export default function BlogAdminPage() {
       tags: form.tags.trim() || null,
       author: form.author.trim() || "فريق تحرير عقار أونلاين",
       canonical_url: form.canonical_url.trim() || null,
-      reading_time: readingTime,
+     reading_time: readingTime,
       schema_type: form.schema_type,
     };
 
+    let error;
     if (editingId) {
-      await supabase.from("blog_posts").update(payload).eq("id", editingId);
+      ({ error } = await supabase.from("blog_posts").update(payload).eq("id", editingId));
     } else {
-      await supabase.from("blog_posts").insert(payload);
+      ({ error } = await supabase.from("blog_posts").insert(payload));
     }
 
     setSaving(false);
+
+    if (error) {
+      if (error.code === "23505") {
+        alert(isAr
+          ? "الرابط (Slug) ده مستخدم بالفعل في مقال تاني. غيّره واضغط حفظ تاني."
+          : "This slug is already used by another post. Please change it and save again.");
+      } else {
+        alert(isAr ? `فشل الحفظ: ${error.message}` : `Save failed: ${error.message}`);
+      }
+      return;
+    }
+
     setShowForm(false);
     load();
   };
