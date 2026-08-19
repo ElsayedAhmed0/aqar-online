@@ -42,6 +42,7 @@ export default function DeveloperPropertiesClient({
   const [activeType, setActiveType] = useState("all");
   const [purpose, setPurpose] = useState("all");
   const [maxPrice, setMaxPrice] = useState(10000000);
+  const maxPriceLimit = 10000000;
   const [minArea, setMinArea] = useState(0);
   const [minBeds, setMinBeds] = useState(0);
   const [sortBy, setSortBy] = useState("newest");
@@ -147,6 +148,7 @@ export default function DeveloperPropertiesClient({
               setPurpose={setPurpose}
               maxPrice={maxPrice}
               setMaxPrice={setMaxPrice}
+              maxPriceLimit={maxPriceLimit}
               minArea={minArea}
               setMinArea={setMinArea}
               minBeds={minBeds}
@@ -265,6 +267,7 @@ export default function DeveloperPropertiesClient({
               setPurpose={setPurpose}
               maxPrice={maxPrice}
               setMaxPrice={setMaxPrice}
+              maxPriceLimit={maxPriceLimit}
               minArea={minArea}
               setMinArea={setMinArea}
               minBeds={minBeds}
