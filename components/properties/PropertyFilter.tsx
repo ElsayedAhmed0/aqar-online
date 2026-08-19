@@ -11,8 +11,9 @@ type Props = {
   setActiveType: (v: string) => void;
   purpose: string;
   setPurpose: (v: string) => void;
-  maxPrice: number;
+    maxPrice: number;
   setMaxPrice: (v: number) => void;
+  maxPriceLimit: number;
   minArea: number;
   setMinArea: (v: number) => void;
   minBeds: number;
@@ -23,13 +24,13 @@ type Props = {
 
 export default function PropertiesFilter({
   isAr, searchQuery, setSearchQuery, activeType, setActiveType,
-  purpose, setPurpose, maxPrice, setMaxPrice, minArea, setMinArea,
+  purpose, setPurpose, maxPrice, setMaxPrice, maxPriceLimit, minArea, setMinArea,
   minBeds, setMinBeds, total, onClear,
 }: Props) {
   const { types } = usePropertyTypes();
 
-  const hasFilters = searchQuery || activeType !== "all" || purpose !== "all"
-    || maxPrice < 10000000 || minArea > 0 || minBeds > 0;
+   const hasFilters = searchQuery || activeType !== "all" || purpose !== "all"
+    || maxPrice < maxPriceLimit || minArea > 0 || minBeds > 0;
 
   return (
     <div className="bg-aura-card border border-aura-border rounded-3xl p-6 shadow-sm space-y-6">
@@ -113,12 +114,12 @@ export default function PropertiesFilter({
             {isAr ? `${(maxPrice / 1000000).toFixed(1)} مليون` : `EGP ${(maxPrice / 1000000).toFixed(1)}M`}
           </span>
         </div>
-        <input type="range" min={500000} max={10000000} step={100000} value={maxPrice}
+                <input type="range" min={500000} max={maxPriceLimit} step={100000} value={maxPrice}
           onChange={(e) => setMaxPrice(Number(e.target.value))}
           className="w-full h-1 bg-aura-canvas rounded-lg appearance-none cursor-pointer accent-aura-accent" />
         <div className="flex justify-between text-[9px] text-aura-muted">
           <span>{isAr ? "500 ألف" : "500K"}</span>
-          <span>{isAr ? "10 مليون" : "10M"}</span>
+          <span>{isAr ? `${maxPriceLimit / 1000000} مليون` : `${maxPriceLimit / 1000000}M`}</span>
         </div>
       </div>
 

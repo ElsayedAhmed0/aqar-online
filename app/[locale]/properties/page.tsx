@@ -48,7 +48,10 @@ export async function generateMetadata({
     },
   };
 }
-
+// الحد الأقصى الافتراضي للسعر لو مفيش إعلانات موافق عليها لسه (أو حصل خطأ في الجلب)
+const DEFAULT_MAX_PRICE = 10_000_000;
+// بنقرّب الحد الأقصى الديناميكي لأعلى مضاعف لـ 5 مليون
+const PRICE_ROUND_STEP = 5_000_000;
 export default async function PropertiesPage() {
   const supabase = await createClient();
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
@@ -65,11 +68,32 @@ export default async function PropertiesPage() {
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false })
     .range(0, 8);
+  // ✅ أعلى سعر فعلي موجود في الإعلانات الموافق عليها (بنفس فلاتر الأرشفة لو الباقات شغالة)
+  // بنستخدم order + limit(1) بدل MAX() لأن Supabase JS client مش بيدعم aggregate functions مباشرة
+  let maxPriceQuery = supabase
+    .from("listings")
+    .select("price")
+    .eq("status", "approved");
 
+  if (PACKAGES_SYSTEM_ENABLED) {
+    maxPriceQuery = maxPriceQuery.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo);
+  }
+
+  const { data: maxPriceRow } = await maxPriceQuery
+    .order("price", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const highestPrice = maxPriceRow?.price ?? DEFAULT_MAX_PRICE;
+  const maxPriceLimit = Math.max(
+    DEFAULT_MAX_PRICE,
+    Math.ceil(highestPrice / PRICE_ROUND_STEP) * PRICE_ROUND_STEP
+  );
   return (
     <PropertiesClient
       initialProperties={initialProperties || []}
       initialTotal={initialTotal || 0}
+      maxPriceLimit={maxPriceLimit}
     />
   );
 }

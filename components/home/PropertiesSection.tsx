@@ -23,13 +23,37 @@ export default function PropertiesSection() {
     const fetchProperties = async () => {
       setLoadingProps(true);
       const supabase = createClient();
-      const { data } = await supabase
+      const nowIso = new Date().toISOString();
+
+      // ✅ 1) الإعلانات المميزة الفعّالة فعليًا (featured = true ومش منتهية الصلاحية)
+      // بنجيبها في كويري منفصلة عشان تظهر في الرئيسية حتى لو مش من ضمن آخر 12 إعلان
+      const { data: featuredData } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("status", "approved")
+        .eq("featured", true)
+        .or(`featured_until.is.null,featured_until.gt.${nowIso}`)
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      const featuredIds = (featuredData || []).map((p) => p.id);
+
+      // ✅ 2) نكمّل باقي الأماكن (لحد 12 إجمالي) بأحدث الإعلانات العادية، من غير تكرار المميزة
+      let latestQuery = supabase
         .from("listings")
         .select("*")
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(12);
-      if (data) setProperties(data);
+
+      if (featuredIds.length > 0) {
+        latestQuery = latestQuery.not("id", "in", `(${featuredIds.join(",")})`);
+      }
+
+      const { data: latestData } = await latestQuery;
+
+      const combined = [...(featuredData || []), ...(latestData || [])].slice(0, 12);
+      setProperties(combined);
       setLoadingProps(false);
     };
     fetchProperties();
@@ -44,7 +68,7 @@ export default function PropertiesSection() {
       p.location_en?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchType && matchSearch;
   });
- const isStillFeatured = (p: any) =>
+  const isStillFeatured = (p: any) =>
     p.featured && (!p.featured_until || new Date(p.featured_until) > new Date());
 
   const sorted = [...filtered].sort((a, b) =>
@@ -78,8 +102,8 @@ export default function PropertiesSection() {
               <button
                 onClick={() => setActiveFilter("all")}
                 className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === "all"
-                    ? "bg-aura-dark text-white shadow-sm"
-                    : "text-aura-muted hover:text-aura-dark"
+                  ? "bg-aura-dark text-white shadow-sm"
+                  : "text-aura-muted hover:text-aura-dark"
                   }`}
               >
                 <HiOutlineHome className="w-4 h-4" />
@@ -91,8 +115,8 @@ export default function PropertiesSection() {
                   key={t.value}
                   onClick={() => setActiveFilter(t.value)}
                   className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeFilter === t.value
-                      ? "bg-aura-dark text-white shadow-sm"
-                      : "text-aura-muted hover:text-aura-dark"
+                    ? "bg-aura-dark text-white shadow-sm"
+                    : "text-aura-muted hover:text-aura-dark"
                     }`}
                 >
                   {isAr ? t.name_ar : t.name_en}
@@ -101,7 +125,7 @@ export default function PropertiesSection() {
             </div>
 
 
-          <a href={`/${locale}/properties`}
+            <a href={`/${locale}/properties`}
               className="group px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-aura-accent text-white text-sm sm:text-base font-medium hover:bg-aura-dark hover:scale-[1.03] shadow-lg shadow-aura-accent/20 transition-all duration-300 whitespace-nowrap flex items-center gap-2"
             >
               {isAr ? "عرض كل العقارات" : "View All Properties"}

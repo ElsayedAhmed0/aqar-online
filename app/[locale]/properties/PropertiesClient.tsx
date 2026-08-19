@@ -17,9 +17,11 @@ const ITEMS_PER_PAGE = 10;
 export default function PropertiesClient({
   initialProperties = [],
   initialTotal = 0,
+  maxPriceLimit = 10000000,
 }: {
   initialProperties?: any[];
   initialTotal?: number;
+  maxPriceLimit?: number;
 }) {
   const locale = useLocale();
   const isAr = locale === "ar";
@@ -34,7 +36,7 @@ export default function PropertiesClient({
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [activeType, setActiveType] = useState(searchParams.get("type") || "all");
   const [purpose, setPurpose] = useState(searchParams.get("purpose") || "sale");
-  const [maxPrice, setMaxPrice] = useState(10000000);
+  const [maxPrice, setMaxPrice] = useState(maxPriceLimit);
   const [minArea, setMinArea] = useState(0);
   const [minBeds, setMinBeds] = useState(0);
   const [sortBy, setSortBy] = useState("newest");
@@ -94,7 +96,7 @@ export default function PropertiesClient({
     setSearchQuery("");
     setActiveType("all");
     setPurpose("all");
-    setMaxPrice(10000000);
+    setMaxPrice(maxPriceLimit);
     setMinArea(0);
     setMinBeds(0);
     setSortBy("newest");
@@ -112,7 +114,7 @@ export default function PropertiesClient({
               {isAr ? "تصفح العقارات" : "Browse Properties"}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-             <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-aura-dark">
                 {isAr ? "عقارات" : "Properties"}
                 <span className="block font-serif italic text-aura-accent mt-1">
                   {isAr ? "للبيع والإيجار" : "for Sale & Rent"}
@@ -153,6 +155,7 @@ export default function PropertiesClient({
                 purpose={purpose}
                 setPurpose={setPurpose}
                 maxPrice={maxPrice}
+                maxPriceLimit={maxPriceLimit}
                 setMaxPrice={setMaxPrice}
                 minArea={minArea}
                 setMinArea={setMinArea}
@@ -171,7 +174,7 @@ export default function PropertiesClient({
                 locale={locale}
                 page={page}
                 totalPages={totalPages}
-                  onPageChange={(newPage) => {
+                onPageChange={(newPage) => {
                   setPage(newPage);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
@@ -213,6 +216,7 @@ export default function PropertiesClient({
               purpose={purpose}
               setPurpose={setPurpose}
               maxPrice={maxPrice}
+              maxPriceLimit={maxPriceLimit}
               setMaxPrice={setMaxPrice}
               minArea={minArea}
               setMinArea={setMinArea}
