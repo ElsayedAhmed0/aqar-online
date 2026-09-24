@@ -82,7 +82,7 @@ export default function SubscriptionsAdminPage() {
     const checkAndLoad = async () => {
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-      if (!profile || (profile.role !== "admin" && profile.role !== "subadmin")) {
+       if (!profile || profile.role !== "admin") {
         router.push(`/${locale}`);
         return;
       }

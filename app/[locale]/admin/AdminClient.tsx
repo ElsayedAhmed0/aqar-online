@@ -1047,20 +1047,25 @@ export default function AdminPage() {
                 )
               ))}
 
-              {/* ── روابط صفحات منفصلة (باقات الاشتراك) ── */}
+              
+              {/* ── روابط صفحات منفصلة (باقات الاشتراك) — أدمن كامل بس ── */}
               <div className="w-full border-t border-aura-border mt-2 pt-2 space-y-1">
-                <a href={`/${locale}/admin/packages`}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
-                  {isAr ? "إدارة الباقات" : "Manage Packages"}
-                </a>
-                <a href={`/${locale}/admin/subscriptions`}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
-                  {isAr ? "طلبات الاشتراك" : "Subscriptions"}
-                </a>
-                <a href={`/${locale}/admin/archive`}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
-                  {isAr ? "أرشيف الإعلانات" : "Listings Archive"}
-                </a>
+                {isFullAdmin && (
+                  <>
+                    <a href={`/${locale}/admin/packages`}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                      {isAr ? "إدارة الباقات" : "Manage Packages"}
+                    </a>
+                    <a href={`/${locale}/admin/subscriptions`}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                      {isAr ? "طلبات الاشتراك" : "Subscriptions"}
+                    </a>
+                    <a href={`/${locale}/admin/archive`}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
+                      {isAr ? "أرشيف الإعلانات" : "Listings Archive"}
+                    </a>
+                  </>
+                )}
                 {/* <a href={`/${locale}/admin/profile-views`}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-aura-muted hover:text-aura-dark hover:bg-aura-canvas transition-all duration-300">
                   {isAr ? "زوار البروفايلات" : "Profile Visitors"}
@@ -1072,7 +1077,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* محتوى التاب النشط */}
+            
 
             {/* محتوى التاب النشط */}
             <div className="flex-1 min-w-0">
