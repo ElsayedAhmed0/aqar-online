@@ -267,9 +267,13 @@ export default function AdminPage() {
       ]);
       if (listingsRes.data) setListings(listingsRes.data as Listing[]);
       if (usersRes.data) {
-        const withCounts = await Promise.all(usersRes.data.map(async (u) => {
-          const { count } = await supabase.from("listings").select("*", { count: "exact", head: true }).eq("user_id", u.id);
-          return { ...u, listings_count: count || 0 };
+        const countsByUser: Record<string, number> = {};
+        (listingsRes.data || []).forEach((l: any) => {
+          countsByUser[l.user_id] = (countsByUser[l.user_id] || 0) + 1;
+        });
+        const withCounts = usersRes.data.map((u) => ({
+          ...u,
+          listings_count: countsByUser[u.id] || 0,
         }));
         setUsers(withCounts);
       }
@@ -1047,7 +1051,7 @@ export default function AdminPage() {
                 )
               ))}
 
-              
+
               {/* ── روابط صفحات منفصلة (باقات الاشتراك) — أدمن كامل بس ── */}
               <div className="w-full border-t border-aura-border mt-2 pt-2 space-y-1">
                 {isFullAdmin && (
@@ -1077,7 +1081,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            
+
 
             {/* محتوى التاب النشط */}
             <div className="flex-1 min-w-0">
