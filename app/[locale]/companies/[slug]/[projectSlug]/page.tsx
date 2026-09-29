@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import ProjectUnits from "@/components/companies/ProjectUnits";
+import { PACKAGES_SYSTEM_ENABLED } from "@/lib/featureFlags";
 import { AREAS } from "@/lib/data/areas";
 import { HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBanknotes, HiOutlineBuildingOffice2 } from "react-icons/hi2";
 
@@ -67,6 +69,23 @@ export default async function ProjectDetailsPage({
     .single();
 
   if (!project) notFound();
+
+  // ✅ الوحدات (الإعلانات) المربوطة بالكمبوند ده: معتمدة + مش مؤرشفة (نفس شروط صفحة /properties)
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  let unitsQuery = supabase
+    .from("listings")
+    .select("*")
+    .eq("project_id", project.id)
+    .eq("status", "approved");
+
+  if (PACKAGES_SYSTEM_ENABLED) {
+    unitsQuery = unitsQuery.eq("archived", false).gte("cycle_start_at", ninetyDaysAgo);
+  }
+
+  const { data: units } = await unitsQuery
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(24);
 
   const developer = (project as any).developers;
   const name = (isAr ? project.name_ar : project.name_en) || project.name_ar;
@@ -173,6 +192,9 @@ export default async function ProjectDetailsPage({
                 <p className="text-sm text-aura-muted leading-relaxed whitespace-pre-line">{project.payment_plan_ar}</p>
               </div>
             )}
+
+            {/* الوحدات المتاحة داخل الكمبوند */}
+            <ProjectUnits units={units || []} projectName={name} isAr={isAr} locale={locale} />
           </div>
 
           {/* الشريط الجانبي — بيانات المطور */}

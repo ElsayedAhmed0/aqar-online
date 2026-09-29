@@ -121,6 +121,28 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // ✅ ربط الإعلان بكمبوند (مشروع): مسموح بس لو المشروع معتمد وتابع لسجل المطوّر بتاع نفس المستخدم
+      // لو الشرط ماتحققش، الإعلان بيتحفظ عادي بدون ربط (مفيش فشل)
+      let validProjectId: string | null = null;
+      const requestedProjectId = (listing as any).project_id as string | null | undefined;
+      if (requestedProjectId) {
+        const { data: devRecord } = await supabase
+          .from("developers")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (devRecord) {
+          const { data: proj } = await supabase
+            .from("projects")
+            .select("id")
+            .eq("id", requestedProjectId)
+            .eq("developer_id", devRecord.id)
+            .eq("status", "approved")
+            .maybeSingle();
+          if (proj) validProjectId = proj.id;
+        }
+      }
+
       const uploadedUrls: string[] = [];
       for (let i = 0; i < rawImages.length; i++) {
         const img = rawImages[i];
@@ -137,6 +159,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .insert({
           user_id: user.id,
           developer_id: developerRow?.id || null,
+          project_id: validProjectId,
           type: listing.type,
           purpose: (listing as any).purpose || purpose,
           title_ar: listing.title_ar,

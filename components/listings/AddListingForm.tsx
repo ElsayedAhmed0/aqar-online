@@ -73,6 +73,9 @@ export default function AddListingForm() {
   } | null>(null);
   const [limitLoading, setLimitLoading] = useState(true);
   const [requestFeatured, setRequestFeatured] = useState(false);
+  // كمبوندات المطوّر المعتمدة (فاضية لأي مستخدم مش مطوّر) + الكمبوند المختار
+  const [myProjects, setMyProjects] = useState<{ id: string; name_ar: string; name_en: string | null }[]>([]);
+  const [projectId, setProjectId] = useState("");
   const { addListing } = useListings();
   const { types: propertyTypes, loading: typesLoading } = usePropertyTypes();
   const { areas: customAreas } = useCustomAreas();
@@ -245,6 +248,31 @@ export default function AddListingForm() {
     loadLimit();
   }, [user, isAr]);
 
+  // تحميل كمبوندات المطوّر المعتمدة (لو المستخدم مطوّر) + اختيار مسبق من الرابط ?project=ID
+  useEffect(() => {
+    if (!user) return;
+    const loadProjects = async () => {
+      const supabase = createClient();
+      const { data: dev } = await supabase
+        .from("developers")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!dev) return;
+      const { data: projs } = await supabase
+        .from("projects")
+        .select("id, name_ar, name_en")
+        .eq("developer_id", dev.id)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false });
+      if (!projs || projs.length === 0) return;
+      setMyProjects(projs);
+      const preselected = new URLSearchParams(window.location.search).get("project");
+      if (preselected && projs.some((p) => p.id === preselected)) setProjectId(preselected);
+    };
+    loadProjects();
+  }, [user]);
+
   const update = (fields: Partial<ListingFormData>) => {
     setForm((prev) => ({ ...prev, ...fields }));
     setError("");
@@ -338,6 +366,7 @@ export default function AddListingForm() {
         custom_fields: customFields.filter(f => f.label.trim() && f.value.trim()),
         delivery_status: deliveryStatus,
         whatsapp: whatsapp.trim() || null,
+        project_id: projectId || null,
       } as any, form.images);
 
       if (created) router.push(`/${locale}/dashboard`);
@@ -490,6 +519,20 @@ export default function AddListingForm() {
           {/* ── المعلومات الأساسية ── */}
           {activeSection === "basic" && (
             <div className="space-y-4">
+              {myProjects.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-aura-dark">{isAr ? "الكمبوند (اختياري)" : "Compound (optional)"}</label>
+                  <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className={inputCls}>
+                    <option value="">{isAr ? "إعلان عادي — غير تابع لكمبوند" : "Regular listing — not in a compound"}</option>
+                    {myProjects.map((p) => (
+                      <option key={p.id} value={p.id}>{isAr ? p.name_ar : (p.name_en || p.name_ar)}</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-aura-muted">
+                    {isAr ? "لو اخترت كمبوند، الوحدة هتظهر تلقائيًا ضمن وحدات الكمبوند ده" : "If you pick a compound, this unit will automatically appear among its units"}
+                  </p>
+                </div>
+              )}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-aura-dark">{isAr ? "عنوان الإعلان *" : "Title *"}</label>
                 <input type="text" value={form.title_ar} maxLength={90} onChange={(e) => update({ title_ar: e.target.value })}
