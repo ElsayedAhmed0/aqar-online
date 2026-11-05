@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { HiOutlinePhoto, HiOutlinePlus, HiOutlineXMark, HiOutlineMapPin, HiOutlineCalendarDays } from "react-icons/hi2";
+import { HiOutlinePhoto, HiOutlinePlus, HiOutlineXMark, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineCheck } from "react-icons/hi2";
 import { AREAS } from "@/lib/data/areas";
 
 const FINISH_TYPES = [
@@ -12,6 +12,13 @@ const FINISH_TYPES = [
   { value: "semi_finished", ar: "نصف تشطيب", en: "Semi Finished" },
   { value: "without_finish", ar: "بدون تشطيب", en: "Without Finish" },
 ];
+
+const PROJECT_TYPES = [
+  { value: "administrative", ar: "إداري", en: "Administrative" },
+  { value: "residential", ar: "سكني", en: "Residential" },
+  { value: "commercial", ar: "تجاري", en: "Commercial" },
+];
+
 type Project = {
   id: string;
   developer_id: string;
@@ -30,6 +37,7 @@ type Project = {
   project_rating_ar?: string | null;
   project_features_ar?: string | null;
   custom_sections?: { label: string; value: string }[] | null;
+  project_types?: { type: string; units: number }[] | null;
   status: "pending" | "approved" | "rejected";
   active: boolean;
   starting_price?: number | null;
@@ -51,6 +59,7 @@ const emptyForm = {
   delivery_date: "", payment_plan_ar: "",
   about_developer_ar: "", project_location_ar: "", project_rating_ar: "", project_features_ar: "",
   custom_sections: [] as { label: string; value: string }[],
+  project_types: [] as { type: string; units: number }[],
   starting_price: "", construction_status: "", finish_type: "", area_slug: "",
   images: [] as string[],
 };
@@ -67,6 +76,8 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
   const [saving, setSaving] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
+  // البوب أب بتاع عدد الوحدات لنوع المشروع (إداري / سكني / تجاري)
+  const [unitsModal, setUnitsModal] = useState<{ type: string; value: string } | null>(null);
   const fetchProjects = async () => {
     setLoading(true);
     const supabase = createClient();
@@ -182,6 +193,7 @@ const handleEditProject = (project: Project) => {
       project_rating_ar: project.project_rating_ar || "",
       project_features_ar: project.project_features_ar || "",
       custom_sections: project.custom_sections || [],
+      project_types: project.project_types || [],
       starting_price: project.starting_price ? String(project.starting_price) : "",
       construction_status: project.construction_status || "",
       finish_type: project.finish_type || "",
@@ -201,6 +213,27 @@ const handleEditProject = (project: Project) => {
     const supabase = createClient();
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (!error) setProjects((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const modalType = unitsModal ? PROJECT_TYPES.find((t) => t.value === unitsModal.type) : null;
+  const modalSelected = unitsModal ? form.project_types.some((t) => t.type === unitsModal.type) : false;
+
+  const saveUnits = () => {
+    if (!unitsModal) return;
+    const units = Math.floor(Number(unitsModal.value));
+    if (!units || units <= 0) return;
+    setForm((p) => ({
+      ...p,
+      project_types: [...p.project_types.filter((t) => t.type !== unitsModal.type), { type: unitsModal.type, units }]
+        .sort((a, b) => PROJECT_TYPES.findIndex((x) => x.value === a.type) - PROJECT_TYPES.findIndex((x) => x.value === b.type)),
+    }));
+    setUnitsModal(null);
+  };
+
+  const removeProjectType = () => {
+    if (!unitsModal) return;
+    setForm((p) => ({ ...p, project_types: p.project_types.filter((t) => t.type !== unitsModal.type) }));
+    setUnitsModal(null);
   };
 
   if (loading) {
@@ -302,6 +335,33 @@ const handleEditProject = (project: Project) => {
                   <option key={f.value} value={f.value}>{isAr ? f.ar : f.en}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">{isAr ? "نوع الكمبوند / المشروع" : "Compound / Project Type"}</label>
+              <div className="flex flex-wrap gap-3">
+                {PROJECT_TYPES.map((t) => {
+                  const selected = form.project_types.find((x) => x.type === t.value);
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setUnitsModal({ type: t.value, value: selected ? String(selected.units) : "" })}
+                      className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl border-2 text-sm transition-all duration-300 ${selected ? "border-aura-accent bg-aura-accent/5 text-aura-dark" : "border-aura-border hover:border-aura-accent/40 text-aura-muted"}`}
+                    >
+                      <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${selected ? "bg-aura-accent border-aura-accent" : "border-aura-border bg-white"}`}>
+                        {selected && <HiOutlineCheck className="w-3 h-3 text-white" />}
+                      </span>
+                      <span className="font-medium">{isAr ? t.ar : t.en}</span>
+                      {selected && (
+                        <span className="text-xs text-aura-accent">
+                          ({selected.units.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "وحدة" : "units"})
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
@@ -515,6 +575,58 @@ const handleEditProject = (project: Project) => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* بوب أب عدد الوحدات */}
+      {unitsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setUnitsModal(null)} />
+          <div className="relative w-full max-w-sm bg-aura-card rounded-3xl border border-aura-border p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-medium text-aura-dark">
+                {isAr ? "عدد الوحدات — " : "Number of units — "}
+                {isAr ? modalType?.ar : modalType?.en}
+              </h4>
+              <button
+                type="button"
+                onClick={() => setUnitsModal(null)}
+                className="w-8 h-8 rounded-full border border-aura-border flex items-center justify-center text-aura-muted hover:text-aura-dark transition-all"
+              >
+                <HiOutlineXMark className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="number"
+              min={1}
+              autoFocus
+              value={unitsModal.value}
+              onChange={(e) => setUnitsModal((m) => (m ? { ...m, value: e.target.value } : m))}
+              onKeyDown={(e) => { if (e.key === "Enter") saveUnits(); }}
+              placeholder={isAr ? "مثال: 120" : "e.g. 120"}
+              className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent"
+              dir="ltr"
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                type="button"
+                onClick={saveUnits}
+                disabled={!(Number(unitsModal.value) > 0)}
+                className="flex-1 px-4 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50"
+              >
+                {isAr ? "حفظ" : "Save"}
+              </button>
+              {modalSelected && (
+                <button
+                  type="button"
+                  onClick={removeProjectType}
+                  className="px-4 py-3 rounded-2xl bg-red-50 text-red-500 text-sm hover:bg-red-100 transition-all"
+                >
+                  {isAr ? "إلغاء الاختيار" : "Remove"}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

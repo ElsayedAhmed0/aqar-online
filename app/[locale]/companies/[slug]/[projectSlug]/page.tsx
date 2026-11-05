@@ -22,6 +22,12 @@ const FINISH_LABELS: Record<string, { ar: string; en: string }> = {
   without_finish: { ar: "بدون تشطيب", en: "Without Finish" },
 };
 
+const PROJECT_TYPE_LABELS: Record<string, { ar: string; en: string }> = {
+  administrative: { ar: "إداري", en: "Administrative" },
+  residential: { ar: "سكني", en: "Residential" },
+  commercial: { ar: "تجاري", en: "Commercial" },
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -95,6 +101,10 @@ export default async function ProjectDetailsPage({
   const finishLabel = (project as any).finish_type ? FINISH_LABELS[(project as any).finish_type] : null;
 
   const developerName = developer ? (isAr ? developer.name : developer.name_en || developer.name) : "";
+
+  // ✅ أنواع المشروع (إداري / سكني / تجاري) مع عدد وحدات كل نوع
+  const projectTypes = (((project as any).project_types as { type: string; units: number }[] | null) || [])
+    .filter((t) => PROJECT_TYPE_LABELS[t.type] && t.units > 0);
 
   // ✅ الأقسام الإضافية اللي المطوّر بيملاها (الأقسام الفاضية بتتخفي تلقائيًا)
   const extraSections: { title: string; text: string }[] = [
@@ -187,6 +197,16 @@ export default async function ProjectDetailsPage({
                   <span className="text-sm text-aura-dark">{isAr ? finishLabel.ar : finishLabel.en}</span>
                 </div>
               )}
+              {projectTypes.map((t) => (
+                <div key={t.type} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-aura-card border border-aura-border">
+                  <HiOutlineBuildingOffice2 className="w-4 h-4 text-aura-accent" />
+                  <span className="text-sm text-aura-dark">
+                    {isAr ? PROJECT_TYPE_LABELS[t.type].ar : PROJECT_TYPE_LABELS[t.type].en}
+                    {": "}
+                    {t.units.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "وحدة" : "units"}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {/* الوصف */}
