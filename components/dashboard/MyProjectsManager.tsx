@@ -25,6 +25,11 @@ type Project = {
   location_en?: string | null;
   delivery_date?: string | null;
   payment_plan_ar?: string | null;
+  about_developer_ar?: string | null;
+  project_location_ar?: string | null;
+  project_rating_ar?: string | null;
+  project_features_ar?: string | null;
+  custom_sections?: { label: string; value: string }[] | null;
   status: "pending" | "approved" | "rejected";
   active: boolean;
   starting_price?: number | null;
@@ -44,6 +49,8 @@ const emptyForm = {
   name_ar: "", name_en: "", description_ar: "", description_en: "",
   cover_image_url: "", location_ar: "", location_en: "",
   delivery_date: "", payment_plan_ar: "",
+  about_developer_ar: "", project_location_ar: "", project_rating_ar: "", project_features_ar: "",
+  custom_sections: [] as { label: string; value: string }[],
   starting_price: "", construction_status: "", finish_type: "", area_slug: "",
   images: [] as string[],
 };
@@ -107,6 +114,7 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
       construction_status: form.construction_status || null,
       finish_type: form.finish_type || null,
       area_slug: form.area_slug || null,
+      custom_sections: form.custom_sections.filter((s) => s.label.trim() && s.value.trim()),
     };
 
   if (editingProjectId) {
@@ -169,6 +177,11 @@ const handleEditProject = (project: Project) => {
       location_en: project.location_en || "",
       delivery_date: project.delivery_date || "",
       payment_plan_ar: project.payment_plan_ar || "",
+      about_developer_ar: project.about_developer_ar || "",
+      project_location_ar: project.project_location_ar || "",
+      project_rating_ar: project.project_rating_ar || "",
+      project_features_ar: project.project_features_ar || "",
+      custom_sections: project.custom_sections || [],
       starting_price: project.starting_price ? String(project.starting_price) : "",
       construction_status: project.construction_status || "",
       finish_type: project.finish_type || "",
@@ -362,6 +375,68 @@ const handleEditProject = (project: Project) => {
             <div className="space-y-1.5 sm:col-span-2">
               <label className="text-xs font-medium text-aura-dark">{isAr ? "خطة السداد" : "Payment Plan"}</label>
               <textarea value={form.payment_plan_ar} onChange={(e) => setForm((p) => ({ ...p, payment_plan_ar: e.target.value }))} rows={2} placeholder={isAr ? "مثال: مقدم 10% وتقسيط 8 سنوات" : "e.g. 10% down payment, 8-year installments"} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">{isAr ? "عن المطوّر" : "About the Developer"}</label>
+              <textarea value={form.about_developer_ar} onChange={(e) => setForm((p) => ({ ...p, about_developer_ar: e.target.value }))} rows={3} placeholder={isAr ? "نبذة عن الشركة وسابقة أعمالها" : "About the company and its track record"} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">{isAr ? "موقع المشروع" : "Project Location"}</label>
+              <textarea value={form.project_location_ar} onChange={(e) => setForm((p) => ({ ...p, project_location_ar: e.target.value }))} rows={3} placeholder={isAr ? "وصف الموقع والمحاور والخدمات القريبة" : "Location description, nearby roads and services"} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">{isAr ? "تقييم المشروع" : "Project Rating"}</label>
+              <textarea value={form.project_rating_ar} onChange={(e) => setForm((p) => ({ ...p, project_rating_ar: e.target.value }))} rows={3} placeholder={isAr ? "تقييمك للمشروع ونقاط قوته" : "Your assessment of the project and its strengths"} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-medium text-aura-dark">{isAr ? "خدمات ومميزات المشروع" : "Project Services & Features"}</label>
+              <textarea value={form.project_features_ar} onChange={(e) => setForm((p) => ({ ...p, project_features_ar: e.target.value }))} rows={3} placeholder={isAr ? "مثال: مساحات خضراء، نادي، أمن 24 ساعة" : "e.g. Green areas, club, 24/7 security"} className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent" />
+            </div>
+
+            {/* أقسام إضافية يضيفها المطوّر بنفسه */}
+            <div className="space-y-3 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-aura-dark">{isAr ? "أقسام إضافية" : "Additional Sections"}</p>
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, custom_sections: [...p.custom_sections, { label: "", value: "" }] }))}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-aura-accent/10 text-aura-accent text-xs font-medium hover:bg-aura-accent/20 transition-all"
+                >
+                  <HiOutlinePlus className="w-3.5 h-3.5" />
+                  {isAr ? "أضف جديد" : "Add New"}
+                </button>
+              </div>
+              {form.custom_sections.map((section, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="text"
+                      value={section.label}
+                      onChange={(e) => setForm((p) => ({ ...p, custom_sections: p.custom_sections.map((s, i) => (i === index ? { ...s, label: e.target.value } : s)) }))}
+                      placeholder={isAr ? "عنوان القسم (مثال: فوائد الاستثمار)" : "Section title (e.g. Investment benefits)"}
+                      className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent"
+                    />
+                    <textarea
+                      value={section.value}
+                      onChange={(e) => setForm((p) => ({ ...p, custom_sections: p.custom_sections.map((s, i) => (i === index ? { ...s, value: e.target.value } : s)) }))}
+                      rows={3}
+                      placeholder={isAr ? "محتوى القسم" : "Section content"}
+                      className="w-full px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, custom_sections: p.custom_sections.filter((_, i) => i !== index) }))}
+                    className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all flex items-center justify-center shrink-0"
+                  >
+                    <HiOutlineXMark className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 

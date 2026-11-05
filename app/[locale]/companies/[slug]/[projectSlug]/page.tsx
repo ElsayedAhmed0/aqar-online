@@ -96,6 +96,18 @@ export default async function ProjectDetailsPage({
 
   const developerName = developer ? (isAr ? developer.name : developer.name_en || developer.name) : "";
 
+  // ✅ الأقسام الإضافية اللي المطوّر بيملاها (الأقسام الفاضية بتتخفي تلقائيًا)
+  const extraSections: { title: string; text: string }[] = [
+    { title: isAr ? "عن المطوّر" : "About the Developer", text: (project as any).about_developer_ar },
+    { title: isAr ? "موقع المشروع" : "Project Location", text: (project as any).project_location_ar },
+    { title: isAr ? "تقييم المشروع" : "Project Rating", text: (project as any).project_rating_ar },
+    { title: isAr ? "خدمات ومميزات المشروع" : "Services & Features", text: (project as any).project_features_ar },
+    ...(((project as any).custom_sections as { label: string; value: string }[] | null) || []).map((sec) => ({
+      title: sec.label,
+      text: sec.value,
+    })),
+  ].filter((sec) => sec.text && sec.text.trim());
+
   const breadcrumbItems = [
     {
       label: isAr ? "الرئيسية" : "Home",
@@ -192,6 +204,14 @@ export default async function ProjectDetailsPage({
                 <p className="text-sm text-aura-muted leading-relaxed whitespace-pre-line">{project.payment_plan_ar}</p>
               </div>
             )}
+
+            {/* أقسام المطوّر الإضافية */}
+            {extraSections.map((sec, i) => (
+              <div key={i}>
+                <h2 className="text-lg font-medium text-aura-dark mb-3">{sec.title}</h2>
+                <p className="text-sm text-aura-muted leading-relaxed whitespace-pre-line">{sec.text}</p>
+              </div>
+            ))}
 
             {/* الوحدات المتاحة داخل الكمبوند */}
             <ProjectUnits units={units || []} projectName={name} isAr={isAr} locale={locale} />
