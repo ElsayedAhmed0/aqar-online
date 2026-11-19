@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import AboutClient from "./AboutClient";
-
+import { DEFAULT_OG_IMAGE } from "@/lib/images";
 export async function generateMetadata({
   params,
 }: {
@@ -34,7 +34,7 @@ export async function generateMetadata({
       locale: isAr ? "ar_EG" : "en_US",
       type: "website",
       images: [{
-        url: "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg",
+        url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
         alt: isAr ? "عقار أونلاين" : "Aqar Online",

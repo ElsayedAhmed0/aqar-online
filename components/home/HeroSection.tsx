@@ -8,7 +8,7 @@ import { useFilter } from "@/context/FilterContext";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useRouter } from "next/navigation";
 import { usePropertyTypes } from "@/lib/hooks/usePropertyTypes";
-
+import { DEFAULT_OG_IMAGE } from "@/lib/images";
 export default function HeroSection() {
   const locale = useLocale();
   const isAr = locale === "ar";
@@ -62,7 +62,7 @@ export default function HeroSection() {
       {/* الخلفية */}
       <div className="absolute inset-0 z-0">
         <img
-          src={settings.hero_image || "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg"}
+          src={settings.hero_image ||    DEFAULT_OG_IMAGE}
           alt="hero"
           className="w-full h-full object-cover"
         />

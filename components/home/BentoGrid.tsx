@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { HiOutlineShieldCheck, HiOutlineMapPin, HiOutlineStar, HiOutlineUserGroup } from "react-icons/hi2";
-
+import { DEFAULT_OG_IMAGE } from "@/lib/images";
 export default function BentoGrid() {
   const locale = useLocale();
   const isAr = locale === "ar";
@@ -35,7 +35,7 @@ export default function BentoGrid() {
 
           <div className="bento-card sm:col-span-2 lg:col-span-2 rounded-3xl p-8 md:p-10 flex flex-col justify-between min-h-56 md:min-h-64 relative overflow-hidden">
             <img
-             src={settings.hero_image || "https://res.cloudinary.com/de6itr3fm/image/upload/v1783724293/aqar-online/u37lefl0abg9obkfrvmy.jpg"}
+             src={settings.hero_image ||    DEFAULT_OG_IMAGE}
               alt="background"
               className="absolute inset-0 w-full h-full object-cover"
             />
