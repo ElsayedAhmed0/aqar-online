@@ -199,7 +199,7 @@ export default function AddListingForm() {
         .limit(1)
         .maybeSingle();
 
-      let maxListings = 5;
+      let maxListings = 1;
       let maxFeatured = 0;
       let packageName = isAr ? "مجانية" : "Free";
       let cycleStart: Date;
