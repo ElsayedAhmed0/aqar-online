@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { HiOutlinePhoto, HiOutlinePlus, HiOutlineXMark, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineCheck } from "react-icons/hi2";
 import { AREAS } from "@/lib/data/areas";
+import { useCustomAreas } from "@/lib/hooks/useCustomAreas";
 
 const FINISH_TYPES = [
   { value: "extra_super_lux", ar: "إكسترا سوبر لوكس", en: "Extra Super Lux" },
@@ -76,8 +77,11 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
   const [saving, setSaving] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
+  const { areas: customAreas } = useCustomAreas();
+  const [customAreaMode, setCustomAreaMode] = useState(false);
+  const [customAreaName, setCustomAreaName] = useState("");
   // البوب أب بتاع عدد الوحدات لنوع المشروع (إداري / سكني / تجاري)
-  const [unitsModal, setUnitsModal] = useState<{ type: string; value: string } | null>(null);
+  const [unitsModal, setUnitsModal] = useState<{ type: string; value: string; isNew?: boolean } | null>(null);
   const fetchProjects = async () => {
     setLoading(true);
     const supabase = createClient();
@@ -119,12 +123,34 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
     setSaving(true);
     const supabase = createClient();
 
+    // لو المطور اختار "منطقة تانية": نحدد الـ area_slug ونحفظ المنطقة الجديدة لو مش موجودة
+    let areaSlug = form.area_slug;
+    if (customAreaMode) {
+      const typedArea = customAreaName.trim();
+      if (typedArea) {
+        const staticMatch = AREAS.find((a) => a.ar === typedArea);
+        const customMatch = customAreas.find((c) => c.name_ar === typedArea);
+        if (staticMatch) {
+          areaSlug = staticMatch.slug;
+        } else {
+          areaSlug = typedArea;
+          if (!customMatch) {
+            await supabase
+              .from("custom_areas")
+              .upsert({ name_ar: typedArea, name_en: null }, { onConflict: "name_ar" });
+          }
+        }
+      } else {
+        areaSlug = "";
+      }
+    }
+
     const payload = {
       ...form,
       starting_price: form.starting_price ? Number(form.starting_price) : null,
       construction_status: form.construction_status || null,
       finish_type: form.finish_type || null,
-      area_slug: form.area_slug || null,
+      area_slug: areaSlug || null,
       custom_sections: form.custom_sections.filter((s) => s.label.trim() && s.value.trim()),
     };
 
@@ -146,6 +172,8 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
       if (!error && data) {
         setProjects((prev) => prev.map((p) => (p.id === editingProjectId ? data : p)));
         setForm(emptyForm);
+        setCustomAreaMode(false);
+        setCustomAreaName("");
         setFormOpen(false);
         setEditingProjectId(null);
       }
@@ -174,6 +202,8 @@ export default function MyProjectsManager({ developerId, isAr }: { developerId: 
     if (!error && data) {
       setProjects((prev) => [data, ...prev]);
       setForm(emptyForm);
+      setCustomAreaMode(false);
+      setCustomAreaName("");
       setFormOpen(false);
     }
   };
@@ -200,6 +230,8 @@ const handleEditProject = (project: Project) => {
       area_slug: project.area_slug || "",
       images: project.images || [],
     });
+    setCustomAreaMode(false);
+    setCustomAreaName("");
     setEditingProjectId(project.id);
     setFormOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -218,14 +250,26 @@ const handleEditProject = (project: Project) => {
   const modalType = unitsModal ? PROJECT_TYPES.find((t) => t.value === unitsModal.type) : null;
   const modalSelected = unitsModal ? form.project_types.some((t) => t.type === unitsModal.type) : false;
 
+  const typeOrder = (type: string) => {
+    const i = PROJECT_TYPES.findIndex((x) => x.value === type);
+    return i === -1 ? 999 : i;
+  };
+
   const saveUnits = () => {
     if (!unitsModal) return;
     const units = Math.floor(Number(unitsModal.value));
     if (!units || units <= 0) return;
+    let typeValue = unitsModal.type.trim();
+    if (!typeValue) return;
+    // لو الاسم اللي اتكتب بيطابق نوع أساسي (إداري/سكني/تجاري) نستخدم النوع الأساسي
+    const builtIn = PROJECT_TYPES.find(
+      (t) => t.value === typeValue || t.ar === typeValue || t.en.toLowerCase() === typeValue.toLowerCase()
+    );
+    if (builtIn) typeValue = builtIn.value;
     setForm((p) => ({
       ...p,
-      project_types: [...p.project_types.filter((t) => t.type !== unitsModal.type), { type: unitsModal.type, units }]
-        .sort((a, b) => PROJECT_TYPES.findIndex((x) => x.value === a.type) - PROJECT_TYPES.findIndex((x) => x.value === b.type)),
+      project_types: [...p.project_types.filter((t) => t.type !== typeValue), { type: typeValue, units }]
+        .sort((a, b) => typeOrder(a.type) - typeOrder(b.type)),
     }));
     setUnitsModal(null);
   };
@@ -285,10 +329,14 @@ const handleEditProject = (project: Project) => {
                 onClick={() => setAreaDropdownOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm text-aura-dark outline-none focus:border-aura-accent"
               >
-                <span className={form.area_slug ? "" : "text-aura-muted"}>
-                  {form.area_slug
-                    ? (isAr ? AREAS.find((a) => a.slug === form.area_slug)?.ar : AREAS.find((a) => a.slug === form.area_slug)?.en)
-                    : (isAr ? "اختر المنطقة" : "Select area")}
+                <span className={form.area_slug || customAreaMode ? "" : "text-aura-muted"}>
+                  {customAreaMode
+                    ? (isAr ? "منطقة تانية" : "Other area")
+                    : form.area_slug
+                      ? (isAr
+                          ? (AREAS.find((a) => a.slug === form.area_slug)?.ar || form.area_slug)
+                          : (AREAS.find((a) => a.slug === form.area_slug)?.en || customAreas.find((c) => c.name_ar === form.area_slug)?.name_en || form.area_slug))
+                      : (isAr ? "اختر المنطقة" : "Select area")}
                 </span>
                 <span className={`text-xs transition-transform ${areaDropdownOpen ? "rotate-180" : ""}`}>▾</span>
               </button>
@@ -301,14 +349,42 @@ const handleEditProject = (project: Project) => {
                       <button
                         key={a.slug}
                         type="button"
-                        onClick={() => { setForm((p) => ({ ...p, area_slug: a.slug })); setAreaDropdownOpen(false); }}
+                        onClick={() => { setForm((p) => ({ ...p, area_slug: a.slug })); setCustomAreaMode(false); setAreaDropdownOpen(false); }}
                         className={`w-full text-start px-4 py-2.5 text-sm transition-colors ${form.area_slug === a.slug ? "bg-aura-accent/10 text-aura-accent font-medium" : "text-aura-dark hover:bg-aura-canvas"}`}
                       >
                         {isAr ? a.ar : a.en}
                       </button>
                     ))}
+                    {customAreas
+                      .filter((c) => !AREAS.some((a) => a.ar === c.name_ar))
+                      .map((c) => (
+                        <button
+                          key={c.name_ar}
+                          type="button"
+                          onClick={() => { setForm((p) => ({ ...p, area_slug: c.name_ar })); setCustomAreaMode(false); setAreaDropdownOpen(false); }}
+                          className={`w-full text-start px-4 py-2.5 text-sm transition-colors ${form.area_slug === c.name_ar ? "bg-aura-accent/10 text-aura-accent font-medium" : "text-aura-dark hover:bg-aura-canvas"}`}
+                        >
+                          {isAr ? c.name_ar : (c.name_en || c.name_ar)}
+                        </button>
+                      ))}
+                    <button
+                      type="button"
+                      onClick={() => { setCustomAreaMode(true); setCustomAreaName(""); setForm((p) => ({ ...p, area_slug: "" })); setAreaDropdownOpen(false); }}
+                      className={`w-full text-start px-4 py-2.5 text-sm border-t border-aura-border transition-colors ${customAreaMode ? "bg-aura-accent/10 text-aura-accent font-medium" : "text-aura-dark hover:bg-aura-canvas"}`}
+                    >
+                      {isAr ? "منطقة تانية" : "Other area"}
+                    </button>
                   </div>
                 </>
+              )}
+              {customAreaMode && (
+                <input
+                  type="text"
+                  value={customAreaName}
+                  onChange={(e) => setCustomAreaName(e.target.value)}
+                  placeholder={isAr ? "اكتب اسم المنطقة" : "Type the area name"}
+                  className="w-full mt-2 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent"
+                />
               )}
             </div>
             <div className="space-y-1.5">
@@ -361,6 +437,32 @@ const handleEditProject = (project: Project) => {
                     </button>
                   );
                 })}
+                {form.project_types
+                  .filter((x) => !PROJECT_TYPES.some((t) => t.value === x.type))
+                  .map((x) => (
+                    <button
+                      key={x.type}
+                      type="button"
+                      onClick={() => setUnitsModal({ type: x.type, value: String(x.units) })}
+                      className="flex items-center gap-2.5 px-4 py-3 rounded-2xl border-2 text-sm transition-all duration-300 border-aura-accent bg-aura-accent/5 text-aura-dark"
+                    >
+                      <span className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 bg-aura-accent border-aura-accent">
+                        <HiOutlineCheck className="w-3 h-3 text-white" />
+                      </span>
+                      <span className="font-medium">{x.type}</span>
+                      <span className="text-xs text-aura-accent">
+                        ({x.units.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "وحدة" : "units"})
+                      </span>
+                    </button>
+                  ))}
+                <button
+                  type="button"
+                  onClick={() => setUnitsModal({ type: "", value: "", isNew: true })}
+                  className="flex items-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed border-aura-border hover:border-aura-accent/60 text-aura-muted text-sm transition-all duration-300"
+                >
+                  <HiOutlinePlus className="w-4 h-4" />
+                  {isAr ? "إضافة نوع جديد" : "Add new type"}
+                </button>
               </div>
             </div>
 
@@ -510,7 +612,7 @@ const handleEditProject = (project: Project) => {
             </button>
             {editingProjectId && (
               <button
-                onClick={() => { setEditingProjectId(null); setForm(emptyForm); setFormOpen(false); }}
+                onClick={() => { setEditingProjectId(null); setForm(emptyForm); setCustomAreaMode(false); setCustomAreaName(""); setFormOpen(false); }}
                 className="px-6 py-3 rounded-2xl border border-aura-border text-aura-muted text-sm hover:text-aura-dark transition-all"
               >
                 {isAr ? "إلغاء" : "Cancel"}
@@ -543,7 +645,7 @@ const handleEditProject = (project: Project) => {
                     <span className="text-xs truncate">
                       {isAr
                         ? AREAS.find((a) => a.slug === project.area_slug)?.ar || project.area_slug
-                        : AREAS.find((a) => a.slug === project.area_slug)?.en || project.area_slug}
+                        : AREAS.find((a) => a.slug === project.area_slug)?.en || customAreas.find((c) => c.name_ar === project.area_slug)?.name_en || project.area_slug}
                     </span>
                   </div>
                 )}
@@ -585,8 +687,14 @@ const handleEditProject = (project: Project) => {
           <div className="relative w-full max-w-sm bg-aura-card rounded-3xl border border-aura-border p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-medium text-aura-dark">
-                {isAr ? "عدد الوحدات — " : "Number of units — "}
-                {isAr ? modalType?.ar : modalType?.en}
+                {unitsModal.isNew
+                  ? (isAr ? "نوع جديد" : "New type")
+                  : (
+                    <>
+                      {isAr ? "عدد الوحدات — " : "Number of units — "}
+                      {modalType ? (isAr ? modalType.ar : modalType.en) : unitsModal.type}
+                    </>
+                  )}
               </h4>
               <button
                 type="button"
@@ -596,10 +704,20 @@ const handleEditProject = (project: Project) => {
                 <HiOutlineXMark className="w-4 h-4" />
               </button>
             </div>
+            {unitsModal.isNew && (
+              <input
+                type="text"
+                autoFocus
+                value={unitsModal.type}
+                onChange={(e) => setUnitsModal((m) => (m ? { ...m, type: e.target.value } : m))}
+                placeholder={isAr ? "اسم النوع (مثال: طبي، فندقي)" : "Type name (e.g. Medical, Hotel)"}
+                className="w-full mb-3 px-4 py-3 rounded-2xl border border-aura-border bg-aura-canvas text-sm outline-none focus:border-aura-accent"
+              />
+            )}
             <input
               type="number"
               min={1}
-              autoFocus
+              autoFocus={!unitsModal.isNew}
               value={unitsModal.value}
               onChange={(e) => setUnitsModal((m) => (m ? { ...m, value: e.target.value } : m))}
               onKeyDown={(e) => { if (e.key === "Enter") saveUnits(); }}
@@ -611,7 +729,7 @@ const handleEditProject = (project: Project) => {
               <button
                 type="button"
                 onClick={saveUnits}
-                disabled={!(Number(unitsModal.value) > 0)}
+                disabled={!(Number(unitsModal.value) > 0) || !unitsModal.type.trim()}
                 className="flex-1 px-4 py-3 rounded-2xl bg-aura-accent hover:bg-aura-dark text-white text-sm font-medium transition-all disabled:opacity-50"
               >
                 {isAr ? "حفظ" : "Save"}
