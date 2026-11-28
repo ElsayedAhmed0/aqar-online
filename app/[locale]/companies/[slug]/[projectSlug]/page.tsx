@@ -28,6 +28,9 @@ const PROJECT_TYPE_LABELS: Record<string, { ar: string; en: string }> = {
   commercial: { ar: "تجاري", en: "Commercial" },
 };
 
+// ✅ الأنواع الأساسية ليها اسم جاهز، أما النوع اللي المطوّر بيضيفه بنفسه فبنعرض اسمه زي ما اتكتب
+const getTypeLabel = (type: string) => PROJECT_TYPE_LABELS[type] ?? { ar: type, en: type };
+
 export async function generateMetadata({
   params,
 }: {
@@ -96,15 +99,33 @@ export default async function ProjectDetailsPage({
   const developer = (project as any).developers;
   const name = (isAr ? project.name_ar : project.name_en) || project.name_ar;
   const description = isAr ? project.description_ar : project.description_en;
-  const area = AREAS.find((a) => a.slug === (project as any).area_slug);
+
+  // ✅ المنطقة: لو من القايمة الثابتة نعرضها، ولو منطقة جديدة أضافها مطوّر بنقراها من جدول custom_areas
+  const areaSlug = ((project as any).area_slug as string | null) || null;
+  const staticArea = AREAS.find((a) => a.slug === areaSlug);
+  let areaLabel: string | null = null;
+  if (staticArea) {
+    areaLabel = isAr ? staticArea.ar : staticArea.en;
+  } else if (areaSlug) {
+    const { data: customArea } = await supabase
+      .from("custom_areas")
+      .select("name_ar, name_en")
+      .eq("name_ar", areaSlug)
+      .maybeSingle();
+    areaLabel = isAr ? areaSlug : customArea?.name_en || areaSlug;
+  }
+
   const constructionLabel = (project as any).construction_status ? CONSTRUCTION_LABELS[(project as any).construction_status] : null;
   const finishLabel = (project as any).finish_type ? FINISH_LABELS[(project as any).finish_type] : null;
 
   const developerName = developer ? (isAr ? developer.name : developer.name_en || developer.name) : "";
 
-  // ✅ أنواع المشروع (إداري / سكني / تجاري) مع عدد وحدات كل نوع
+  // ✅ أنواع المشروع (إداري / سكني / تجاري + أي نوع جديد) مع عدد وحدات كل نوع
   const projectTypes = (((project as any).project_types as { type: string; units: number }[] | null) || [])
-    .filter((t) => PROJECT_TYPE_LABELS[t.type] && t.units > 0);
+    .filter((t) => t && t.type && t.units > 0);
+
+  // ✅ معرض الصور الإضافية
+  const galleryImages = (((project as any).images as string[] | null) || []).filter(Boolean);
 
   // ✅ الأقسام الإضافية اللي المطوّر بيملاها (الأقسام الفاضية بتتخفي تلقائيًا)
   const extraSections: { title: string; text: string }[] = [
@@ -162,10 +183,10 @@ export default async function ProjectDetailsPage({
           <div className="lg:col-span-2 space-y-8">
             <div>
               <h1 className="text-3xl md:text-4xl font-light text-aura-dark mb-3">{name}</h1>
-              {area && (
+              {areaLabel && (
                 <div className="flex items-center gap-1.5 text-aura-muted">
                   <HiOutlineMapPin className="w-4 h-4" />
-                  <span className="text-sm">{isAr ? area.ar : area.en}</span>
+                  <span className="text-sm">{areaLabel}</span>
                 </div>
               )}
             </div>
@@ -201,13 +222,27 @@ export default async function ProjectDetailsPage({
                 <div key={t.type} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-aura-card border border-aura-border">
                   <HiOutlineBuildingOffice2 className="w-4 h-4 text-aura-accent" />
                   <span className="text-sm text-aura-dark">
-                    {isAr ? PROJECT_TYPE_LABELS[t.type].ar : PROJECT_TYPE_LABELS[t.type].en}
+                    {isAr ? getTypeLabel(t.type).ar : getTypeLabel(t.type).en}
                     {": "}
                     {t.units.toLocaleString(isAr ? "ar-EG" : "en-US")} {isAr ? "وحدة" : "units"}
                   </span>
                 </div>
               ))}
             </div>
+
+            {/* معرض الصور */}
+            {galleryImages.length > 0 && (
+              <div>
+                <h2 className="text-lg font-medium text-aura-dark mb-3">{isAr ? "معرض الصور" : "Gallery"}</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {galleryImages.map((img, i) => (
+                    <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-aura-border">
+                      <img src={img} alt={`${name} ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* الوصف */}
             {description && (
